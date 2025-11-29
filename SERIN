@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yoonseul Archive</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            touch-action: none;
+            margin: 0;
+            background-color: #000;
+        }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Transition Container */
+        #transition-container {
+            transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; 
+            max-width: 500px;
+            z-index: 50;
+        }
+
+        /* 1. Intro Mode */
+        .mode-intro {
+            background-color: rgba(255, 255, 255, 0.4); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            
+            border-radius: 24px; 
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1); 
+            
+            padding: 32px 24px; 
+            
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* 2. App Mode (Expanded) */
+        .mode-app {
+            top: 0 !important;
+            left: 0 !important;
+            transform: none !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+            border-radius: 0 !important;
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(40px) !important;
+            padding: 0 !important;
+            cursor: default;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+
+        /* Folder Tabs */
+        .folder-tab {
+            position: relative;
+            padding: 12px 20px 8px;
+            border-radius: 12px 12px 0 0;
+            margin-right: -8px;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        .folder-tab.active { background: rgba(255,255,255,0.9); color: #111; z-index: 10; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .folder-tab.inactive { background: rgba(255,255,255,0.5); color: #888; z-index: 0; margin-top: 4px; }
+
+        /* Mobile Swipe Layers */
+        .card-swipe-container { position: relative; overflow: hidden; border-radius: 16px; }
+        .swipe-action { position: absolute; top: 0; bottom: 0; width: 80px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; z-index: 0; }
+        .swipe-left { background-color: #ef4444; right: 0; }
+        .swipe-right { background-color: #3b82f6; left: 0; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden">
+
+    <!-- 1. Background Image -->
+    <div class="absolute inset-0 z-0">
+        <img id="background-image" 
+             src="https://images.unsplash.com/photo-1546514355-7fdc90ccbd03?q=80&w=2574&auto=format&fit=crop" 
+             class="w-full h-full object-cover" 
+             alt="Yoonseul Background">
+    </div>
+
+    <!-- Background Change Button -->
+    <div class="fixed bottom-6 right-6 z-[60] flex flex-col items-end space-y-2">
+        <input type="file" id="bg-upload" accept="image/*" class="hidden" onchange="changeBackground(event)">
+        <button onclick="document.getElementById('bg-upload').click()" 
+                class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-white/80 hover:bg-white/40 hover:text-white transition shadow-lg">
+            <i data-lucide="image" class="w-5 h-5"></i>
+        </button>
+    </div>
+
+    <!-- 2. Main Card Container -->
+    <div id="transition-container" class="mode-intro" onclick="expandToApp()">
+        
+        <!-- INTRO CONTENT -->
+        <div id="intro-content" class="text-center w-full transition-opacity duration-300">
+            <h1 class="text-3xl font-serif italic text-gray-800 animate-float" style="text-shadow: 0 2px 10px rgba(255,255,255,0.5);">
+                Inspiration
+            </h1>
+        </div>
+
+        <!-- APP CONTENT (Hidden initially) -->
+        <div id="app-content" class="absolute inset-0 flex flex-col opacity-0 pointer-events-none transition-opacity duration-700 delay-200">
+            
+            <!-- App Header with 3 Tabs -->
+            <div class="pt-6 px-6 flex items-end justify-between select-none bg-gradient-to-b from-white/30 to-transparent">
+                <div class="flex items-end pl-2">
+                    <button onclick="event.stopPropagation(); switchTab('scraps')" id="tab-scraps" class="folder-tab active">Scraps</button>
+                    <button onclick="event.stopPropagation(); switchTab('folders')" id="tab-folders" class="folder-tab inactive">Folders</button>
+                    <button onclick="event.stopPropagation(); switchTab('favorites')" id="tab-favorites" class="folder-tab inactive">Favorites</button>
+                </div>
+                
+                <div class="flex items-center space-x-4 mb-2">
+                    <!-- User ID Display Restored -->
+                    <span id="user-id-display" class="text-[10px] text-gray-500 font-mono hidden md:inline-block bg-white/50 px-2 py-1 rounded">ID...</span>
+                    
+                    <button onclick="event.stopPropagation(); openAddModal()" class="w-9 h-9 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg hover:bg-black transition">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main App Body -->
+            <div class="flex-grow relative overflow-hidden bg-white/80 backdrop-blur-xl shadow-inner z-10 flex flex-col rounded-t-2xl border-t border-white/50">
+                
+                <!-- Toolbar -->
+                <div class="px-6 py-4 flex items-center justify-between border-b border-white/40 bg-white/40 backdrop-blur-md">
+                    <h2 class="font-serif italic text-lg text-gray-800">My Collection</h2>
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-2 w-3.5 h-3.5 text-gray-500"></i>
+                        <input type="text" onclick="event.stopPropagation()" oninput="handleSearchInput(event)" placeholder="Search..." 
+                            class="pl-8 pr-4 py-1.5 bg-white/60 border-none rounded-full text-xs focus:ring-1 focus:ring-gray-400 w-32 focus:w-48 transition-all outline-none">
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="relative flex-grow overflow-hidden">
+                    <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-24">
+                        <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Cards go here -->
+                        </div>
+                        <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-500 pb-20">
+                            <i data-lucide="sparkles" class="w-8 h-8 mb-2 opacity-40"></i>
+                            <p class="text-xs font-light tracking-wide">Empty Collection</p>
+                        </div>
+                    </div>
+                    
+                    <div id="view-folders" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-24 hidden">
+                         <div id="folder-list" class="space-y-6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Modal -->
+    <div id="add-modal" class="fixed inset-0 z-[70] hidden">
+        <div class="absolute inset-0 bg-white/50 backdrop-blur-sm transition-opacity" onclick="closeAddModal()"></div>
+        <div class="absolute inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl transform translate-x-full transition-transform duration-500 flex flex-col" id="add-panel">
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                <h2 class="font-serif italic text-xl text-gray-900">New Item</h2>
+                <button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
+            </div>
+            <div class="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                <form id="scrap-form" onsubmit="event.preventDefault(); handleSaveScrap();">
+                    <div class="space-y-4">
+                        <div class="flex gap-2">
+                             <input type="url" id="input-url" class="flex-1 bg-gray-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-gray-800" placeholder="Link...">
+                             <button type="button" onclick="handleLinkProcess()" id="link-process-btn" class="bg-gray-800 text-white px-3 rounded-lg text-xs font-bold">Auto</button>
+                        </div>
+                        <textarea id="input-content" rows="3" class="w-full bg-gray-50 border-none rounded-lg p-3 text-xs resize-none" placeholder="Text content for AI..."></textarea>
+                        <input type="text" id="input-title" required class="w-full text-lg font-serif border-b border-gray-200 py-1 bg-transparent placeholder-gray-300" placeholder="Title">
+                        <div class="grid grid-cols-2 gap-4">
+                            <select id="input-type" class="w-full bg-transparent border-b border-gray-200 py-1 text-sm text-gray-600"><option value="news">Article</option><option value="video">Video</option><option value="image">Image</option></select>
+                            <input type="text" id="input-folder" class="w-full bg-transparent border-b border-gray-200 py-1 text-sm placeholder-gray-300" placeholder="Folder">
+                        </div>
+                        <input type="text" id="input-tags" class="w-full bg-transparent border-b border-gray-200 py-1 text-sm placeholder-gray-300" placeholder="#Tags">
+                        <textarea id="input-summary" maxlength="140" rows="2" class="w-full bg-gray-50 rounded-lg p-3 text-sm resize-none" placeholder="Summary..."></textarea>
+                        <textarea id="input-memo" rows="2" class="w-full bg-yellow-50 rounded-lg p-3 text-sm resize-none" placeholder="Memo..."></textarea>
+                        <input type="hidden" id="input-image-url">
+                    </div>
+                </form>
+            </div>
+            <div class="p-6 border-t border-gray-50 bg-white">
+                <button onclick="handleSaveScrap()" id="save-button" class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium text-sm shadow-lg">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Long Press Menu -->
+    <div id="menu-modal" class="fixed inset-0 z-[80] hidden">
+        <div class="absolute inset-0 bg-white/60 backdrop-blur-sm" onclick="closeMenuModal()"></div>
+        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
+            <h3 id="menu-title" class="text-xl font-serif italic text-gray-800 mb-6 truncate">Title</h3>
+            <div class="grid grid-cols-4 gap-4 mb-4">
+                <button onclick="menuAction('visit')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="external-link" class="w-6 h-6 text-gray-600"></i></div><span class="text-[10px]">Open</span></button>
+                <button onclick="menuAction('memo')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="sticky-note" class="w-6 h-6 text-gray-600"></i></div><span class="text-[10px]">Memo</span></button>
+                <button onclick="menuAction('favorite')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="star" class="w-6 h-6 text-gray-600"></i></div><span class="text-[10px]">Fav</span></button>
+                <button onclick="menuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-6 h-6 text-red-500"></i></div><span class="text-[10px]">Delete</span></button>
+            </div>
+            <button onclick="closeMenuModal()" class="w-full py-3 text-xs font-bold text-gray-400 mt-2">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Memo Modal -->
+    <div id="memo-modal" class="fixed inset-0 z-[90] hidden flex items-center justify-center px-6">
+        <div class="absolute inset-0 bg-white/60 backdrop-blur-sm" onclick="closeMemoModal()"></div>
+        <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl relative z-10 border border-gray-50">
+            <h3 class="font-serif italic text-xl text-gray-800 mb-6">Thoughts</h3>
+            <textarea id="edit-memo-input" rows="6" class="w-full bg-gray-50 border-none rounded-2xl p-5 text-sm resize-none mb-6 focus:ring-1 focus:ring-gray-300 leading-relaxed" placeholder="Write something..."></textarea>
+            <button onclick="saveMemo()" class="w-full bg-gray-900 text-white py-4 rounded-xl font-medium text-sm shadow-lg">Save Memo</button>
+        </div>
+    </div>
+
+    <!-- Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.db = null; window.auth = null; window.userId = null;
+        window.allScraps = []; window.currentTab = 'scraps'; window.selectedScrapId = null; window.longPressTimer = null; window.searchText = '';
+
+        window.changeBackground = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('background-image').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        window.expandToApp = function() {
+            const container = document.getElementById('transition-container');
+            const intro = document.getElementById('intro-content');
+            const app = document.getElementById('app-content');
+            intro.style.opacity = '0'; intro.style.pointerEvents = 'none';
+            container.classList.remove('mode-intro'); container.classList.add('mode-app');
+            setTimeout(() => { app.style.opacity = '1'; app.style.pointerEvents = 'auto'; }, 600);
+        }
+
+        window.switchTab = function(tabName) {
+            window.currentTab = tabName;
+            ['scraps', 'folders', 'favorites'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (t === tabName) { el.classList.add('active'); el.classList.remove('inactive'); } 
+                else { el.classList.add('inactive'); el.classList.remove('active'); }
+            });
+            if (tabName === 'folders') { 
+                document.getElementById('view-grid').classList.add('hidden'); 
+                document.getElementById('view-folders').classList.remove('hidden'); 
+                renderFolders(); 
+            } else { 
+                document.getElementById('view-grid').classList.remove('hidden'); 
+                document.getElementById('view-folders').classList.add('hidden'); 
+                renderScraps(); 
+            }
+        }
+
+        window.attachCardListeners = function(card, scrap) {
+            let startX = 0; let currentX = 0;
+            card.addEventListener('touchstart', (e) => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); startX = e.touches[0].clientX; });
+            card.addEventListener('touchend', (e) => { clearTimeout(window.longPressTimer); const diff = currentX - startX; if (currentX !== 0 && Math.abs(diff) > 80) { if (diff > 0) { navigator.clipboard.writeText(scrap.sourceUrl).then(() => alert('Link copied!')); } else { if(confirm('Delete?')) deleteScrap(scrap.id); } } card.style.transform = `translateX(0)`; currentX = 0; });
+            card.addEventListener('touchmove', (e) => { clearTimeout(window.longPressTimer); currentX = e.touches[0].clientX; const diff = currentX - startX; if (Math.abs(diff) < 80) { card.style.transform = `translateX(${diff}px)`; } });
+            card.addEventListener('mousedown', () => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); });
+            card.addEventListener('mouseup', () => clearTimeout(window.longPressTimer));
+            card.addEventListener('mousemove', () => clearTimeout(window.longPressTimer));
+        }
+
+        window.renderScraps = function() {
+            const grid = document.getElementById('scrap-grid'); grid.innerHTML = '';
+            let filtered = window.allScraps;
+            
+            if (window.currentTab === 'favorites') {
+                filtered = filtered.filter(s => s.isFavorite);
+            }
+
+            if (window.searchText) { const term = window.searchText.toLowerCase(); filtered = filtered.filter(s => s.title.toLowerCase().includes(term)); }
+            
+            if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+            else document.getElementById('empty-state').classList.add('hidden');
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "card-swipe-container relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-2xl shadow-sm border border-white/50 overflow-hidden hover:shadow-lg transition-all duration-300";
+                card.innerHTML = `
+                    <div class="swipe-action swipe-right">Share</div><div class="swipe-action swipe-left">Delete</div>
+                    <div class="relative w-full h-full bg-white z-10 transition-transform duration-200 flex flex-col" id="card-inner-${item.id}">
+                        <div class="h-[60%] w-full bg-gray-50 overflow-hidden relative">
+                             ${item.imageUrl 
+                                ? `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="img">` 
+                                : `<div class="w-full h-full flex items-center justify-center bg-gray-50"><i data-lucide="image" class="text-gray-300 w-8 h-8"></i></div>`}
+                             <div class="absolute top-2 right-2 flex space-x-1">
+                                 ${item.isFavorite ? '<div class="bg-white/90 p-1.5 rounded-full shadow-sm"><i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-current"></i></div>' : ''}
+                             </div>
+                        </div>
+                        <div class="h-[40%] p-5 flex flex-col justify-between bg-white/90 backdrop-blur-sm">
+                            <div>
+                                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block truncate">${item.folder || 'Uncategorized'}</span>
+                                <h3 class="font-serif text-sm font-bold text-gray-800 leading-snug line-clamp-2">${item.title}</h3>
+                            </div>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                ${(item.tags || []).slice(0,2).map(t => `<span class="text-[8px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">#${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+                const inner = card.querySelector(`#card-inner-${item.id}`);
+                window.attachCardListeners(inner, item);
+                inner.onclick = () => openMenuModal(item);
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        window.renderFolders = function() {
+            const list = document.getElementById('folder-list'); list.innerHTML = '';
+            const groups = {}; window.allScraps.forEach(s => { const f = s.folder || 'General'; if(!groups[f]) groups[f] = []; groups[f].push(s); });
+            Object.keys(groups).sort().forEach(folder => {
+                const section = document.createElement('div');
+                section.className = "bg-white/70 rounded-2xl p-6 shadow-sm border border-white/40";
+                section.innerHTML = `
+                    <h3 class="font-serif italic text-lg text-gray-800 mb-4">${folder} <span class="text-xs not-italic text-gray-400 ml-2">(${groups[folder].length})</span></h3>
+                    <div class="grid grid-cols-4 gap-3">
+                        ${groups[folder].slice(0, 4).map(s => `<div class="aspect-square bg-gray-100 rounded-xl overflow-hidden shadow-inner">${s.imageUrl ? `<img src="${s.imageUrl}" class="w-full h-full object-cover">` : ''}</div>`).join('')}
+                    </div>
+                `;
+                list.appendChild(section);
+            });
+        }
+
+        window.openMenuModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }
+        window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
+        window.menuAction = function(action) {
+            const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); if(!scrap) return;
+            if (action === 'visit') window.open(scrap.sourceUrl, '_blank');
+            else if (action === 'memo') openMemoModal(scrap);
+            else if (action === 'favorite') toggleFavorite(scrap);
+            else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id);
+            closeMenuModal();
+        }
+        window.openMemoModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('edit-memo-input').value = scrap.memo || ''; document.getElementById('memo-modal').classList.remove('hidden'); }
+        window.closeMemoModal = function() { document.getElementById('memo-modal').classList.add('hidden'); }
+        window.saveMemo = async function() { const newMemo = document.getElementById('edit-memo-input').value; if (window.selectedScrapId) { await updateDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, window.selectedScrapId), { memo: newMemo }); closeMemoModal(); }}
+        window.toggleFavorite = async function(scrap) { await updateDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, scrap.id), { isFavorite: !scrap.isFavorite }); }
+        window.deleteScrap = async function(id) { await deleteDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, id)); }
+        window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
+
+        window.openAddModal = function() { document.getElementById('add-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); }
+        window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 500); }
+        window.handleLinkProcess = async function() {
+             const url = document.getElementById('input-url').value; const content = document.getElementById('input-content').value; 
+             const btn = document.getElementById('link-process-btn'); btn.textContent = '...';
+             const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/); if (ytMatch) { document.getElementById('input-type').value = 'video'; document.getElementById('input-image-url').value = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`; }
+             if (content) {
+                 const apiKey = ""; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                 try {
+                     const res = await fetch(apiUrl, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: `Analyze: "${content}". JSON: {"title": "max 10 words", "summary": "max 140 chars", "tags": ["tag"]}. No markdown.` }] }] }) });
+                     const data = await res.json();
+                     const json = JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
+                     document.getElementById('input-title').value = json.title || ''; document.getElementById('input-summary').value = json.summary || ''; 
+                     if(json.tags) document.getElementById('input-tags').value = json.tags.join(', ');
+                 } catch(e) { console.error(e); }
+             } btn.textContent = 'Auto';
+        }
+        window.handleSaveScrap = async function() {
+             const btn = document.getElementById('save-button'); if(!window.userId) return; btn.textContent = 'Saving...'; btn.disabled = true;
+             const tags = document.getElementById('input-tags').value.split(',').map(t => t.trim()).filter(t => t);
+             const newItem = { userId: window.userId, title: document.getElementById('input-title').value, summary: document.getElementById('input-summary').value, sourceUrl: document.getElementById('input-url').value, imageUrl: document.getElementById('input-image-url').value, type: document.getElementById('input-type').value, folder: document.getElementById('input-folder').value || 'General', memo: document.getElementById('input-memo').value, tags: tags, isFavorite: false, createdAt: serverTimestamp() };
+             try { await addDoc(collection(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`), newItem); closeAddModal(); document.getElementById('scrap-form').reset(); } catch(e) {} finally { btn.textContent = 'Save'; btn.disabled = false; }
+        }
+
+        window.initApp = async function() {
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; window.appId = appId;
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}'); if (!Object.keys(firebaseConfig).length) return;
+            const app = initializeApp(firebaseConfig); window.db = getFirestore(app); window.auth = getAuth(app);
+            const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; if (initialToken) await signInWithCustomToken(window.auth, initialToken); else await signInAnonymously(window.auth);
+            onAuthStateChanged(window.auth, (user) => { if (user) { 
+                window.userId = user.uid; 
+                // Error Fix: Added a null check for user-id-display element
+                const userIdDisplay = document.getElementById('user-id-display');
+                if (userIdDisplay) {
+                    userIdDisplay.textContent = user.uid.substring(0,6);
+                }
+                const q = query(collection(window.db, `artifacts/${appId}/users/${user.uid}/scraps`), orderBy("createdAt", "desc")); 
+                onSnapshot(q, (snapshot) => { window.allScraps = snapshot.docs.map(d => ({id: d.id, ...d.data()})); renderScraps(); renderFolders(); }); 
+            }});
+            lucide.createIcons();
+        }
+        window.onload = window.initApp;
+    </script>
+</body>
+</html>

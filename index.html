@@ -275,7 +275,7 @@
         </div>
     </div>
 
-    <!-- Logic -->
+    <!-- Logic with IndexedDB Persistence -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -284,24 +284,67 @@
         window.db = null; window.auth = null; window.userId = null;
         window.allScraps = []; window.currentTab = 'scraps'; window.selectedScrapId = null; window.longPressTimer = null; window.searchText = '';
 
-        window.changeBackground = function(event) {
+        // --- IndexedDB for Persistent Background ---
+        const DB_NAME = 'YoonseulDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'settings';
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                };
+            });
+        }
+
+        async function saveBackgroundToDB(dataUrl) {
+            try {
+                const db = await openDB();
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.put(dataUrl, 'background_image');
+                return tx.complete;
+            } catch (err) {
+                console.error("Failed to save background:", err);
+            }
+        }
+
+        async function loadBackgroundFromDB() {
+            try {
+                const db = await openDB();
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.get('background_image');
+                return new Promise((resolve) => {
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => resolve(null);
+                });
+            } catch (err) {
+                console.error("Failed to load background:", err);
+                return null;
+            }
+        }
+
+        window.changeBackground = async function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     const dataUrl = e.target.result;
                     document.getElementById('background-image').src = dataUrl;
-                    try {
-                        localStorage.setItem('yoonseul_custom_bg', dataUrl);
-                    } catch (e) {
-                        console.warn("Background image too large to save locally.");
-                        alert('이미지가 너무 커서 저장되지 않았습니다. 새로고침하면 초기화됩니다.');
-                    }
+                    await saveBackgroundToDB(dataUrl);
                 }
                 reader.readAsDataURL(file);
             }
         }
 
+        // Transition
         window.expandToApp = function() {
             const container = document.getElementById('transition-container');
             const intro = document.getElementById('intro-content');
@@ -458,7 +501,7 @@
 
         window.initApp = async function() {
             // Load saved background first
-            const savedBg = localStorage.getItem('yoonseul_custom_bg');
+            const savedBg = await loadBackgroundFromDB();
             if (savedBg) {
                 document.getElementById('background-image').src = savedBg;
             }
@@ -469,7 +512,6 @@
             const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; if (initialToken) await signInWithCustomToken(window.auth, initialToken); else await signInAnonymously(window.auth);
             onAuthStateChanged(window.auth, (user) => { if (user) { 
                 window.userId = user.uid; 
-                // Error fix for potential null element
                 const idDisplay = document.getElementById('user-id-display');
                 if(idDisplay) idDisplay.textContent = user.uid.substring(0,6);
                 

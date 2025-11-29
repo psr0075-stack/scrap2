@@ -289,7 +289,14 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('background-image').src = e.target.result;
+                    const dataUrl = e.target.result;
+                    document.getElementById('background-image').src = dataUrl;
+                    try {
+                        localStorage.setItem('yoonseul_custom_bg', dataUrl);
+                    } catch (e) {
+                        console.warn("Background image too large to save locally.");
+                        alert('이미지가 너무 커서 저장되지 않았습니다. 새로고침하면 초기화됩니다.');
+                    }
                 }
                 reader.readAsDataURL(file);
             }
@@ -450,6 +457,12 @@
         }
 
         window.initApp = async function() {
+            // Load saved background first
+            const savedBg = localStorage.getItem('yoonseul_custom_bg');
+            if (savedBg) {
+                document.getElementById('background-image').src = savedBg;
+            }
+
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; window.appId = appId;
             const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}'); if (!Object.keys(firebaseConfig).length) return;
             const app = initializeApp(firebaseConfig); window.db = getFirestore(app); window.auth = getAuth(app);

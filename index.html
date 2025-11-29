@@ -29,22 +29,24 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80%; 
-            max-width: 500px;
+            /* Increased Size: Wider and taller to feel more spacious */
+            width: 85%; 
+            max-width: 750px; /* Increased from 500px */
+            min-height: 450px;
             z-index: 50;
         }
 
-        /* 1. Intro Mode */
+        /* 1. Intro Mode (Pure Glass Card - Larger & Emotional) */
         .mode-intro {
-            background-color: rgba(255, 255, 255, 0.4); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.35); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
             
-            border-radius: 24px; 
+            border-radius: 32px; /* Smoother corners */
             border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1); 
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15); 
             
-            padding: 32px 24px; 
+            padding: 48px 32px; 
             
             display: flex;
             flex-direction: column;
@@ -61,8 +63,9 @@
             width: 100% !important;
             height: 100% !important;
             max-width: none !important;
+            min-height: 0 !important;
             border-radius: 0 !important;
-            background-color: rgba(255, 255, 255, 0.95) !important;
+            background-color: rgba(255, 255, 255, 0.92) !important;
             backdrop-filter: blur(40px) !important;
             padding: 0 !important;
             cursor: default;
@@ -70,25 +73,49 @@
 
         /* Animations */
         @keyframes float {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-3px); }
-            100% { transform: translateY(0); }
+            0% { transform: translateY(0); opacity: 0.9; }
+            50% { transform: translateY(-4px); opacity: 1; }
+            100% { transform: translateY(0); opacity: 0.9; }
         }
-        .animate-float { animation: float 4s ease-in-out infinite; }
+        .animate-float { animation: float 5s ease-in-out infinite; }
 
-        /* Folder Tabs */
+        /* Folder Tabs Styling (Improved) */
         .folder-tab {
             position: relative;
-            padding: 12px 20px 8px;
-            border-radius: 12px 12px 0 0;
-            margin-right: -8px;
+            padding: 12px 24px 10px;
+            border-radius: 16px 16px 0 0;
+            margin-right: -10px; /* Slight overlap for folder effect */
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: 15px;
+            font-size: 16px;
             transition: all 0.3s ease;
+            border: 1px solid transparent;
+            border-bottom: none;
         }
-        .folder-tab.active { background: rgba(255,255,255,0.9); color: #111; z-index: 10; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .folder-tab.inactive { background: rgba(255,255,255,0.5); color: #888; z-index: 0; margin-top: 4px; }
+        
+        /* Active Tab: Pure White */
+        .folder-tab.active { 
+            background: #ffffff; 
+            color: #111827; 
+            z-index: 10; 
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.05); 
+            font-weight: 600;
+        }
+        
+        /* Inactive Tab: Soft Gray/Beige Glass */
+        .folder-tab.inactive { 
+            background: rgba(220, 220, 225, 0.6); /* Soft Gray Glass */
+            color: #6b7280; 
+            z-index: 0; 
+            margin-top: 6px; 
+            backdrop-filter: blur(4px);
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .folder-tab.inactive:hover {
+            background: rgba(230, 230, 235, 0.8);
+            color: #374151;
+        }
 
         /* Mobile Swipe Layers */
         .card-swipe-container { position: relative; overflow: hidden; border-radius: 16px; }
@@ -103,7 +130,7 @@
     <div class="absolute inset-0 z-0">
         <img id="background-image" 
              src="https://images.unsplash.com/photo-1546514355-7fdc90ccbd03?q=80&w=2574&auto=format&fit=crop" 
-             class="w-full h-full object-cover" 
+             class="w-full h-full object-cover transition-opacity duration-500" 
              alt="Yoonseul Background">
     </div>
 
@@ -111,7 +138,7 @@
     <div class="fixed bottom-6 right-6 z-[60] flex flex-col items-end space-y-2">
         <input type="file" id="bg-upload" accept="image/*" class="hidden" onchange="changeBackground(event)">
         <button onclick="document.getElementById('bg-upload').click()" 
-                class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-white/80 hover:bg-white/40 hover:text-white transition shadow-lg">
+                class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-white/90 hover:bg-white/40 hover:text-white transition shadow-lg group">
             <i data-lucide="image" class="w-5 h-5"></i>
         </button>
     </div>
@@ -120,17 +147,25 @@
     <div id="transition-container" class="mode-intro" onclick="expandToApp()">
         
         <!-- INTRO CONTENT -->
-        <div id="intro-content" class="text-center w-full transition-opacity duration-300">
-            <h1 class="text-3xl font-serif italic text-gray-800 animate-float" style="text-shadow: 0 2px 10px rgba(255,255,255,0.5);">
+        <div id="intro-content" class="text-center w-full transition-opacity duration-500 flex flex-col items-center">
+            <p class="text-[10px] font-bold text-gray-700 uppercase tracking-[0.4em] mb-8 opacity-70">Personal Archive</p>
+            
+            <h1 class="text-5xl md:text-7xl font-serif italic text-gray-900 animate-float drop-shadow-sm mb-4">
                 Inspiration
             </h1>
+            
+            <div class="w-12 h-[1px] bg-gray-500/30 my-8"></div>
+            
+            <div class="inline-flex items-center space-x-2 text-[10px] uppercase tracking-widest text-gray-600 bg-white/40 px-6 py-3 rounded-full border border-white/40 hover:bg-white/60 transition duration-300">
+                <span>Tap to Enter</span>
+            </div>
         </div>
 
         <!-- APP CONTENT (Hidden initially) -->
         <div id="app-content" class="absolute inset-0 flex flex-col opacity-0 pointer-events-none transition-opacity duration-700 delay-200">
             
-            <!-- App Header with 3 Tabs -->
-            <div class="pt-6 px-6 flex items-end justify-between select-none bg-gradient-to-b from-white/30 to-transparent">
+            <!-- App Header with Improved Tabs -->
+            <div class="pt-8 px-8 flex items-end justify-between select-none bg-gradient-to-b from-white/30 to-transparent">
                 <div class="flex items-end pl-2">
                     <button onclick="event.stopPropagation(); switchTab('scraps')" id="tab-scraps" class="folder-tab active">Scraps</button>
                     <button onclick="event.stopPropagation(); switchTab('folders')" id="tab-folders" class="folder-tab inactive">Folders</button>
@@ -138,42 +173,41 @@
                 </div>
                 
                 <div class="flex items-center space-x-4 mb-2">
-                    <!-- User ID Display Restored -->
-                    <span id="user-id-display" class="text-[10px] text-gray-500 font-mono hidden md:inline-block bg-white/50 px-2 py-1 rounded">ID...</span>
+                    <span id="user-id-display" class="text-[10px] text-gray-500 font-mono hidden md:inline-block bg-white/40 px-3 py-1 rounded-full backdrop-blur-sm">Guest</span>
                     
-                    <button onclick="event.stopPropagation(); openAddModal()" class="w-9 h-9 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg hover:bg-black transition">
+                    <button onclick="event.stopPropagation(); openAddModal()" class="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center shadow-lg hover:bg-black transition transform hover:scale-105 active:scale-95">
                         <i data-lucide="plus" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Main App Body -->
-            <div class="flex-grow relative overflow-hidden bg-white/80 backdrop-blur-xl shadow-inner z-10 flex flex-col rounded-t-2xl border-t border-white/50">
+            <!-- Main App Body (White Sheet) -->
+            <div class="flex-grow relative overflow-hidden bg-white/80 backdrop-blur-xl shadow-2xl z-10 flex flex-col rounded-t-3xl border-t border-white/60">
                 
                 <!-- Toolbar -->
-                <div class="px-6 py-4 flex items-center justify-between border-b border-white/40 bg-white/40 backdrop-blur-md">
-                    <h2 class="font-serif italic text-lg text-gray-800">My Collection</h2>
-                    <div class="relative">
-                        <i data-lucide="search" class="absolute left-3 top-2 w-3.5 h-3.5 text-gray-500"></i>
+                <div class="px-8 py-6 flex items-center justify-between border-b border-gray-100 bg-white/50 backdrop-blur-md">
+                    <h2 class="font-serif italic text-2xl text-gray-800">My Collection</h2>
+                    <div class="relative group">
+                        <i data-lucide="search" class="absolute left-4 top-2.5 w-4 h-4 text-gray-400 group-focus-within:text-gray-600 transition"></i>
                         <input type="text" onclick="event.stopPropagation()" oninput="handleSearchInput(event)" placeholder="Search..." 
-                            class="pl-8 pr-4 py-1.5 bg-white/60 border-none rounded-full text-xs focus:ring-1 focus:ring-gray-400 w-32 focus:w-48 transition-all outline-none">
+                            class="pl-10 pr-4 py-2 bg-gray-50/80 border border-transparent rounded-full text-sm focus:ring-1 focus:ring-gray-300 focus:bg-white w-40 focus:w-64 transition-all outline-none placeholder-gray-400">
                     </div>
                 </div>
 
                 <!-- Content Area -->
                 <div class="relative flex-grow overflow-hidden">
-                    <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-24">
-                        <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-8 pb-32">
+                        <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             <!-- Cards go here -->
                         </div>
-                        <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-500 pb-20">
-                            <i data-lucide="sparkles" class="w-8 h-8 mb-2 opacity-40"></i>
-                            <p class="text-xs font-light tracking-wide">Empty Collection</p>
+                        <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
+                            <i data-lucide="sparkles" class="w-8 h-8 mb-3 opacity-30"></i>
+                            <p class="text-xs font-light tracking-widest uppercase">Start your collection</p>
                         </div>
                     </div>
                     
-                    <div id="view-folders" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-24 hidden">
-                         <div id="folder-list" class="space-y-6"></div>
+                    <div id="view-folders" class="absolute inset-0 overflow-y-auto no-scrollbar p-8 pb-32 hidden">
+                         <div id="folder-list" class="space-y-8"></div>
                     </div>
                 </div>
             </div>
@@ -183,34 +217,34 @@
     <!-- Modals -->
     <!-- Add Modal -->
     <div id="add-modal" class="fixed inset-0 z-[70] hidden">
-        <div class="absolute inset-0 bg-white/50 backdrop-blur-sm transition-opacity" onclick="closeAddModal()"></div>
-        <div class="absolute inset-y-0 right-0 w-full md:w-[450px] bg-white shadow-2xl transform translate-x-full transition-transform duration-500 flex flex-col" id="add-panel">
-            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-white z-10">
-                <h2 class="font-serif italic text-xl text-gray-900">New Item</h2>
-                <button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></button>
+        <div class="absolute inset-0 bg-white/50 backdrop-blur-md transition-opacity" onclick="closeAddModal()"></div>
+        <div class="absolute inset-y-0 right-0 w-full md:w-[500px] bg-white shadow-2xl transform translate-x-full transition-transform duration-500 flex flex-col" id="add-panel">
+            <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                <h2 class="font-serif italic text-2xl text-gray-900">New Item</h2>
+                <button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
             </div>
-            <div class="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
+            <div class="flex-grow overflow-y-auto p-8 space-y-6 custom-scrollbar">
                 <form id="scrap-form" onsubmit="event.preventDefault(); handleSaveScrap();">
-                    <div class="space-y-4">
+                    <div class="space-y-5">
                         <div class="flex gap-2">
-                             <input type="url" id="input-url" class="flex-1 bg-gray-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-gray-800" placeholder="Link...">
-                             <button type="button" onclick="handleLinkProcess()" id="link-process-btn" class="bg-gray-800 text-white px-3 rounded-lg text-xs font-bold">Auto</button>
+                             <input type="url" id="input-url" class="flex-1 bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-gray-800" placeholder="Source Link...">
+                             <button type="button" onclick="handleLinkProcess()" id="link-process-btn" class="bg-gray-800 text-white px-4 rounded-xl text-xs font-bold shadow-md">Auto</button>
                         </div>
-                        <textarea id="input-content" rows="3" class="w-full bg-gray-50 border-none rounded-lg p-3 text-xs resize-none" placeholder="Text content for AI..."></textarea>
-                        <input type="text" id="input-title" required class="w-full text-lg font-serif border-b border-gray-200 py-1 bg-transparent placeholder-gray-300" placeholder="Title">
+                        <textarea id="input-content" rows="4" class="w-full bg-gray-50 border-none rounded-xl p-4 text-sm resize-none" placeholder="Paste content for AI Summary..."></textarea>
+                        <input type="text" id="input-title" required class="w-full text-xl font-serif border-b border-gray-200 py-2 bg-transparent placeholder-gray-300" placeholder="Title">
                         <div class="grid grid-cols-2 gap-4">
-                            <select id="input-type" class="w-full bg-transparent border-b border-gray-200 py-1 text-sm text-gray-600"><option value="news">Article</option><option value="video">Video</option><option value="image">Image</option></select>
-                            <input type="text" id="input-folder" class="w-full bg-transparent border-b border-gray-200 py-1 text-sm placeholder-gray-300" placeholder="Folder">
+                            <select id="input-type" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm text-gray-600"><option value="news">Article</option><option value="video">Video</option><option value="image">Image</option></select>
+                            <input type="text" id="input-folder" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm placeholder-gray-300" placeholder="Folder">
                         </div>
-                        <input type="text" id="input-tags" class="w-full bg-transparent border-b border-gray-200 py-1 text-sm placeholder-gray-300" placeholder="#Tags">
-                        <textarea id="input-summary" maxlength="140" rows="2" class="w-full bg-gray-50 rounded-lg p-3 text-sm resize-none" placeholder="Summary..."></textarea>
-                        <textarea id="input-memo" rows="2" class="w-full bg-yellow-50 rounded-lg p-3 text-sm resize-none" placeholder="Memo..."></textarea>
+                        <input type="text" id="input-tags" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm placeholder-gray-300" placeholder="#Tags">
+                        <textarea id="input-summary" maxlength="140" rows="3" class="w-full bg-gray-50 rounded-xl p-4 text-sm resize-none" placeholder="Summary..."></textarea>
+                        <textarea id="input-memo" rows="3" class="w-full bg-yellow-50 rounded-xl p-4 text-sm resize-none" placeholder="Personal Memo..."></textarea>
                         <input type="hidden" id="input-image-url">
                     </div>
                 </form>
             </div>
-            <div class="p-6 border-t border-gray-50 bg-white">
-                <button onclick="handleSaveScrap()" id="save-button" class="w-full bg-gray-900 text-white py-3 rounded-xl font-medium text-sm shadow-lg">Save</button>
+            <div class="p-8 border-t border-gray-50 bg-white">
+                <button onclick="handleSaveScrap()" id="save-button" class="w-full bg-gray-900 text-white py-4 rounded-xl font-medium text-sm shadow-xl">Save to Archive</button>
             </div>
         </div>
     </div>
@@ -218,16 +252,16 @@
     <!-- Long Press Menu -->
     <div id="menu-modal" class="fixed inset-0 z-[80] hidden">
         <div class="absolute inset-0 bg-white/60 backdrop-blur-sm" onclick="closeMenuModal()"></div>
-        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel">
-            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
+        <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
             <h3 id="menu-title" class="text-xl font-serif italic text-gray-800 mb-6 truncate">Title</h3>
             <div class="grid grid-cols-4 gap-4 mb-4">
-                <button onclick="menuAction('visit')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="external-link" class="w-6 h-6 text-gray-600"></i></div><span class="text-[10px]">Open</span></button>
-                <button onclick="menuAction('memo')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="sticky-note" class="w-6 h-6 text-gray-600"></i></div><span class="text-[10px]">Memo</span></button>
-                <button onclick="menuAction('favorite')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="star" class="w-6 h-6 text-gray-600"></i></div><span class="text-[10px]">Fav</span></button>
-                <button onclick="menuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-6 h-6 text-red-500"></i></div><span class="text-[10px]">Delete</span></button>
+                <button onclick="menuAction('visit')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="external-link" class="w-6 h-6 text-gray-600"></i></div><span class="text-xs font-medium">Open</span></button>
+                <button onclick="menuAction('memo')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="sticky-note" class="w-6 h-6 text-gray-600"></i></div><span class="text-xs font-medium">Memo</span></button>
+                <button onclick="menuAction('favorite')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center group-hover:bg-gray-100 transition"><i data-lucide="star" class="w-6 h-6 text-gray-600"></i></div><span class="text-xs font-medium">Fav</span></button>
+                <button onclick="menuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-6 h-6 text-red-500"></i></div><span class="text-xs font-medium text-red-500">Delete</span></button>
             </div>
-            <button onclick="closeMenuModal()" class="w-full py-3 text-xs font-bold text-gray-400 mt-2">CLOSE</button>
+            <button onclick="closeMenuModal()" class="w-full py-4 text-sm font-bold text-gray-400 mt-2 hover:text-gray-600">CANCEL</button>
         </div>
     </div>
 
@@ -265,17 +299,32 @@
             const container = document.getElementById('transition-container');
             const intro = document.getElementById('intro-content');
             const app = document.getElementById('app-content');
-            intro.style.opacity = '0'; intro.style.pointerEvents = 'none';
-            container.classList.remove('mode-intro'); container.classList.add('mode-app');
-            setTimeout(() => { app.style.opacity = '1'; app.style.pointerEvents = 'auto'; }, 600);
+            
+            intro.style.opacity = '0';
+            intro.style.pointerEvents = 'none';
+            
+            container.classList.remove('mode-intro');
+            container.classList.add('mode-app');
+            
+            setTimeout(() => {
+                app.style.opacity = '1';
+                app.style.pointerEvents = 'auto';
+            }, 600);
         }
 
         window.switchTab = function(tabName) {
             window.currentTab = tabName;
             ['scraps', 'folders', 'favorites'].forEach(t => {
                 const el = document.getElementById(`tab-${t}`);
-                if (t === tabName) { el.classList.add('active'); el.classList.remove('inactive'); } 
-                else { el.classList.add('inactive'); el.classList.remove('active'); }
+                if (el) {
+                    if (t === tabName) { 
+                        el.classList.add('active'); 
+                        el.classList.remove('inactive'); 
+                    } else { 
+                        el.classList.add('inactive'); 
+                        el.classList.remove('active'); 
+                    }
+                }
             });
             if (tabName === 'folders') { 
                 document.getElementById('view-grid').classList.add('hidden'); 
@@ -313,7 +362,7 @@
 
             filtered.forEach(item => {
                 const card = document.createElement('div');
-                card.className = "card-swipe-container relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-2xl shadow-sm border border-white/50 overflow-hidden hover:shadow-lg transition-all duration-300";
+                card.className = "card-swipe-container relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300";
                 card.innerHTML = `
                     <div class="swipe-action swipe-right">Share</div><div class="swipe-action swipe-left">Delete</div>
                     <div class="relative w-full h-full bg-white z-10 transition-transform duration-200 flex flex-col" id="card-inner-${item.id}">
@@ -325,7 +374,7 @@
                                  ${item.isFavorite ? '<div class="bg-white/90 p-1.5 rounded-full shadow-sm"><i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-current"></i></div>' : ''}
                              </div>
                         </div>
-                        <div class="h-[40%] p-5 flex flex-col justify-between bg-white/90 backdrop-blur-sm">
+                        <div class="h-[40%] p-5 flex flex-col justify-between bg-white backdrop-blur-sm">
                             <div>
                                 <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block truncate">${item.folder || 'Uncategorized'}</span>
                                 <h3 class="font-serif text-sm font-bold text-gray-800 leading-snug line-clamp-2">${item.title}</h3>
@@ -348,7 +397,7 @@
             const groups = {}; window.allScraps.forEach(s => { const f = s.folder || 'General'; if(!groups[f]) groups[f] = []; groups[f].push(s); });
             Object.keys(groups).sort().forEach(folder => {
                 const section = document.createElement('div');
-                section.className = "bg-white/70 rounded-2xl p-6 shadow-sm border border-white/40";
+                section.className = "bg-white/70 rounded-2xl p-6 shadow-sm border border-gray-100";
                 section.innerHTML = `
                     <h3 class="font-serif italic text-lg text-gray-800 mb-4">${folder} <span class="text-xs not-italic text-gray-400 ml-2">(${groups[folder].length})</span></h3>
                     <div class="grid grid-cols-4 gap-3">
@@ -407,11 +456,10 @@
             const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; if (initialToken) await signInWithCustomToken(window.auth, initialToken); else await signInAnonymously(window.auth);
             onAuthStateChanged(window.auth, (user) => { if (user) { 
                 window.userId = user.uid; 
-                // Error Fix: Added a null check for user-id-display element
-                const userIdDisplay = document.getElementById('user-id-display');
-                if (userIdDisplay) {
-                    userIdDisplay.textContent = user.uid.substring(0,6);
-                }
+                // Error fix for potential null element
+                const idDisplay = document.getElementById('user-id-display');
+                if(idDisplay) idDisplay.textContent = user.uid.substring(0,6);
+                
                 const q = query(collection(window.db, `artifacts/${appId}/users/${user.uid}/scraps`), orderBy("createdAt", "desc")); 
                 onSnapshot(q, (snapshot) => { window.allScraps = snapshot.docs.map(d => ({id: d.id, ...d.data()})); renderScraps(); renderFolders(); }); 
             }});

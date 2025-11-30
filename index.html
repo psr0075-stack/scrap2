@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Creative Archive</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body { 
@@ -183,10 +179,8 @@
 </head>
 <body class="h-screen w-screen overflow-hidden">
 
-    <!-- 1. Background -->
     <div class="absolute inset-0 z-0 bg-[#f9fafb]"></div>
 
-    <!-- 2. Intro Scene -->
     <div id="intro-scene">
         <div class="poster-card">
             <div class="poster-header">
@@ -204,10 +198,8 @@
         </div>
     </div>
 
-    <!-- 3. App Content -->
     <div id="app-content" class="mode-app-container flex flex-col">
         
-        <!-- Header -->
         <div class="pt-5 px-6 flex items-end justify-between select-none z-50 relative">
             <div class="flex items-center">
                 <button onclick="returnToIntro()" class="mr-4 w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition text-gray-400 hover:text-black border border-gray-200">
@@ -228,10 +220,8 @@
             </div>
         </div>
 
-        <!-- Main Body -->
         <div class="flex-grow relative overflow-hidden bg-white shadow-2xl z-10 flex flex-col rounded-t-lg border-t border-gray-100">
             <div class="px-8 py-5 flex items-center justify-between border-b border-gray-100 bg-white z-20">
-                <!-- Back Button for Folder Detail -->
                 <div class="flex items-center">
                     <button id="folder-back-btn" onclick="closeFolderDetail()" class="mr-3 hidden p-1 hover:bg-gray-100 rounded-full transition">
                         <i data-lucide="arrow-left" class="w-5 h-5 text-black"></i>
@@ -247,7 +237,6 @@
 
             <div class="relative flex-grow overflow-hidden bg-[#fafafa]">
                 
-                <!-- View: Scraps Grid -->
                 <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32">
                     <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
                     <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
@@ -256,7 +245,6 @@
                     </div>
                 </div>
 
-                <!-- View: Folders List (Icons) -->
                 <div id="view-folders" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32 hidden">
                     <div class="mb-6">
                          <button onclick="openFolderModal()" class="flex items-center space-x-2 text-sm font-bold text-black hover:text-gray-600 transition border border-gray-300 rounded-sm px-4 py-2 bg-white hover:shadow-sm">
@@ -267,10 +255,9 @@
                     <div id="folder-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
                 </div>
 
-                <!-- View: Single Folder Detail -->
                 <div id="view-folder-detail" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32 hidden bg-[#fafafa]">
-                     <div id="folder-detail-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
-                     <div id="folder-empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
+                      <div id="folder-detail-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                      <div id="folder-empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
                         <p class="text-xs font-light tracking-widest uppercase">No items in this folder</p>
                     </div>
                 </div>
@@ -278,8 +265,6 @@
         </div>
     </div>
 
-    <!-- Modals -->
-    <!-- Add Scrap Modal -->
     <div id="add-modal" class="fixed inset-0 z-[200] hidden">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onclick="closeAddModal()"></div>
         <div class="absolute inset-y-0 right-0 w-full md:w-[500px] bg-white shadow-2xl transform translate-x-full transition-transform duration-500 flex flex-col" id="add-panel">
@@ -300,26 +285,37 @@
             </div>
             <div class="flex-grow overflow-y-auto p-8 space-y-8 custom-scrollbar">
                 <div id="scrap-form-container">
-                    <!-- 1. Link & Media Section -->
                     <div class="space-y-2 p-4 bg-gray-50 rounded-sm border border-gray-100">
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">1. Media Source</label>
                         <div class="flex gap-2">
-                            <input type="url" id="input-url" class="flex-1 bg-white border border-gray-200 rounded-sm px-4 py-3 text-sm focus:ring-1 focus:ring-black outline-none transition" placeholder="Paste URL (YouTube/Image/Link)...">
-                            <!-- Media Input File (Hidden) -->
-                            <input type="file" id="media-upload" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
-                            
-                            <!-- Upload Button -->
-                             <button type="button" onclick="document.getElementById('media-upload').click()" class="bg-gray-100 border border-gray-200 text-black px-3 rounded-sm hover:bg-gray-200 transition">
-                                <i data-lucide="upload" class="w-4 h-4"></i>
-                            </button>
-                            
-                            <!-- Check Button -->
+                            <input type="url" id="input-url" class="flex-1 bg-white border border-gray-200 rounded-sm px-4 py-3 text-sm focus:ring-1 focus:ring-black outline-none transition" placeholder="Paste Link (YouTube/Article)...">
                             <button type="button" onclick="handleMediaProcess()" id="media-btn" class="bg-white border border-gray-200 text-black px-4 rounded-sm text-xs font-bold hover:bg-gray-50 transition whitespace-nowrap">Check</button>
                         </div>
-                        <p class="text-[10px] text-gray-400 pl-1">URL, YouTube, or Upload Image.</p>
+                        <p class="text-[10px] text-gray-400 pl-1">Input URL to auto-detect thumbnail or fill details.</p>
+                    </div>
+                    
+                    <div class="space-y-2 p-4 bg-gray-50 rounded-sm border border-gray-100">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Thumbnail Image</label>
+                        <div class="flex items-start gap-3">
+                            <div class="w-16 h-16 bg-gray-200 rounded-sm border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center bg-cover bg-center" id="thumb-preview-box">
+                                <i data-lucide="image" class="w-6 h-6 text-gray-400" id="thumb-preview-icon"></i>
+                                <img id="thumb-preview-img" class="w-full h-full object-cover hidden" src="" onerror="this.style.display='none'; document.getElementById('thumb-preview-icon').style.display='block';">
+                            </div>
+                            
+                            <div class="flex-1 space-y-2">
+                                <div class="flex gap-2">
+                                    <input type="text" id="input-image-url" oninput="handleImageInputChanged(this.value)" class="flex-1 bg-white border border-gray-200 rounded-sm px-3 py-2 text-xs focus:ring-1 focus:ring-black outline-none" placeholder="Image URL (or leave empty)">
+                                    
+                                    <input type="file" id="media-upload" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+                                    <button type="button" onclick="document.getElementById('media-upload').click()" class="bg-gray-200 text-black px-3 py-2 rounded-sm text-xs hover:bg-gray-300 transition" title="Upload File">
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                <p class="text-[10px] text-gray-400">Paste URL or Upload. Leave empty for gray card.</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- 2. Content & AI Section -->
                     <div class="space-y-2 p-4 bg-blue-50/30 rounded-sm border border-blue-100">
                          <div class="flex justify-between items-center">
                             <label class="block text-xs font-bold text-blue-400 uppercase tracking-wider">2. Content for AI</label>
@@ -330,7 +326,6 @@
                         <textarea id="input-content" rows="5" class="w-full bg-white border border-blue-100 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Paste article text here to generate Title, Summary & Tags automatically..."></textarea>
                     </div>
 
-                    <!-- 3. Details Section -->
                     <div class="space-y-5 border-t border-gray-100 pt-6">
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Title</label>
@@ -340,7 +335,6 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-1">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Type</label>
-                                <!-- Custom Type Logic -->
                                 <div class="relative flex gap-2">
                                      <select id="input-type-select" onchange="handleTypeChange(this)" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm text-gray-600 focus:outline-none">
                                         <option value="news">Article</option>
@@ -375,7 +369,6 @@
                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Memo</label>
                             <textarea id="input-memo" rows="3" class="w-full bg-yellow-50/50 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-yellow-600 outline-none" placeholder="Personal Note..."></textarea>
                         </div>
-                        <input type="hidden" id="input-image-url">
                     </div>
                 </div>
             </div>
@@ -385,7 +378,6 @@
         </div>
     </div>
 
-    <!-- Create Folder Modal -->
     <div id="folder-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center px-6">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeFolderModal()"></div>
         <div class="bg-white w-full max-w-sm rounded-lg p-8 shadow-2xl relative z-10 border border-gray-100">
@@ -395,7 +387,6 @@
         </div>
     </div>
 
-    <!-- AI Insight Modal -->
     <div id="insight-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center px-6">
         <div class="absolute inset-0 bg-white/90 backdrop-blur-md" onclick="closeInsightModal()"></div>
         <div class="bg-white w-full max-w-lg rounded-lg p-8 shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative z-10 border border-gray-100">
@@ -407,7 +398,6 @@
         </div>
     </div>
 
-    <!-- Menu Modal -->
     <div id="menu-modal" class="fixed inset-0 z-[250] hidden">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMenuModal()"></div>
         <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel">
@@ -426,7 +416,6 @@
         </div>
     </div>
 
-    <!-- Memo Modal -->
     <div id="memo-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center px-6">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMemoModal()"></div>
         <div class="bg-white w-full max-w-md rounded-lg p-8 shadow-2xl relative z-10 border border-gray-100">
@@ -436,8 +425,16 @@
         </div>
     </div>
 
-    <!-- Logic (Local Storage) -->
     <script>
+        // --- CONFIG: Type Icons & Labels ---
+        window.TYPE_CONFIG = {
+            'news': { icon: 'newspaper', label: 'Article' },
+            'video': { icon: 'youtube', label: 'Video' },
+            'image': { icon: 'image', label: 'Image' },
+            'paper': { icon: 'file-text', label: 'Paper' },
+            'custom': { icon: 'box', label: 'Other' }
+        };
+
         window.allScraps = []; 
         window.currentTab = 'scraps'; 
         window.selectedScrapId = null; 
@@ -457,7 +454,10 @@
         function loadData() {
             const storedScraps = localStorage.getItem('my_archive_scraps');
             if (storedScraps) {
-                window.allScraps = JSON.parse(storedScraps);
+                try {
+                    window.allScraps = JSON.parse(storedScraps);
+                } catch(e) { window.allScraps = []; }
+                
                 window.allScraps.forEach(s => {
                     if(s.folder) window.customFolders.add(s.folder);
                 });
@@ -465,7 +465,9 @@
             
             const storedFolders = localStorage.getItem('my_archive_folders');
             if(storedFolders) {
-                JSON.parse(storedFolders).forEach(f => window.customFolders.add(f));
+                try {
+                    JSON.parse(storedFolders).forEach(f => window.customFolders.add(f));
+                } catch(e) { }
             }
             
             renderScraps();
@@ -586,24 +588,45 @@
         }
 
         // Media & AI Handlers
+        // --- NEW: Handle Image Input Text Change ---
+        window.handleImageInputChanged = function(val) {
+            const img = document.getElementById('thumb-preview-img');
+            const icon = document.getElementById('thumb-preview-icon');
+            if(val && val.trim() !== '') {
+                img.src = val;
+                img.classList.remove('hidden');
+                icon.style.display = 'none';
+            } else {
+                img.src = '';
+                img.classList.add('hidden');
+                icon.style.display = 'block';
+            }
+        }
+
         window.handleMediaProcess = function() {
             const url = document.getElementById('input-url').value;
             const btn = document.getElementById('media-btn');
-            btn.textContent = 'Checking...';
             
             // Check YouTube
             const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
             if (ytMatch) {
                 document.getElementById('input-type-select').value = 'video';
-                document.getElementById('input-image-url').value = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+                // Update Thumbnail Input and Preview
+                const thumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+                document.getElementById('input-image-url').value = thumbUrl;
+                handleImageInputChanged(thumbUrl);
+                
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set';
                 lucide.createIcons();
                 return;
             }
             
-            if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+            // Check Direct Image Link
+            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) {
                 document.getElementById('input-type-select').value = 'image';
                 document.getElementById('input-image-url').value = url;
+                handleImageInputChanged(url);
+                
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set';
                 lucide.createIcons();
                 return;
@@ -618,14 +641,15 @@
             if(file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('input-image-url').value = e.target.result;
-                    alert("Image Uploaded!");
+                    const result = e.target.result;
+                    document.getElementById('input-image-url').value = result;
+                    handleImageInputChanged(result);
+                    // alert("Image Uploaded to Thumbnail!");
                 }
                 reader.readAsDataURL(file);
             }
         }
 
-        // ... (API Key & AI Logic preserved from v4) ...
         function getGeminiKey() {
              let key = localStorage.getItem('gemini_api_key');
              if (!key) {
@@ -673,6 +697,10 @@
         window.resetForm = function() {
             const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea');
             inputs.forEach(input => input.value = '');
+            
+            // Clear Thumbnail Preview
+            handleImageInputChanged('');
+            
             // Reset Type Select
             document.getElementById('input-type-select').value = 'news';
             document.getElementById('input-type-select').classList.remove('hidden');
@@ -716,19 +744,17 @@
             const tagsInput = document.getElementById('input-tags').value;
             const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : []; 
             
+            // Get Image from the VISIBLE input now
             let img = document.getElementById('input-image-url').value;
             
             // Handle Type Logic
             let type = document.getElementById('input-type-select').value;
             if(type === 'custom') {
-                type = document.getElementById('input-type-custom').value || 'Other';
+                type = document.getElementById('input-type-custom').value || 'custom';
             }
-
-            // Default Image
+            
             if(!img) {
-                if(type === 'news') img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=News';
-                else if(type === 'video') img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=Video';
-                else img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=' + type;
+                img = ""; // Empty string triggers gray background logic
             }
 
             const newItem = { 
@@ -764,23 +790,44 @@
             btn.disabled = false; 
         }
 
+        // Helper to get Icon info for Type
+        function getTypeInfo(type) {
+            const t = type ? type.toLowerCase() : 'custom';
+            if(window.TYPE_CONFIG[t]) return window.TYPE_CONFIG[t];
+            return window.TYPE_CONFIG['custom'];
+        }
+
         // Card Logic
         function createCardElement(item) {
             const card = document.createElement('div');
             card.className = "card-swipe-container relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300";
             
             const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
+            const typeInfo = getTypeInfo(item.type);
             
+            // Image Area Logic
+            let mediaContent = '';
+            if (item.imageUrl && item.imageUrl.trim() !== '') {
+                mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
+            } else {
+                mediaContent = `
+                <div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                    <i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i>
+                </div>`;
+            }
+
             card.innerHTML = `
                 <div class="swipe-action swipe-right">Share</div>
                 <div class="swipe-action swipe-left">Delete</div>
                 <div class="relative w-full h-full bg-white z-10 transition-transform duration-200 flex flex-col" id="card-inner-${item.id}">
-                    <div class="h-[60%] w-full bg-gray-50 overflow-hidden relative">
-                         ${item.imageUrl 
-                            ? `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="img">` 
-                            : `<div class="w-full h-full flex items-center justify-center bg-gray-50"><i data-lucide="image" class="text-gray-300 w-8 h-8"></i></div>`}
+                    <div class="h-[60%] w-full overflow-hidden relative">
+                         ${mediaContent}
                          
-                         <!-- Direct Favorite Toggle -->
+                         <div class="absolute bottom-2 left-2 z-20 bg-black/60 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1 border border-white/10 shadow-sm">
+                            <i data-lucide="${typeInfo.icon}" class="w-3 h-3 text-white"></i>
+                            <span class="text-[9px] text-white font-medium uppercase tracking-wide">${item.type || 'Item'}</span>
+                         </div>
+
                          <div class="absolute top-2 right-2 z-20 p-2 cursor-pointer" onclick="event.stopPropagation(); toggleFavoriteById('${item.id}')">
                              <div class="bg-black/20 hover:bg-black/40 backdrop-blur-sm p-1.5 rounded-full transition">
                                 <i data-lucide="heart" class="w-4 h-4 ${favIconClass}"></i>
@@ -799,7 +846,6 @@
                 </div>`;
                 
             const inner = card.querySelector(`#card-inner-${item.id}`);
-            window.attachCardListeners(inner, item);
             inner.onclick = () => openMenuModal(item);
             return card;
         }
@@ -865,8 +911,8 @@
                 window.allScraps[idx].isFavorite = !window.allScraps[idx].isFavorite;
                 saveData();
                 if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
-                     const folderName = document.querySelector('#view-title').textContent;
-                     openFolder(folderName);
+                      const folderName = document.querySelector('#view-title').textContent;
+                      openFolder(folderName);
                 } else if (window.currentTab !== 'folders') {
                     renderScraps();
                 }

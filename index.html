@@ -214,14 +214,14 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
                 <div class="flex items-end pl-2">
-                    <button onclick="event.stopPropagation(); switchTab('scraps')" id="tab-scraps" class="folder-tab active">Scraps</button>
-                    <button onclick="event.stopPropagation(); switchTab('folders')" id="tab-folders" class="folder-tab inactive">Folders</button>
-                    <button onclick="event.stopPropagation(); switchTab('favorites')" id="tab-favorites" class="folder-tab inactive">Favorites</button>
+                    <button onclick="switchTab('scraps')" id="tab-scraps" class="folder-tab active">Scraps</button>
+                    <button onclick="switchTab('folders')" id="tab-folders" class="folder-tab inactive">Folders</button>
+                    <button onclick="switchTab('favorites')" id="tab-favorites" class="folder-tab inactive">Favorites</button>
                 </div>
             </div>
             
             <div class="flex items-center space-x-3 mb-2">
-                <span id="user-id-display" class="text-[10px] text-gray-400 font-mono hidden md:inline-block px-3 py-1 border border-gray-200 rounded-full">Guest</span>
+                <span class="text-[10px] text-gray-400 font-mono hidden md:inline-block px-3 py-1 border border-gray-200 rounded-full">Local Mode</span>
                 
                 <!-- Add Button -->
                 <button onclick="openAddModal()" class="relative z-50 w-9 h-9 rounded-full bg-black text-white flex items-center justify-center shadow-lg hover:bg-gray-800 transition transform hover:scale-105 active:scale-95">
@@ -236,7 +236,7 @@
                 <h2 id="view-title" class="font-serif italic text-xl text-black">All Scraps</h2>
                 <div class="relative group">
                     <i data-lucide="search" class="absolute left-4 top-2.5 w-4 h-4 text-gray-400 group-focus-within:text-black transition"></i>
-                    <input type="text" onclick="event.stopPropagation()" oninput="handleSearchInput(event)" placeholder="Search..." 
+                    <input type="text" oninput="handleSearchInput(event)" placeholder="Search..." 
                         class="pl-10 pr-4 py-2 bg-gray-50 border border-transparent rounded-sm text-sm focus:ring-1 focus:ring-black focus:bg-white w-40 focus:w-64 transition-all outline-none placeholder-gray-400 text-black">
                 </div>
             </div>
@@ -263,14 +263,12 @@
     </div>
 
     <!-- Modals -->
-    <!-- Add Scrap Modal -->
     <div id="add-modal" class="fixed inset-0 z-[200] hidden">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onclick="closeAddModal()"></div>
         <div class="absolute inset-y-0 right-0 w-full md:w-[500px] bg-white shadow-2xl transform translate-x-full transition-transform duration-500 flex flex-col" id="add-panel">
             <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
                 <h2 class="font-serif italic text-2xl text-black">New Item</h2>
                 <div class="flex items-center space-x-2">
-                    <!-- Reset Button -->
                     <button onclick="resetForm()" class="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition" title="Reset Input">
                         <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
                     </button>
@@ -280,19 +278,18 @@
                 </div>
             </div>
             <div class="flex-grow overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                <!-- Form Container (No <form> tag to prevent submit refresh) -->
                 <div id="scrap-form-container">
-                    <!-- 1. Link & Media Section -->
+                    <!-- 1. Link & Media -->
                     <div class="space-y-2 p-4 bg-gray-50 rounded-sm border border-gray-100">
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">1. Media Source</label>
                         <div class="flex gap-2">
                             <input type="url" id="input-url" class="flex-1 bg-white border border-gray-200 rounded-sm px-4 py-3 text-sm focus:ring-1 focus:ring-black outline-none transition" placeholder="Paste URL (YouTube/Image)...">
                             <button type="button" onclick="handleMediaProcess()" id="media-btn" class="bg-white border border-gray-200 text-black px-4 rounded-sm text-xs font-bold hover:bg-gray-50 transition whitespace-nowrap">Check Media</button>
                         </div>
-                        <p class="text-[10px] text-gray-400 pl-1">YouTube 썸네일이나 이미지 주소를 자동으로 가져옵니다.</p>
+                        <p class="text-[10px] text-gray-400 pl-1">Detects YouTube thumbnail or Image URL.</p>
                     </div>
 
-                    <!-- 2. Content & AI Section -->
+                    <!-- 2. AI Section -->
                     <div class="space-y-2 p-4 bg-blue-50/30 rounded-sm border border-blue-100">
                          <div class="flex justify-between items-center">
                             <label class="block text-xs font-bold text-blue-400 uppercase tracking-wider">2. Content for AI</label>
@@ -300,10 +297,10 @@
                                 <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill
                             </button>
                         </div>
-                        <textarea id="input-content" rows="5" class="w-full bg-white border border-blue-100 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-blue-500 outline-none" placeholder="※ 중요: URL만으로는 요약 불가! 기사 본문을 여기에 붙여넣어 주세요."></textarea>
+                        <textarea id="input-content" rows="5" class="w-full bg-white border border-blue-100 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Paste article text here to generate Title, Summary & Tags automatically..."></textarea>
                     </div>
 
-                    <!-- 3. Details Section -->
+                    <!-- 3. Details -->
                     <div class="space-y-5 border-t border-gray-100 pt-6">
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Title</label>
@@ -339,17 +336,16 @@
                             <textarea id="input-memo" rows="3" class="w-full bg-yellow-50/50 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-yellow-600 outline-none" placeholder="Personal Note..."></textarea>
                         </div>
                         <input type="hidden" id="input-image-url">
+                        <form id="scrap-form" class="hidden"></form>
                     </div>
                 </div>
             </div>
             <div class="p-8 border-t border-gray-50 bg-white">
-                <!-- Save Button (type="button" prevents reload) -->
                 <button type="button" onclick="handleSaveScrap()" id="save-button" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-xl hover:bg-gray-800 transition">Save</button>
             </div>
         </div>
     </div>
 
-    <!-- Create Folder Modal -->
     <div id="folder-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center px-6">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeFolderModal()"></div>
         <div class="bg-white w-full max-w-sm rounded-lg p-8 shadow-2xl relative z-10 border border-gray-100">
@@ -359,7 +355,6 @@
         </div>
     </div>
 
-    <!-- AI Insight Modal -->
     <div id="insight-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center px-6">
         <div class="absolute inset-0 bg-white/90 backdrop-blur-md" onclick="closeInsightModal()"></div>
         <div class="bg-white w-full max-w-lg rounded-lg p-8 shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative z-10 border border-gray-100">
@@ -371,7 +366,6 @@
         </div>
     </div>
 
-    <!-- Menu Modal -->
     <div id="menu-modal" class="fixed inset-0 z-[250] hidden">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMenuModal()"></div>
         <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel">
@@ -390,7 +384,6 @@
         </div>
     </div>
 
-    <!-- Memo Modal -->
     <div id="memo-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center px-6">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMemoModal()"></div>
         <div class="bg-white w-full max-w-md rounded-lg p-8 shadow-2xl relative z-10 border border-gray-100">
@@ -400,21 +393,44 @@
         </div>
     </div>
 
-    <!-- Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        window.db = null; window.auth = null; window.userId = null;
+    <!-- Logic (Local Storage) -->
+    <script>
         window.allScraps = []; window.currentTab = 'scraps'; window.selectedScrapId = null; window.longPressTimer = null; window.searchText = '';
-        window.currentScrap = null;
         window.customFolders = new Set(['General', 'Design', 'Ideas', 'Work']); 
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; 
-        window.appId = appId;
+        // Initialize
+        window.onload = function() {
+            loadData();
+            lucide.createIcons();
+        };
 
-        // Transition
+        // --- Data Management (Local Storage) ---
+        function loadData() {
+            const storedScraps = localStorage.getItem('my_archive_scraps');
+            if (storedScraps) {
+                window.allScraps = JSON.parse(storedScraps);
+                // Recover folders from scraps
+                window.allScraps.forEach(s => {
+                    if(s.folder) window.customFolders.add(s.folder);
+                });
+            }
+            
+            const storedFolders = localStorage.getItem('my_archive_folders');
+            if(storedFolders) {
+                JSON.parse(storedFolders).forEach(f => window.customFolders.add(f));
+            }
+            
+            renderScraps();
+            renderFolders();
+            updateFolderDropdown();
+        }
+
+        function saveData() {
+            localStorage.setItem('my_archive_scraps', JSON.stringify(window.allScraps));
+            localStorage.setItem('my_archive_folders', JSON.stringify(Array.from(window.customFolders)));
+        }
+
+        // --- Core Functions ---
         window.expandToApp = function() {
             const introScene = document.getElementById('intro-scene');
             const appContent = document.getElementById('app-content');
@@ -426,7 +442,7 @@
                 appContent.classList.add('mode-app-active');
             }, 600);
         }
-        
+
         window.returnToIntro = function() {
             const introScene = document.getElementById('intro-scene');
             const appContent = document.getElementById('app-content');
@@ -454,66 +470,56 @@
             else { document.getElementById('view-grid').classList.remove('hidden'); document.getElementById('view-folders').classList.add('hidden'); renderScraps(); }
         }
 
-        // Folder Management
-        window.openFolderModal = function() { document.getElementById('folder-modal').classList.remove('hidden'); }
-        window.closeFolderModal = function() { document.getElementById('folder-modal').classList.add('hidden'); }
-        window.createFolder = async function() {
-            const name = document.getElementById('new-folder-input').value.trim();
-            if(name && window.userId) {
-                window.customFolders.add(name);
-                try {
-                    await addDoc(collection(window.db, `artifacts/${window.appId}/users/${window.userId}/folders`), { name: name, createdAt: serverTimestamp() });
-                    closeFolderModal(); renderFolders(); updateFolderDropdown();
-                } catch(e) { console.error(e); }
+        // Save Logic
+        window.handleSaveScrap = function() { 
+            const btn = document.getElementById('save-button'); 
+            btn.textContent = 'Saving...'; 
+            btn.disabled = true; 
+            
+            const title = document.getElementById('input-title').value;
+            if(!title) { alert('Title is required!'); btn.textContent = 'Save'; btn.disabled = false; return; }
+
+            const tags = document.getElementById('input-tags').value.split(',').map(t => t.trim()).filter(t => t); 
+            
+            let img = document.getElementById('input-image-url').value;
+            const type = document.getElementById('input-type').value;
+            if(!img) {
+                if(type === 'news') img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=News';
+                else if(type === 'video') img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=Video';
+                else img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=Image';
             }
-        }
-        
-        window.updateFolderDropdown = function() {
-            const datalist = document.getElementById('folder-options');
-            datalist.innerHTML = '';
-            window.customFolders.forEach(f => { const opt = document.createElement('option'); opt.value = f; datalist.appendChild(opt); });
+
+            const newItem = { 
+                id: Date.now().toString(),
+                title: title, 
+                summary: document.getElementById('input-summary').value, 
+                sourceUrl: document.getElementById('input-url').value, 
+                imageUrl: img, 
+                type: type, 
+                folder: document.getElementById('input-folder').value || 'General', 
+                memo: document.getElementById('input-memo').value, 
+                tags: tags, 
+                isFavorite: false, 
+                createdAt: new Date().toISOString()
+            }; 
+            
+            window.allScraps.unshift(newItem); // Add to top
+            saveData();
+            
+            closeAddModal(); 
+            window.resetForm();
+            
+            if(window.currentTab === 'folders') renderFolders(); else renderScraps();
+            
+            btn.textContent = 'Save'; 
+            btn.disabled = false; 
         }
 
-        async function loadFolders() {
-            if(!window.userId) return;
-            const q = query(collection(window.db, `artifacts/${window.appId}/users/${window.userId}/folders`));
-            const snap = await getDocs(q);
-            snap.forEach(doc => window.customFolders.add(doc.data().name));
-            updateFolderDropdown();
-        }
-
-        // Media & AI Handlers
-        window.handleMediaProcess = function() {
-            const url = document.getElementById('input-url').value;
-            const btn = document.getElementById('media-btn');
-            btn.textContent = 'Checking...';
-            
-            const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
-            if (ytMatch) {
-                document.getElementById('input-type').value = 'video';
-                document.getElementById('input-image-url').value = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
-                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set';
-                lucide.createIcons();
-                return;
-            }
-            
-            if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
-                document.getElementById('input-type').value = 'image';
-                document.getElementById('input-image-url').value = url;
-                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set';
-                lucide.createIcons();
-                return;
-            }
-            
-            btn.innerHTML = '<i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Unknown';
-            lucide.createIcons();
-        }
-
-        // API Key Helper with prompt (only triggers if key is missing/empty)
+        // API & Media
         function getGeminiKey() {
              let key = localStorage.getItem('gemini_api_key');
              if (!key) {
-                 key = prompt("Gemini API 기능 사용을 위해 API 키를 입력해주세요 (브라우저에 저장됩니다):");
+                 key = prompt("Gemini API Key Required (Saved locally):");
                  if (key) localStorage.setItem('gemini_api_key', key);
              }
              return key;
@@ -525,9 +531,8 @@
             
             if(!content) { alert('Please paste text content first.'); return; }
             
-            // Get Key (Prompt if needed)
             const userKey = getGeminiKey();
-            if(!userKey) { alert("API 키가 필요합니다."); return; }
+            if(!userKey) return;
             
             btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...';
             lucide.createIcons();
@@ -538,18 +543,13 @@
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: `Analyze this text: "${content}". Output JSON with keys: "title" (max 10 words), "summary" (max 140 chars Korean), "tags" (comma separated string). No markdown.` }] }],
+                        contents: [{ parts: [{ text: `Analyze text: "${content}". Output JSON with keys: "title" (max 10 words), "summary" (max 140 chars Korean), "tags" (comma separated string). No markdown.` }] }],
                         generationConfig: { responseMimeType: "application/json" }
                     }) 
                 }); 
                 
                 const data = await res.json();
-                
-                if(data.error) {
-                    console.error(data.error);
-                    throw new Error(data.error.message);
-                }
-
+                if(data.error) throw new Error(data.error.message);
                 const text = data.candidates[0].content.parts[0].text;
                 const json = JSON.parse(text); 
                 document.getElementById('input-title').value = json.title || ''; 
@@ -559,19 +559,79 @@
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done';
             } catch(e) { 
                 console.error(e); 
-                // Clear invalid key if auth failed
-                if(e.message && (e.message.includes('API key') || e.message.includes('403'))) {
-                     localStorage.removeItem('gemini_api_key');
-                     alert('API 키가 유효하지 않습니다. 다시 시도해주세요.');
-                } else {
-                     alert('AI 요청 실패: ' + e.message);
-                }
+                alert('AI Error: ' + e.message);
                 btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed';
             } 
             lucide.createIcons();
         }
 
-        // Reset Form Function
+        window.handleMediaProcess = function() {
+            const url = document.getElementById('input-url').value;
+            const btn = document.getElementById('media-btn');
+            
+            const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
+            if (ytMatch) {
+                document.getElementById('input-type').value = 'video';
+                document.getElementById('input-image-url').value = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video';
+            } else if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+                document.getElementById('input-type').value = 'image';
+                document.getElementById('input-image-url').value = url;
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image';
+            } else {
+                btn.innerHTML = '<i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Unknown';
+            }
+            lucide.createIcons();
+        }
+
+        window.openInsightModal = async function(scrap) {
+            if(!scrap) return;
+            closeMenuModal();
+            const modal = document.getElementById('insight-modal');
+            const contentDiv = document.getElementById('insight-content');
+            modal.classList.remove('hidden');
+            contentDiv.innerHTML = '<div class="flex justify-center py-10"><i data-lucide="loader" class="animate-spin text-slate-400 w-8 h-8"></i></div>';
+            lucide.createIcons();
+
+            const userKey = getGeminiKey();
+            if(!userKey) { contentDiv.innerHTML = '<p class="text-red-500 text-center">API Key Required.</p>'; return; }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`;
+            const prompt = `Analyze this scrap: Title: ${scrap.title}, Summary: ${scrap.summary}. 
+            Provide a creative insight in Korean (HTML format).
+            Sections: 🔑 Key Themes, ✨ Creative Spark, 🚀 Action.`;
+
+            try {
+                const res = await fetch(apiUrl, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) 
+                });
+                const data = await res.json();
+                if(data.error) throw new Error(data.error.message);
+                const text = data.candidates[0].content.parts[0].text;
+                contentDiv.innerHTML = marked.parse(text);
+            } catch(e) {
+                contentDiv.innerHTML = `<p class="text-red-500 text-center">Failed: ${e.message}</p>`;
+            }
+        }
+        window.closeInsightModal = function() { document.getElementById('insight-modal').classList.add('hidden'); }
+
+        // CRUD & UI
+        window.openFolderModal = function() { document.getElementById('folder-modal').classList.remove('hidden'); }
+        window.closeFolderModal = function() { document.getElementById('folder-modal').classList.add('hidden'); }
+        window.createFolder = function() {
+            const name = document.getElementById('new-folder-input').value.trim();
+            if(name) {
+                window.customFolders.add(name);
+                saveData();
+                closeFolderModal(); renderFolders(); updateFolderDropdown();
+            }
+        }
+        window.updateFolderDropdown = function() {
+            const datalist = document.getElementById('folder-options'); datalist.innerHTML = '';
+            window.customFolders.forEach(f => { const opt = document.createElement('option'); opt.value = f; datalist.appendChild(opt); });
+        }
         window.resetForm = function() {
             const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea, #scrap-form-container select');
             inputs.forEach(input => input.value = '');
@@ -579,67 +639,6 @@
             document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill';
             lucide.createIcons();
         }
-
-        // Save Function (Fixed)
-        window.handleSaveScrap = async function() { 
-            const btn = document.getElementById('save-button'); 
-            if(!window.userId) return; 
-            
-            btn.textContent = 'Saving...'; 
-            btn.disabled = true; 
-            
-            const tags = document.getElementById('input-tags').value.split(',').map(t => t.trim()).filter(t => t); 
-            
-            let img = document.getElementById('input-image-url').value;
-            if(!img) {
-                const type = document.getElementById('input-type').value;
-                if(type === 'news') img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=News';
-                else if(type === 'video') img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=Video';
-                else img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=Image';
-            }
-
-            const newItem = { 
-                userId: window.userId, 
-                title: document.getElementById('input-title').value, 
-                summary: document.getElementById('input-summary').value, 
-                sourceUrl: document.getElementById('input-url').value, 
-                imageUrl: img, 
-                type: document.getElementById('input-type').value, 
-                folder: document.getElementById('input-folder').value || 'General', 
-                memo: document.getElementById('input-memo').value, 
-                tags: tags, 
-                isFavorite: false, 
-                createdAt: serverTimestamp() 
-            }; 
-            
-            try { 
-                await addDoc(collection(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`), newItem); 
-                closeAddModal(); 
-                window.resetForm();
-                
-                document.getElementById('media-btn').textContent = 'Check Media';
-                document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill';
-                lucide.createIcons();
-            } catch(e) { 
-                console.error(e); 
-                alert('Save failed. Please try again.');
-            } finally { 
-                btn.textContent = 'Save'; 
-                btn.disabled = false; 
-            } 
-        }
-
-        // Interaction Listeners & Render
-        window.attachCardListeners = function(card, scrap) {
-            let startX = 0; let currentX = 0;
-            card.addEventListener('touchstart', (e) => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); startX = e.touches[0].clientX; });
-            card.addEventListener('touchend', (e) => { clearTimeout(window.longPressTimer); const diff = currentX - startX; if (currentX !== 0 && Math.abs(diff) > 80) { if (diff > 0) { navigator.clipboard.writeText(scrap.sourceUrl).then(() => alert('Link copied!')); } else { if(confirm('Delete?')) deleteScrap(scrap.id); } } card.style.transform = `translateX(0)`; currentX = 0; });
-            card.addEventListener('touchmove', (e) => { clearTimeout(window.longPressTimer); currentX = e.touches[0].clientX; const diff = currentX - startX; if (Math.abs(diff) < 80) { card.style.transform = `translateX(${diff}px)`; } });
-            card.addEventListener('mousedown', () => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); });
-            card.addEventListener('mouseup', () => clearTimeout(window.longPressTimer));
-            card.addEventListener('mousemove', () => clearTimeout(window.longPressTimer));
-        }
-
         window.renderScraps = function() {
             const grid = document.getElementById('scrap-grid'); grid.innerHTML = '';
             let filtered = window.allScraps;
@@ -654,10 +653,8 @@
             });
             lucide.createIcons();
         }
-
         window.renderFolders = function() {
             const list = document.getElementById('folder-list'); list.innerHTML = '';
-            window.allScraps.forEach(s => { if(s.folder) window.customFolders.add(s.folder); });
             const folders = Array.from(window.customFolders).sort();
             folders.forEach(folder => {
                 const items = window.allScraps.filter(s => s.folder === folder);
@@ -667,76 +664,27 @@
             });
         }
 
+        window.attachCardListeners = function(card, scrap) {
+            let startX = 0; let currentX = 0;
+            card.addEventListener('touchstart', (e) => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); startX = e.touches[0].clientX; });
+            card.addEventListener('touchend', (e) => { clearTimeout(window.longPressTimer); const diff = currentX - startX; if (currentX !== 0 && Math.abs(diff) > 80) { if (diff > 0) { navigator.clipboard.writeText(scrap.sourceUrl).then(() => alert('Link copied!')); } else { if(confirm('Delete?')) deleteScrap(scrap.id); } } card.style.transform = `translateX(0)`; currentX = 0; });
+            card.addEventListener('touchmove', (e) => { clearTimeout(window.longPressTimer); currentX = e.touches[0].clientX; const diff = currentX - startX; if (Math.abs(diff) < 80) { card.style.transform = `translateX(${diff}px)`; } });
+            card.addEventListener('mousedown', () => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); });
+            card.addEventListener('mouseup', () => clearTimeout(window.longPressTimer));
+            card.addEventListener('mousemove', () => clearTimeout(window.longPressTimer));
+        }
+
         window.openMenuModal = function(scrap) { window.currentScrap = scrap; window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }
         window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
         window.menuAction = function(action) { const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); if(!scrap) return; if (action === 'visit') window.open(scrap.sourceUrl, '_blank'); else if (action === 'memo') openMemoModal(scrap); else if (action === 'favorite') toggleFavorite(scrap); else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id); closeMenuModal(); }
         window.openMemoModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('edit-memo-input').value = scrap.memo || ''; document.getElementById('memo-modal').classList.remove('hidden'); }
         window.closeMemoModal = function() { document.getElementById('memo-modal').classList.add('hidden'); }
-        window.saveMemo = async function() { const newMemo = document.getElementById('edit-memo-input').value; if (window.selectedScrapId) { await updateDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, window.selectedScrapId), { memo: newMemo }); closeMemoModal(); }}
-        window.toggleFavorite = async function(scrap) { await updateDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, scrap.id), { isFavorite: !scrap.isFavorite }); }
-        window.deleteScrap = async function(id) { await deleteDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, id)); }
+        window.saveMemo = function() { const newMemo = document.getElementById('edit-memo-input').value; const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId); if(idx > -1) { window.allScraps[idx].memo = newMemo; saveData(); closeMemoModal(); } }
+        window.toggleFavorite = function(scrap) { const idx = window.allScraps.findIndex(s => s.id === scrap.id); if(idx > -1) { window.allScraps[idx].isFavorite = !scrap.isFavorite; saveData(); renderScraps(); } }
+        window.deleteScrap = function(id) { const idx = window.allScraps.findIndex(s => s.id === id); if(idx > -1) { window.allScraps.splice(idx, 1); saveData(); if(window.currentTab === 'folders') renderFolders(); else renderScraps(); } }
         window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
         window.openAddModal = function() { document.getElementById('add-modal').classList.remove('hidden'); updateFolderDropdown(); setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); }
         window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 500); }
-        
-        window.openInsightModal = async function(scrap) {
-            if(!scrap) return;
-            closeMenuModal();
-            const modal = document.getElementById('insight-modal');
-            const contentDiv = document.getElementById('insight-content');
-            modal.classList.remove('hidden');
-            contentDiv.innerHTML = '<div class="flex justify-center py-10"><i data-lucide="loader" class="animate-spin text-slate-400 w-8 h-8"></i></div>';
-            lucide.createIcons();
-
-            // Get Key (Prompt if needed)
-            const userKey = getGeminiKey();
-            if(!userKey) { 
-                 contentDiv.innerHTML = '<p class="text-red-500 text-center">API Key Required for Insight.</p>';
-                 return; 
-            }
-
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`;
-            const prompt = `Analyze this scrap: Title: ${scrap.title}, Summary: ${scrap.summary}. 
-            Provide a creative insight in Korean (HTML format).
-            Sections: 🔑 Key Themes, ✨ Creative Spark, 🚀 Action.`;
-
-            try {
-                const res = await fetch(apiUrl, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: prompt }] }]
-                    }) 
-                });
-                const data = await res.json();
-                if(data.error) throw new Error(data.error.message);
-
-                const text = data.candidates[0].content.parts[0].text;
-                contentDiv.innerHTML = marked.parse(text);
-            } catch(e) {
-                contentDiv.innerHTML = `<p class="text-red-500 text-center">Failed: ${e.message}</p>`;
-            }
-        }
-
-        window.closeInsightModal = function() { document.getElementById('insight-modal').classList.add('hidden'); }
-
-        window.initApp = async function() {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; window.appId = appId;
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}'); if (!Object.keys(firebaseConfig).length) return;
-            const app = initializeApp(firebaseConfig); window.db = getFirestore(app); window.auth = getAuth(app);
-            const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; if (initialToken) await signInWithCustomToken(window.auth, initialToken); else await signInAnonymously(window.auth);
-            onAuthStateChanged(window.auth, (user) => { if (user) { window.userId = user.uid; 
-                const idDisplay = document.getElementById('user-id-display'); 
-                if(idDisplay) idDisplay.textContent = user.uid.substring(0,6); 
-                
-                loadFolders(); 
-
-                const q = query(collection(window.db, `artifacts/${appId}/users/${user.uid}/scraps`), orderBy("createdAt", "desc")); 
-                onSnapshot(q, (snapshot) => { window.allScraps = snapshot.docs.map(d => ({id: d.id, ...d.data()})); renderScraps(); renderFolders(); }); 
-            }});
-            lucide.createIcons();
-        }
-        window.onload = window.initApp;
     </script>
 </body>
 </html>

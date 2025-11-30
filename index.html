@@ -24,7 +24,7 @@
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* --- 1. Intro Scene: Minimal Poster --- */
+        /* --- 1. Intro Scene --- */
         #intro-scene {
             position: absolute;
             top: 50%;
@@ -231,7 +231,13 @@
         <!-- Main Body -->
         <div class="flex-grow relative overflow-hidden bg-white shadow-2xl z-10 flex flex-col rounded-t-lg border-t border-gray-100">
             <div class="px-8 py-5 flex items-center justify-between border-b border-gray-100 bg-white z-20">
-                <h2 id="view-title" class="font-serif italic text-xl text-black">All Scraps</h2>
+                <!-- Added Back Button for Folder Detail View -->
+                <div class="flex items-center">
+                    <button id="folder-back-btn" onclick="closeFolderDetail()" class="mr-3 hidden p-1 hover:bg-gray-100 rounded-full transition">
+                        <i data-lucide="arrow-left" class="w-5 h-5 text-black"></i>
+                    </button>
+                    <h2 id="view-title" class="font-serif italic text-xl text-black">All Scraps</h2>
+                </div>
                 <div class="relative group">
                     <i data-lucide="search" class="absolute left-4 top-2.5 w-4 h-4 text-gray-400 group-focus-within:text-black transition"></i>
                     <input type="text" oninput="handleSearchInput(event)" placeholder="Search..." 
@@ -240,6 +246,8 @@
             </div>
 
             <div class="relative flex-grow overflow-hidden bg-[#fafafa]">
+                
+                <!-- View: Scraps Grid -->
                 <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32">
                     <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
                     <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
@@ -247,6 +255,8 @@
                         <p class="text-xs font-light tracking-widest uppercase">Empty Collection</p>
                     </div>
                 </div>
+
+                <!-- View: Folders List (Icons) -->
                 <div id="view-folders" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32 hidden">
                     <div class="mb-6">
                          <button onclick="openFolderModal()" class="flex items-center space-x-2 text-sm font-bold text-black hover:text-gray-600 transition border border-gray-300 rounded-sm px-4 py-2 bg-white hover:shadow-sm">
@@ -254,7 +264,16 @@
                             <span>New Folder</span>
                          </button>
                     </div>
-                    <div id="folder-list" class="space-y-8"></div>
+                    <!-- Folder Icons Grid -->
+                    <div id="folder-list" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+                </div>
+
+                <!-- View: Single Folder Detail -->
+                <div id="view-folder-detail" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32 hidden bg-[#fafafa]">
+                     <div id="folder-detail-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                     <div id="folder-empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
+                        <p class="text-xs font-light tracking-widest uppercase">No items in this folder</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -268,18 +287,16 @@
             <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
                 <h2 class="font-serif italic text-2xl text-black">New Item</h2>
                 <div class="flex items-center space-x-4">
-                    <!-- 1. Added Favorite Button here -->
+                    <!-- Favorite Toggle Button (Unified Style) -->
                     <button type="button" id="new-favorite-btn" onclick="toggleNewFavorite()" class="text-gray-400 hover:text-red-500 transition flex items-center justify-center" title="Add to Favorites">
                         <i data-lucide="heart" class="w-5 h-5"></i>
                     </button>
                     
                     <div class="w-px h-4 bg-gray-300"></div>
                     
-                    <!-- Reset Button -->
                     <button onclick="resetForm()" class="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition" title="Reset Input">
                         <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
                     </button>
-                    <!-- Close Button -->
                     <button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
@@ -287,7 +304,7 @@
             </div>
             <div class="flex-grow overflow-y-auto p-8 space-y-8 custom-scrollbar">
                 <div id="scrap-form-container">
-                    <!-- Form content remains same -->
+                    <!-- 1. Link & Media Section -->
                     <div class="space-y-2 p-4 bg-gray-50 rounded-sm border border-gray-100">
                         <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">1. Media Source</label>
                         <div class="flex gap-2">
@@ -297,6 +314,7 @@
                         <p class="text-[10px] text-gray-400 pl-1">Detects YouTube thumbnail or Image URL.</p>
                     </div>
 
+                    <!-- 2. Content & AI Section -->
                     <div class="space-y-2 p-4 bg-blue-50/30 rounded-sm border border-blue-100">
                          <div class="flex justify-between items-center">
                             <label class="block text-xs font-bold text-blue-400 uppercase tracking-wider">2. Content for AI</label>
@@ -307,6 +325,7 @@
                         <textarea id="input-content" rows="5" class="w-full bg-white border border-blue-100 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Paste article text here to generate Title, Summary & Tags automatically..."></textarea>
                     </div>
 
+                    <!-- 3. Details Section -->
                     <div class="space-y-5 border-t border-gray-100 pt-6">
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Title</label>
@@ -411,7 +430,7 @@
         window.searchText = '';
         window.currentScrap = null;
         window.customFolders = new Set(['General', 'Design', 'Ideas', 'Work']); 
-        window.isNewItemFavorite = false; // Track favorite state in new item modal
+        window.isNewItemFavorite = false;
 
         // Initialize
         window.onload = function() {
@@ -419,12 +438,11 @@
             lucide.createIcons();
         };
 
-        // --- Data Management (Local Storage) ---
+        // --- Data Management ---
         function loadData() {
             const storedScraps = localStorage.getItem('my_archive_scraps');
             if (storedScraps) {
                 window.allScraps = JSON.parse(storedScraps);
-                // Recover folders from scraps to ensure consistency
                 window.allScraps.forEach(s => {
                     if(s.folder) window.customFolders.add(s.folder);
                 });
@@ -445,29 +463,24 @@
             localStorage.setItem('my_archive_folders', JSON.stringify(Array.from(window.customFolders)));
         }
 
-        // --- Core Functions ---
+        // --- Core UI Functions ---
         window.expandToApp = function() {
-            const introScene = document.getElementById('intro-scene');
-            const appContent = document.getElementById('app-content');
-            introScene.style.opacity = "0";
-            introScene.style.transform = "translate(-50%, -50%) scale(1.05)";
-            introScene.style.pointerEvents = "none";
+            document.getElementById('intro-scene').style.opacity = "0";
+            document.getElementById('intro-scene').style.pointerEvents = "none";
             setTimeout(() => {
-                introScene.style.display = 'none';
-                appContent.classList.add('mode-app-active');
+                document.getElementById('intro-scene').style.display = 'none';
+                document.getElementById('app-content').classList.add('mode-app-active');
             }, 600);
         }
         
         window.returnToIntro = function() {
-            const introScene = document.getElementById('intro-scene');
-            const appContent = document.getElementById('app-content');
-            appContent.classList.remove('mode-app-active');
+            document.getElementById('app-content').classList.remove('mode-app-active');
             setTimeout(() => {
-                introScene.style.display = 'flex';
+                const intro = document.getElementById('intro-scene');
+                intro.style.display = 'flex';
                 requestAnimationFrame(() => {
-                    introScene.style.opacity = "1";
-                    introScene.style.transform = "translate(-50%, -50%) scale(1)";
-                    introScene.style.pointerEvents = "auto";
+                    intro.style.opacity = "1";
+                    intro.style.pointerEvents = "auto";
                 });
             }, 300);
         }
@@ -477,15 +490,55 @@
             const titleMap = {'scraps': 'All Scraps', 'folders': 'My Folders', 'favorites': 'Favorites'};
             document.querySelector('#view-title').textContent = titleMap[tabName];
 
+            // Reset View
+            document.getElementById('view-folder-detail').classList.add('hidden');
+            document.getElementById('folder-back-btn').classList.add('hidden');
+
             ['scraps', 'folders', 'favorites'].forEach(t => {
                 const el = document.getElementById(`tab-${t}`);
                 if(el) { if (t === tabName) { el.classList.add('active'); el.classList.remove('inactive'); } else { el.classList.add('inactive'); el.classList.remove('active'); } }
             });
-            if (tabName === 'folders') { document.getElementById('view-grid').classList.add('hidden'); document.getElementById('view-folders').classList.remove('hidden'); renderFolders(); } 
-            else { document.getElementById('view-grid').classList.remove('hidden'); document.getElementById('view-folders').classList.add('hidden'); renderScraps(); }
+            if (tabName === 'folders') { 
+                document.getElementById('view-grid').classList.add('hidden'); 
+                document.getElementById('view-folders').classList.remove('hidden'); 
+                renderFolders(); 
+            } else { 
+                document.getElementById('view-grid').classList.remove('hidden'); 
+                document.getElementById('view-folders').classList.add('hidden'); 
+                renderScraps(); 
+            }
         }
 
-        // Folder Management
+        // Folder Logic (Improved)
+        window.openFolder = function(folderName) {
+            // Switch to detail view
+            document.getElementById('view-folders').classList.add('hidden');
+            document.getElementById('view-folder-detail').classList.remove('hidden');
+            document.getElementById('folder-back-btn').classList.remove('hidden');
+            document.querySelector('#view-title').textContent = folderName;
+
+            const items = window.allScraps.filter(s => s.folder === folderName);
+            const grid = document.getElementById('folder-detail-grid');
+            grid.innerHTML = '';
+            
+            if(items.length === 0) {
+                document.getElementById('folder-empty-state').classList.remove('hidden');
+            } else {
+                document.getElementById('folder-empty-state').classList.add('hidden');
+                items.forEach(item => {
+                    grid.appendChild(createCardElement(item));
+                });
+            }
+            lucide.createIcons();
+        }
+
+        window.closeFolderDetail = function() {
+            document.getElementById('view-folder-detail').classList.add('hidden');
+            document.getElementById('view-folders').classList.remove('hidden');
+            document.getElementById('folder-back-btn').classList.add('hidden');
+            document.querySelector('#view-title').textContent = 'My Folders';
+        }
+
         window.openFolderModal = function() { document.getElementById('folder-modal').classList.remove('hidden'); }
         window.closeFolderModal = function() { document.getElementById('folder-modal').classList.add('hidden'); }
         window.createFolder = function() {
@@ -503,110 +556,127 @@
             window.customFolders.forEach(f => { const opt = document.createElement('option'); opt.value = f; datalist.appendChild(opt); });
         }
 
-        // Media & AI Handlers
-        window.handleMediaProcess = function() {
-            const url = document.getElementById('input-url').value;
-            const btn = document.getElementById('media-btn');
-            btn.textContent = 'Checking...';
+        // Card Logic
+        function createCardElement(item) {
+            const card = document.createElement('div');
+            card.className = "card-swipe-container relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300";
             
-            const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
-            if (ytMatch) {
-                document.getElementById('input-type').value = 'video';
-                document.getElementById('input-image-url').value = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
-                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set';
-                lucide.createIcons();
-                return;
+            const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
+            
+            card.innerHTML = `
+                <div class="swipe-action swipe-right">Share</div>
+                <div class="swipe-action swipe-left">Delete</div>
+                <div class="relative w-full h-full bg-white z-10 transition-transform duration-200 flex flex-col" id="card-inner-${item.id}">
+                    <div class="h-[60%] w-full bg-gray-100 overflow-hidden relative">
+                         ${item.imageUrl 
+                            ? `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="img">` 
+                            : `<div class="w-full h-full flex items-center justify-center bg-gray-50"><i data-lucide="image" class="text-gray-300 w-8 h-8"></i></div>`}
+                         
+                         <!-- Direct Favorite Toggle on Card -->
+                         <div class="absolute top-2 right-2 z-20 p-2" onclick="event.stopPropagation(); toggleFavoriteById('${item.id}')">
+                             <div class="bg-black/20 hover:bg-black/40 backdrop-blur-sm p-1.5 rounded-full transition">
+                                <i data-lucide="heart" class="w-4 h-4 ${favIconClass}"></i>
+                             </div>
+                         </div>
+                    </div>
+                    <div class="h-[40%] p-5 flex flex-col justify-between bg-white">
+                        <div>
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block truncate">${item.folder || 'Uncategorized'}</span>
+                            <h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${item.title}</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            ${(item.tags || []).slice(0,2).map(t => `<span class="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">#${t}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+                
+            const inner = card.querySelector(`#card-inner-${item.id}`);
+            window.attachCardListeners(inner, item);
+            inner.onclick = () => openMenuModal(item);
+            return card;
+        }
+
+        // Rendering
+        window.renderScraps = function() {
+            const grid = document.getElementById('scrap-grid'); 
+            grid.innerHTML = '';
+            let filtered = window.allScraps;
+            
+            if (window.currentTab === 'favorites') {
+                filtered = filtered.filter(s => s.isFavorite);
             }
+
+            if (window.searchText) { const term = window.searchText.toLowerCase(); filtered = filtered.filter(s => s.title.toLowerCase().includes(term)); }
             
-            if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
-                document.getElementById('input-type').value = 'image';
-                document.getElementById('input-image-url').value = url;
-                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set';
-                lucide.createIcons();
-                return;
+            if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+            else document.getElementById('empty-state').classList.add('hidden');
+
+            filtered.forEach(item => {
+                grid.appendChild(createCardElement(item));
+            });
+            lucide.createIcons();
+        }
+
+        window.renderFolders = function() {
+            const list = document.getElementById('folder-list'); list.innerHTML = '';
+            const folders = Array.from(window.customFolders).sort();
+            folders.forEach(folder => {
+                const items = window.allScraps.filter(s => s.folder === folder);
+                const folderEl = document.createElement('div');
+                folderEl.className = "bg-white rounded-sm p-6 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition flex flex-col items-center justify-center aspect-square";
+                folderEl.onclick = () => openFolder(folder);
+                folderEl.innerHTML = `
+                    <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3 text-gray-700">
+                        <i data-lucide="folder" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="font-serif italic text-lg text-black text-center">${folder}</h3>
+                    <span class="text-xs text-gray-400 mt-1">${items.length} Items</span>
+                `;
+                list.appendChild(folderEl);
+            });
+            lucide.createIcons();
+        }
+
+        // Listeners
+        window.attachCardListeners = function(card, scrap) {
+            let startX = 0; let currentX = 0;
+            card.addEventListener('touchstart', (e) => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); startX = e.touches[0].clientX; });
+            card.addEventListener('touchend', (e) => { clearTimeout(window.longPressTimer); const diff = currentX - startX; if (currentX !== 0 && Math.abs(diff) > 80) { if (diff > 0) { navigator.clipboard.writeText(scrap.sourceUrl).then(() => alert('Link copied!')); } else { if(confirm('Delete?')) deleteScrap(scrap.id); } } card.style.transform = `translateX(0)`; currentX = 0; });
+            card.addEventListener('touchmove', (e) => { clearTimeout(window.longPressTimer); currentX = e.touches[0].clientX; const diff = currentX - startX; if (Math.abs(diff) < 80) { card.style.transform = `translateX(${diff}px)`; } });
+        }
+
+        // CRUD
+        window.deleteScrap = function(id) {
+            window.allScraps = window.allScraps.filter(s => s.id !== id); // Fixed delete logic
+            saveData();
+            // Rerender based on context
+            if(window.currentTab === 'folders' && !document.getElementById('view-folder-detail').classList.contains('hidden')) {
+                 // If inside folder view
+                 const folderName = document.querySelector('#view-title').textContent;
+                 openFolder(folderName); 
+            } else if (window.currentTab === 'folders') {
+                renderFolders();
+            } else {
+                renderScraps();
             }
-            
-            btn.innerHTML = '<i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Unknown';
-            lucide.createIcons();
         }
 
-        // API Key Helper with prompt (only triggers if key is missing/empty)
-        function getGeminiKey() {
-             let key = localStorage.getItem('gemini_api_key');
-             if (!key) {
-                 key = prompt("Gemini API 기능 사용을 위해 API 키를 입력해주세요 (브라우저에 저장됩니다):");
-                 if (key) localStorage.setItem('gemini_api_key', key);
-             }
-             return key;
-        }
-
-        window.handleAIProcess = async function() {
-            const content = document.getElementById('input-content').value;
-            const btn = document.getElementById('ai-btn');
-            
-            if(!content) { alert('Please paste text content first.'); return; }
-            
-            // Get Key (Prompt if needed)
-            const userKey = getGeminiKey();
-            if(!userKey) { alert("API 키가 필요합니다."); return; }
-            
-            btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...';
-            lucide.createIcons();
-
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; 
-            try { 
-                const res = await fetch(apiUrl, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: `Analyze this text: "${content}". Output JSON with keys: "title" (max 10 words), "summary" (max 140 chars Korean), "tags" (comma separated string). No markdown.` }] }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    }) 
-                }); 
-                
-                const data = await res.json();
-                
-                if(data.error) {
-                    console.error(data.error);
-                    throw new Error(data.error.message);
+        window.toggleFavoriteById = function(id) {
+            const idx = window.allScraps.findIndex(s => s.id === id);
+            if(idx > -1) {
+                window.allScraps[idx].isFavorite = !window.allScraps[idx].isFavorite;
+                saveData();
+                // Smart Rerender
+                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
+                     const folderName = document.querySelector('#view-title').textContent;
+                     openFolder(folderName);
+                } else if (window.currentTab !== 'folders') {
+                    renderScraps();
                 }
-
-                const text = data.candidates[0].content.parts[0].text;
-                const json = JSON.parse(text); 
-                document.getElementById('input-title').value = json.title || ''; 
-                document.getElementById('input-summary').value = json.summary || ''; 
-                if(json.tags) document.getElementById('input-tags').value = json.tags; 
-                
-                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done';
-            } catch(e) { 
-                console.error(e); 
-                // Clear invalid key if auth failed
-                if(e.message && (e.message.includes('API key') || e.message.includes('403'))) {
-                     localStorage.removeItem('gemini_api_key');
-                     alert('API 키가 유효하지 않습니다. 다시 시도해주세요.');
-                } else {
-                     alert('AI 요청 실패: ' + e.message);
-                }
-                btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed';
-            } 
-            lucide.createIcons();
+            }
         }
 
-        // Reset Form Function
-        window.resetForm = function() {
-            const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea, #scrap-form-container select');
-            inputs.forEach(input => input.value = '');
-            document.getElementById('media-btn').textContent = 'Check Media';
-            document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill';
-            
-            // Reset favorite state
-            window.isNewItemFavorite = false;
-            updateNewFavoriteBtn();
-            
-            lucide.createIcons();
-        }
-        
-        // New Favorite Toggle Logic
+        // Unified Favorite Style in Modal
         window.toggleNewFavorite = function() {
             window.isNewItemFavorite = !window.isNewItemFavorite;
             updateNewFavoriteBtn();
@@ -617,6 +687,7 @@
             if(window.isNewItemFavorite) {
                 btn.classList.remove('text-gray-400');
                 btn.classList.add('text-red-500', 'fill-current');
+                // Use same icon style as card
                 btn.innerHTML = '<i data-lucide="heart" class="w-5 h-5 fill-current"></i>';
             } else {
                 btn.classList.add('text-gray-400');
@@ -626,7 +697,18 @@
             lucide.createIcons();
         }
 
-        // Save Function (Local Storage)
+        // Reset Form
+        window.resetForm = function() {
+            const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea, #scrap-form-container select');
+            inputs.forEach(input => input.value = '');
+            document.getElementById('media-btn').textContent = 'Check Media';
+            document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill';
+            window.isNewItemFavorite = false;
+            updateNewFavoriteBtn();
+            lucide.createIcons();
+        }
+
+        // Save
         window.handleSaveScrap = function() { 
             const btn = document.getElementById('save-button'); 
             btn.textContent = 'Saving...'; 
@@ -660,144 +742,88 @@
                 createdAt: new Date().toISOString()
             }; 
             
-            window.allScraps.unshift(newItem); // Add to top
+            window.allScraps.unshift(newItem); 
             saveData();
             
             closeAddModal(); 
             window.resetForm();
             
-            // Refresh current view
-            if(window.currentTab === 'folders') renderFolders(); else renderScraps();
+            if(window.currentTab === 'folders' && document.getElementById('view-folders').classList.contains('hidden')) {
+                // If in folder detail view
+                 const folderName = document.querySelector('#view-title').textContent;
+                 if (newItem.folder === folderName) openFolder(folderName);
+            } else if (window.currentTab === 'folders') {
+                renderFolders();
+            } else {
+                renderScraps();
+            }
             
             btn.textContent = 'Save'; 
             btn.disabled = false; 
         }
 
-        // Interaction Listeners & Render
-        window.attachCardListeners = function(card, scrap) {
-            let startX = 0; let currentX = 0;
-            card.addEventListener('touchstart', (e) => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); startX = e.touches[0].clientX; });
-            card.addEventListener('touchend', (e) => { clearTimeout(window.longPressTimer); const diff = currentX - startX; if (currentX !== 0 && Math.abs(diff) > 80) { if (diff > 0) { navigator.clipboard.writeText(scrap.sourceUrl).then(() => alert('Link copied!')); } else { if(confirm('Delete?')) deleteScrap(scrap.id); } } card.style.transform = `translateX(0)`; currentX = 0; });
-            card.addEventListener('touchmove', (e) => { clearTimeout(window.longPressTimer); currentX = e.touches[0].clientX; const diff = currentX - startX; if (Math.abs(diff) < 80) { card.style.transform = `translateX(${diff}px)`; } });
-            card.addEventListener('mousedown', () => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); });
-            card.addEventListener('mouseup', () => clearTimeout(window.longPressTimer));
-            card.addEventListener('mousemove', () => clearTimeout(window.longPressTimer));
-        }
-
-        window.renderScraps = function() {
-            const grid = document.getElementById('scrap-grid'); grid.innerHTML = '';
-            let filtered = window.allScraps;
-            
-            if (window.currentTab === 'favorites') {
-                filtered = filtered.filter(s => s.isFavorite);
+        // Other Handlers (Media, AI, etc - Keep as is)
+        window.handleMediaProcess = function() {
+            const url = document.getElementById('input-url').value;
+            const btn = document.getElementById('media-btn');
+            btn.textContent = 'Checking...';
+            const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
+            if (ytMatch) {
+                document.getElementById('input-type').value = 'video';
+                document.getElementById('input-image-url').value = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set';
+                lucide.createIcons();
+                return;
             }
-
-            if (window.searchText) { const term = window.searchText.toLowerCase(); filtered = filtered.filter(s => s.title.toLowerCase().includes(term)); }
-            
-            if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
-            else document.getElementById('empty-state').classList.add('hidden');
-
-            filtered.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "card-swipe-container relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300";
-                card.innerHTML = `
-                    <div class="swipe-action swipe-right">Share</div><div class="swipe-action swipe-left">Delete</div>
-                    <div class="relative w-full h-full bg-white z-10 transition-transform duration-200 flex flex-col" id="card-inner-${item.id}">
-                        <div class="h-[60%] w-full bg-gray-100 overflow-hidden relative">
-                             ${item.imageUrl 
-                                ? `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="img">` 
-                                : `<div class="w-full h-full flex items-center justify-center bg-gray-50"><i data-lucide="image" class="text-gray-300 w-8 h-8"></i></div>`}
-                             <div class="absolute top-2 right-2 flex space-x-1">
-                                 ${item.isFavorite ? '<div class="bg-white/90 p-1.5 rounded-full shadow-sm"><i data-lucide="star" class="w-3 h-3 text-yellow-500 fill-current"></i></div>' : ''}
-                             </div>
-                        </div>
-                        <div class="h-[40%] p-5 flex flex-col justify-between bg-white">
-                            <div>
-                                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block truncate">${item.folder || 'Uncategorized'}</span>
-                                <h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${item.title}</h3>
-                            </div>
-                            <div class="flex flex-wrap gap-1 mt-1">
-                                ${(item.tags || []).slice(0,2).map(t => `<span class="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">#${t}</span>`).join('')}
-                            </div>
-                        </div>
-                    </div>`;
-                const inner = card.querySelector(`#card-inner-${item.id}`);
-                window.attachCardListeners(inner, item);
-                inner.onclick = () => openMenuModal(item);
-                grid.appendChild(card);
-            });
+            if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+                document.getElementById('input-type').value = 'image';
+                document.getElementById('input-image-url').value = url;
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set';
+                lucide.createIcons();
+                return;
+            }
+            btn.innerHTML = '<i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Unknown';
             lucide.createIcons();
         }
-
-        window.renderFolders = function() {
-            const list = document.getElementById('folder-list'); list.innerHTML = '';
-            const groups = {}; window.allScraps.forEach(s => { const f = s.folder || 'General'; if(!groups[f]) groups[f] = []; groups[f].push(s); });
-            Object.keys(groups).sort().forEach(folder => {
-                const section = document.createElement('div');
-                section.className = "bg-white rounded-sm p-6 shadow-sm border border-gray-200";
-                section.innerHTML = `
-                    <h3 class="font-serif italic text-lg text-black mb-4">${folder} <span class="text-xs not-italic text-gray-400 ml-2">(${groups[folder].length})</span></h3>
-                    <div class="grid grid-cols-4 gap-3">
-                        ${groups[folder].slice(0, 4).map(s => `<div class="aspect-square bg-gray-100 rounded-sm overflow-hidden shadow-inner">${s.imageUrl ? `<img src="${s.imageUrl}" class="w-full h-full object-cover">` : ''}</div>`).join('')}
-                    </div>
-                `;
-                list.appendChild(section);
-            });
+        
+        function getGeminiKey() {
+             let key = localStorage.getItem('gemini_api_key');
+             if (!key) { key = prompt("Gemini API Key Required:"); if (key) localStorage.setItem('gemini_api_key', key); }
+             return key;
         }
 
-        window.openMenuModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }
-        window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
-        window.menuAction = function(action) {
-            const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); if(!scrap) return;
-            if (action === 'visit') window.open(scrap.sourceUrl, '_blank');
-            else if (action === 'memo') openMemoModal(scrap);
-            else if (action === 'favorite') toggleFavorite(scrap);
-            else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id);
-            closeMenuModal();
+        window.handleAIProcess = async function() {
+            const content = document.getElementById('input-content').value;
+            const btn = document.getElementById('ai-btn');
+            if(!content) { alert('Please paste text content first.'); return; }
+            const userKey = getGeminiKey(); if(!userKey) return;
+            btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...';
+            lucide.createIcons();
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; 
+            try { 
+                const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `Analyze this text: "${content}". Output JSON with keys: "title" (max 10 words), "summary" (max 140 chars Korean), "tags" (comma separated string). No markdown.` }] }], generationConfig: { responseMimeType: "application/json" } }) }); 
+                const data = await res.json(); 
+                const text = data.candidates[0].content.parts[0].text;
+                const json = JSON.parse(text); 
+                document.getElementById('input-title').value = json.title || ''; 
+                document.getElementById('input-summary').value = json.summary || ''; 
+                if(json.tags) document.getElementById('input-tags').value = json.tags; 
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done';
+            } catch(e) { console.error(e); btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed'; } 
+            lucide.createIcons();
         }
-        window.openMemoModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('edit-memo-input').value = scrap.memo || ''; document.getElementById('memo-modal').classList.remove('hidden'); }
-        window.closeMemoModal = function() { document.getElementById('memo-modal').classList.add('hidden'); }
-        window.saveMemo = async function() { const newMemo = document.getElementById('edit-memo-input').value; if (window.selectedScrapId) { await updateDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, window.selectedScrapId), { memo: newMemo }); closeMemoModal(); }}
-        window.toggleFavorite = async function(scrap) { await updateDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, scrap.id), { isFavorite: !scrap.isFavorite }); }
-        window.deleteScrap = async function(id) { await deleteDoc(doc(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`, id)); }
-        window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
+        
         window.openAddModal = function() { document.getElementById('add-modal').classList.remove('hidden'); updateFolderDropdown(); setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); }
         window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 500); }
-        
-        window.openInsightModal = async function(scrap) {
-            if(!scrap) return;
-            closeMenuModal();
-            const modal = document.getElementById('insight-modal');
-            const contentDiv = document.getElementById('insight-content');
-            modal.classList.remove('hidden');
-            contentDiv.innerHTML = '<div class="flex justify-center py-10"><i data-lucide="loader" class="animate-spin text-slate-400 w-8 h-8"></i></div>';
-            lucide.createIcons();
-
-            const apiKey = ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const prompt = `Analyze this scrap: Title: ${scrap.title}, Summary: ${scrap.summary}. 
-            Provide a creative insight in Korean (HTML format).
-            Sections: 🔑 Key Themes, ✨ Creative Spark, 🚀 Action.`;
-
-            try {
-                const res = await fetch(apiUrl, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: prompt }] }]
-                    }) 
-                });
-                const data = await res.json();
-                if(data.error) throw new Error(data.error.message);
-
-                const text = data.candidates[0].content.parts[0].text;
-                contentDiv.innerHTML = marked.parse(text);
-            } catch(e) {
-                contentDiv.innerHTML = `<p class="text-red-500 text-center">Failed: ${e.message}</p>`;
-            }
-        }
-
+        window.openMenuModal = function(scrap) { window.currentScrap = scrap; window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }
+        window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
+        window.menuAction = function(action) { const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); if(!scrap) return; if (action === 'visit') window.open(scrap.sourceUrl, '_blank'); else if (action === 'memo') openMemoModal(scrap); else if (action === 'favorite') toggleFavoriteById(scrap.id); else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id); closeMenuModal(); }
+        window.openMemoModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('edit-memo-input').value = scrap.memo || ''; document.getElementById('memo-modal').classList.remove('hidden'); }
+        window.closeMemoModal = function() { document.getElementById('memo-modal').classList.add('hidden'); }
+        window.saveMemo = function() { const newMemo = document.getElementById('edit-memo-input').value; const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId); if(idx > -1) { window.allScraps[idx].memo = newMemo; saveData(); closeMemoModal(); } }
+        window.openInsightModal = async function(scrap) { if(!scrap) return; closeMenuModal(); const modal = document.getElementById('insight-modal'); const contentDiv = document.getElementById('insight-content'); modal.classList.remove('hidden'); contentDiv.innerHTML = '<div class="flex justify-center py-10"><i data-lucide="loader" class="animate-spin text-slate-400 w-8 h-8"></i></div>'; lucide.createIcons(); const userKey = getGeminiKey(); if(!userKey) { contentDiv.innerHTML = '<p class="text-red-500 text-center">API Key Required.</p>'; return; } const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; const prompt = `Analyze: Title: ${scrap.title}, Summary: ${scrap.summary}. Insight in Korean (HTML format). Sections: 🔑 Key Themes, ✨ Creative Spark, 🚀 Action.`; try { const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }); const data = await res.json(); const text = data.candidates[0].content.parts[0].text; contentDiv.innerHTML = marked.parse(text); } catch(e) { contentDiv.innerHTML = `<p class="text-red-500 text-center">Failed</p>`; } }
         window.closeInsightModal = function() { document.getElementById('insight-modal').classList.add('hidden'); }
+        window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
     </script>
 </body>
 </html>

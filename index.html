@@ -223,7 +223,7 @@
             <div class="flex items-center space-x-3 mb-2">
                 <span id="user-id-display" class="text-[10px] text-gray-400 font-mono hidden md:inline-block px-3 py-1 border border-gray-200 rounded-full">Guest</span>
                 
-                <!-- Removed white refresh button here as requested -->
+                <!-- Add Button Only -->
                 <button onclick="openAddModal()" class="relative z-50 w-9 h-9 rounded-full bg-black text-white flex items-center justify-center shadow-lg hover:bg-gray-800 transition transform hover:scale-105 active:scale-95">
                     <i data-lucide="plus" class="w-5 h-5"></i>
                 </button>
@@ -509,17 +509,30 @@
             lucide.createIcons();
         }
 
+        // API Key Helper with prompt (only triggers if key is missing/empty)
+        function getGeminiKey() {
+             let key = localStorage.getItem('gemini_api_key');
+             if (!key) {
+                 key = prompt("Gemini API 기능 사용을 위해 API 키를 입력해주세요 (브라우저에 저장됩니다):");
+                 if (key) localStorage.setItem('gemini_api_key', key);
+             }
+             return key;
+        }
+
         window.handleAIProcess = async function() {
             const content = document.getElementById('input-content').value;
             const btn = document.getElementById('ai-btn');
             
             if(!content) { alert('Please paste text content first.'); return; }
             
+            // Get Key (Prompt if needed)
+            const userKey = getGeminiKey();
+            if(!userKey) { alert("API 키가 필요합니다."); return; }
+            
             btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...';
             lucide.createIcons();
 
-            const apiKey = ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; 
             try { 
                 const res = await fetch(apiUrl, { 
                     method: 'POST', 
@@ -530,7 +543,13 @@
                     }) 
                 }); 
                 
-                const data = await res.json(); 
+                const data = await res.json();
+                
+                if(data.error) {
+                    console.error(data.error);
+                    throw new Error(data.error.message);
+                }
+
                 const text = data.candidates[0].content.parts[0].text;
                 const json = JSON.parse(text); 
                 document.getElementById('input-title').value = json.title || ''; 
@@ -540,6 +559,13 @@
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done';
             } catch(e) { 
                 console.error(e); 
+                // Clear invalid key if auth failed
+                if(e.message && (e.message.includes('API key') || e.message.includes('403'))) {
+                     localStorage.removeItem('gemini_api_key');
+                     alert('API 키가 유효하지 않습니다. 다시 시도해주세요.');
+                } else {
+                     alert('AI 요청 실패: ' + e.message);
+                }
                 btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed';
             } 
             lucide.createIcons();
@@ -662,8 +688,14 @@
             contentDiv.innerHTML = '<div class="flex justify-center py-10"><i data-lucide="loader" class="animate-spin text-slate-400 w-8 h-8"></i></div>';
             lucide.createIcons();
 
-            const apiKey = ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            // Get Key (Prompt if needed)
+            const userKey = getGeminiKey();
+            if(!userKey) { 
+                 contentDiv.innerHTML = '<p class="text-red-500 text-center">API Key Required for Insight.</p>';
+                 return; 
+            }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`;
             const prompt = `Analyze this scrap: Title: ${scrap.title}, Summary: ${scrap.summary}. 
             Provide a creative insight in Korean (HTML format).
             Sections: 🔑 Key Themes, ✨ Creative Spark, 🚀 Action.`;
@@ -673,15 +705,16 @@
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "text/plain" } 
+                        contents: [{ parts: [{ text: prompt }] }]
                     }) 
                 });
                 const data = await res.json();
+                if(data.error) throw new Error(data.error.message);
+
                 const text = data.candidates[0].content.parts[0].text;
                 contentDiv.innerHTML = marked.parse(text);
             } catch(e) {
-                contentDiv.innerHTML = '<p class="text-red-500">Failed to generate insight.</p>';
+                contentDiv.innerHTML = `<p class="text-red-500 text-center">Failed: ${e.message}</p>`;
             }
         }
 

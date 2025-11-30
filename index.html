@@ -301,11 +301,9 @@
                                 <i data-lucide="image" class="w-6 h-6 text-gray-400" id="thumb-preview-icon"></i>
                                 <img id="thumb-preview-img" class="w-full h-full object-cover hidden" src="" onerror="this.style.display='none'; document.getElementById('thumb-preview-icon').style.display='block';">
                             </div>
-                            
                             <div class="flex-1 space-y-2">
                                 <div class="flex gap-2">
                                     <input type="text" id="input-image-url" oninput="handleImageInputChanged(this.value)" class="flex-1 bg-white border border-gray-200 rounded-sm px-3 py-2 text-xs focus:ring-1 focus:ring-black outline-none" placeholder="Image URL (or leave empty)">
-                                    
                                     <input type="file" id="media-upload" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
                                     <button type="button" onclick="document.getElementById('media-upload').click()" class="bg-gray-200 text-black px-3 py-2 rounded-sm text-xs hover:bg-gray-300 transition" title="Upload File">
                                         <i data-lucide="upload" class="w-4 h-4"></i>
@@ -604,7 +602,6 @@
         }
 
         // Media & AI Handlers
-        // --- NEW: Handle Image Input Text Change ---
         window.handleImageInputChanged = function(val) {
             const img = document.getElementById('thumb-preview-img');
             const icon = document.getElementById('thumb-preview-icon');
@@ -627,10 +624,8 @@
             const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
             if (ytMatch) {
                 document.getElementById('input-type-select').value = 'video';
-                // Trigger icon update manually
-                window.handleTypeChange(document.getElementById('input-type-select'));
+                window.handleTypeChange(document.getElementById('input-type-select')); // Force icon update
                 
-                // Update Thumbnail Input and Preview
                 const thumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
                 document.getElementById('input-image-url').value = thumbUrl;
                 handleImageInputChanged(thumbUrl);
@@ -643,7 +638,7 @@
             // Check Direct Image Link
             if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) {
                 document.getElementById('input-type-select').value = 'image';
-                window.handleTypeChange(document.getElementById('input-type-select'));
+                window.handleTypeChange(document.getElementById('input-type-select')); // Force icon update
 
                 document.getElementById('input-image-url').value = url;
                 handleImageInputChanged(url);
@@ -665,7 +660,6 @@
                     const result = e.target.result;
                     document.getElementById('input-image-url').value = result;
                     handleImageInputChanged(result);
-                    // alert("Image Uploaded to Thumbnail!");
                 }
                 reader.readAsDataURL(file);
             }
@@ -714,21 +708,15 @@
             lucide.createIcons();
         }
 
-        // Reset Form Function
         window.resetForm = function() {
             const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea');
             inputs.forEach(input => input.value = '');
-            
-            // Clear Thumbnail Preview
             handleImageInputChanged('');
-            
-            // Reset Type Select & Icon
             const typeSelect = document.getElementById('input-type-select');
             typeSelect.value = 'news';
             typeSelect.classList.remove('hidden');
             document.getElementById('input-type-custom').classList.add('hidden');
-            window.handleTypeChange(typeSelect); // Reset Icon
-
+            window.handleTypeChange(typeSelect); 
             document.getElementById('media-btn').textContent = 'Check Media';
             document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill';
             window.isNewItemFavorite = false;
@@ -736,7 +724,6 @@
             lucide.createIcons();
         }
         
-        // New Favorite Toggle Logic
         window.toggleNewFavorite = function() {
             window.isNewItemFavorite = !window.isNewItemFavorite;
             updateNewFavoriteBtn();
@@ -756,7 +743,7 @@
             lucide.createIcons();
         }
 
-        // Save Function (Local Storage)
+        // Save Function - FIXED
         window.handleSaveScrap = function() { 
             const btn = document.getElementById('save-button'); 
             btn.textContent = 'Saving...'; 
@@ -768,18 +755,14 @@
             const tagsInput = document.getElementById('input-tags').value;
             const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : []; 
             
-            // FIX: Get Image from the visible input specifically
             let img = document.getElementById('input-image-url').value;
             
-            // Handle Type Logic
             let type = document.getElementById('input-type-select').value;
             if(type === 'custom') {
                 type = document.getElementById('input-type-custom').value || 'custom';
             }
             
-            if(!img) {
-                img = ""; // Empty string triggers gray background logic
-            }
+            if(!img) { img = ""; }
 
             const newItem = { 
                 id: Date.now().toString(),
@@ -801,20 +784,15 @@
             closeAddModal(); 
             window.resetForm();
             
-            if(window.currentTab === 'folders' && document.getElementById('view-folders').classList.contains('hidden')) {
-                 const folderName = document.querySelector('#view-title').textContent;
-                 if (newItem.folder === folderName) openFolder(folderName);
-            } else if (window.currentTab === 'folders') {
-                renderFolders();
-            } else {
-                renderScraps();
-            }
+            // FIXED: Force switch to 'scraps' tab to ensure visibility
+            switchTab('scraps');
+            renderScraps();
             
             btn.textContent = 'Save'; 
             btn.disabled = false; 
         }
 
-        // Helper to get Icon info for Type
+        // Helper
         function getTypeInfo(type) {
             const t = type ? type.toLowerCase() : 'custom';
             if(window.TYPE_CONFIG[t]) return window.TYPE_CONFIG[t];
@@ -829,9 +807,10 @@
             const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
             const typeInfo = getTypeInfo(item.type);
             
-            // Image Area Logic
+            // Image Area
             let mediaContent = '';
             if (item.imageUrl && item.imageUrl.trim() !== '') {
+                // Safety check for image loading
                 mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
             } else {
                 mediaContent = `
@@ -874,9 +853,10 @@
             return card;
         }
 
-        // Rendering
+        // Rendering - Fixed Safety
         window.renderScraps = function() {
             const grid = document.getElementById('scrap-grid'); 
+            if(!grid) return; // Safety
             grid.innerHTML = '';
             let filtered = window.allScraps;
             
@@ -884,13 +864,20 @@
                 filtered = filtered.filter(s => s.isFavorite);
             }
 
-            if (window.searchText) { const term = window.searchText.toLowerCase(); filtered = filtered.filter(s => s.title.toLowerCase().includes(term)); }
+            if (window.searchText) { 
+                const term = window.searchText.toLowerCase(); 
+                filtered = filtered.filter(s => s.title && s.title.toLowerCase().includes(term)); 
+            }
             
             if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
             else document.getElementById('empty-state').classList.add('hidden');
 
             filtered.forEach(item => {
-                grid.appendChild(createCardElement(item));
+                try {
+                    grid.appendChild(createCardElement(item));
+                } catch(e) {
+                    console.error("Skipping bad item", item);
+                }
             });
             lucide.createIcons();
         }
@@ -943,7 +930,7 @@
             }
         }
 
-        // Other Modal Logic ... (Keep existing)
+        // Modal Logic
         window.openAddModal = function() { document.getElementById('add-modal').classList.remove('hidden'); updateFolderDropdown(); setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); }
         window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 500); }
         window.openMenuModal = function(scrap) { window.currentScrap = scrap; window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }

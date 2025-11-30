@@ -18,7 +18,6 @@
             overflow: hidden; 
             touch-action: none;
             margin: 0;
-            /* 1. Clean Solid Background (Off-White) */
             background-color: #f9fafb; 
             color: #18181b;
         }
@@ -45,17 +44,10 @@
             width: 100%;
             height: 100%;
             border-radius: 16px;
-            
-            /* Paper Texture Effect */
             background: #ffffff;
-            /* Subtle noise texture overlay for paper feel */
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-            
             border: 1px solid rgba(0, 0, 0, 0.06);
-            box-shadow: 
-                0 20px 60px -10px rgba(0, 0, 0, 0.08),
-                0 0 0 1px rgba(0, 0, 0, 0.02);
-                
+            box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -75,6 +67,7 @@
             width: 100%;
             display: flex;
             justify-content: space-between;
+            font-weight: 500;
         }
 
         .poster-title-group {
@@ -86,9 +79,7 @@
             transition: transform 0.5s ease;
         }
 
-        .poster-card:hover .poster-title-group {
-            transform: scale(1.02);
-        }
+        .poster-card:hover .poster-title-group { transform: scale(1.02); }
 
         .poster-title-main {
             font-family: 'Playfair Display', serif;
@@ -118,30 +109,30 @@
             gap: 30px;
         }
 
-        /* Enter Button (Translucent Oval) */
         .enter-btn {
             position: relative;
             padding: 16px 56px;
-            background: #18181b; /* Solid Black */
+            background: rgba(24, 24, 27, 0.9);
             color: #fff;
             font-size: 11px;
             font-weight: 600;
-            letter-spacing: 0.2em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
             border: none;
-            border-radius: 9999px; /* Oval */
+            border-radius: 9999px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(4px);
         }
         
         .enter-btn:hover {
-            background: #27272a;
+            background: rgba(0, 0, 0, 1);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
 
-        /* --- 2. App Mode (Expanded) --- */
+        /* --- 2. App Mode --- */
         .mode-app-container {
             position: absolute;
             top: 0;
@@ -152,51 +143,28 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.6s ease;
-            background: #f9fafb; /* Match body bg */
+            background: #f9fafb;
             display: flex;
             flex-direction: column;
         }
-        .mode-app-active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .mode-app-active { opacity: 1; pointer-events: auto; }
 
-        /* Folder Tabs (White & Black Theme) */
+        /* Folder Tabs */
         .folder-tab {
             position: relative;
-            padding: 14px 28px 10px;
-            border-radius: 12px 12px 0 0;
-            margin-right: -10px;
+            padding: 14px 32px 12px;
+            border-radius: 8px 8px 0 0;
+            margin-right: -4px;
             font-family: 'Playfair Display', serif;
             font-style: italic;
-            font-size: 16px;
-            transition: background-color 0.15s ease, color 0.1s ease; 
+            font-size: 15px;
+            transition: background-color 0.15s ease, color 0.1s ease;
             border: none;
             cursor: pointer;
         }
-        
-        /* Active: White */
-        .folder-tab.active { 
-            background: #ffffff; 
-            color: #18181b; 
-            z-index: 10; 
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.03); 
-            font-weight: 700; 
-        }
-        
-        /* Inactive: Dark Gray */
-        .folder-tab.inactive { 
-            background: #27272a; 
-            color: #a1a1aa; 
-            z-index: 0; 
-            margin-top: 6px; 
-            font-weight: 400; 
-        }
-        
-        .folder-tab.inactive:hover { 
-            background: #3f3f46; 
-            color: #ffffff; 
-        }
+        .folder-tab.active { background: #ffffff; color: #000000; z-index: 20; font-weight: 700; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
+        .folder-tab.inactive { background: #27272a; color: #a1a1aa; z-index: 10; margin-top: 8px; font-weight: 400; }
+        .folder-tab.inactive:hover { background: #3f3f46; color: #ffffff; }
 
         /* Mobile Swipe Layers */
         .card-swipe-container { position: relative; overflow: hidden; border-radius: 4px; }
@@ -215,51 +183,36 @@
 </head>
 <body class="h-screen w-screen overflow-hidden">
 
-    <!-- 1. Background: Clean Solid Color -->
+    <!-- 1. Background -->
     <div class="absolute inset-0 z-0 bg-[#f9fafb]"></div>
 
-    <!-- 2. Intro Scene: Minimal Poster -->
+    <!-- 2. Intro Scene -->
     <div id="intro-scene">
         <div class="poster-card">
-            
-            <!-- Header -->
             <div class="poster-header">
                 <span>VOL.01</span>
-                <span> COLLECTION</span>
+                <span>COLLECTION</span>
             </div>
-
-            <!-- Main Title Group -->
             <div class="poster-title-group">
-                <h1 class="poster-title-main">
-                    Creative<br>Archive
-                </h1>
-                <p class="poster-title-sub">
-                    Curate your inspiration
-                </p>
+                <h1 class="poster-title-main">Creative<br>Archive</h1>
+                <p class="poster-title-sub">Curate your inspiration</p>
             </div>
-
-            <!-- Footer / Action -->
             <div class="poster-footer">
-                <div class="w-px h-12 bg-gray-200"></div>
-                <button onclick="expandToApp()" class="enter-btn">
-                    Enter
-                </button>
+                <div class="w-px h-16 bg-gray-200"></div>
+                <button onclick="expandToApp()" class="enter-btn">Enter</button>
             </div>
-
         </div>
     </div>
 
     <!-- 3. App Content -->
     <div id="app-content" class="mode-app-container flex flex-col">
         
-        <!-- App Header -->
+        <!-- Header -->
         <div class="pt-5 px-6 flex items-end justify-between select-none z-50 relative">
-            
             <div class="flex items-center">
                 <button onclick="returnToIntro()" class="mr-4 w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition text-gray-400 hover:text-black border border-gray-200">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
-
                 <div class="flex items-end pl-2">
                     <button onclick="event.stopPropagation(); switchTab('scraps')" id="tab-scraps" class="folder-tab active">Scraps</button>
                     <button onclick="event.stopPropagation(); switchTab('folders')" id="tab-folders" class="folder-tab inactive">Folders</button>
@@ -267,19 +220,22 @@
                 </div>
             </div>
             
-            <div class="flex items-center space-x-4 mb-3">
+            <div class="flex items-center space-x-3 mb-2">
                 <span id="user-id-display" class="text-[10px] text-gray-400 font-mono hidden md:inline-block px-3 py-1 border border-gray-200 rounded-full">Guest</span>
                 
-                <!-- Fixed Add Button (Black) -->
+                <!-- Added Refresh Button -->
+                <button onclick="refreshData()" class="relative z-50 w-9 h-9 rounded-full bg-white text-gray-700 flex items-center justify-center shadow-sm border border-gray-200 hover:bg-gray-50 transition mr-2">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                </button>
+
                 <button onclick="openAddModal()" class="relative z-50 w-9 h-9 rounded-full bg-black text-white flex items-center justify-center shadow-lg hover:bg-gray-800 transition transform hover:scale-105 active:scale-95">
                     <i data-lucide="plus" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Main App Body -->
+        <!-- Main Body -->
         <div class="flex-grow relative overflow-hidden bg-white shadow-2xl z-10 flex flex-col rounded-t-lg border-t border-gray-100">
-            <!-- Toolbar -->
             <div class="px-8 py-5 flex items-center justify-between border-b border-gray-100 bg-white z-20">
                 <h2 id="view-title" class="font-serif italic text-xl text-black">All Scraps</h2>
                 <div class="relative group">
@@ -289,10 +245,7 @@
                 </div>
             </div>
 
-            <!-- Content Area -->
             <div class="relative flex-grow overflow-hidden bg-[#fafafa]">
-                
-                <!-- 1. SCRAP / FAVORITES GRID -->
                 <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32">
                     <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
                     <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
@@ -300,8 +253,6 @@
                         <p class="text-xs font-light tracking-widest uppercase">Empty Collection</p>
                     </div>
                 </div>
-
-                <!-- 2. FOLDERS VIEW (With Create Button) -->
                 <div id="view-folders" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32 hidden">
                     <div class="mb-6">
                          <button onclick="openFolderModal()" class="flex items-center space-x-2 text-sm font-bold text-black hover:text-gray-600 transition border border-gray-300 rounded-sm px-4 py-2 bg-white hover:shadow-sm">
@@ -311,13 +262,12 @@
                     </div>
                     <div id="folder-list" class="space-y-8"></div>
                 </div>
-
             </div>
         </div>
     </div>
 
     <!-- Modals -->
-    <!-- Add Scrap Modal -->
+    <!-- Add Scrap Modal (Fixed Structure) -->
     <div id="add-modal" class="fixed inset-0 z-[200] hidden">
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity" onclick="closeAddModal()"></div>
         <div class="absolute inset-y-0 right-0 w-full md:w-[500px] bg-white shadow-2xl transform translate-x-full transition-transform duration-500 flex flex-col" id="add-panel">
@@ -325,37 +275,74 @@
                 <h2 class="font-serif italic text-2xl text-black">New Item</h2>
                 <button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
             </div>
-            <div class="flex-grow overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                <form id="scrap-form" onsubmit="event.preventDefault(); handleSaveScrap();">
-                    <div class="space-y-5">
+            <div class="flex-grow overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                <!-- The form tag is used for layout but submission is handled via JS function -->
+                <div id="scrap-form-container">
+                    
+                    <!-- 1. Link & Media Section -->
+                    <div class="space-y-2 p-4 bg-gray-50 rounded-sm border border-gray-100">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">1. Media Source</label>
                         <div class="flex gap-2">
-                            <input type="url" id="input-url" class="flex-1 bg-gray-50 border-none rounded-sm px-4 py-3 text-sm focus:ring-1 focus:ring-black" placeholder="Link...">
-                            <!-- Magic Auto Button -->
-                            <button type="button" onclick="handleLinkProcess()" id="link-process-btn" class="bg-black text-white px-4 rounded-sm text-xs font-bold shadow-md hover:bg-gray-800 transition flex items-center">
-                                <i data-lucide="sparkles" class="w-3 h-3 mr-2"></i> Magic Auto
+                            <input type="url" id="input-url" class="flex-1 bg-white border border-gray-200 rounded-sm px-4 py-3 text-sm focus:ring-1 focus:ring-black outline-none transition" placeholder="Paste URL (YouTube/Image)...">
+                            <button type="button" onclick="handleMediaProcess()" id="media-btn" class="bg-white border border-gray-200 text-black px-4 rounded-sm text-xs font-bold hover:bg-gray-50 transition whitespace-nowrap">Check Media</button>
+                        </div>
+                        <p class="text-[10px] text-gray-400 pl-1">Detects YouTube thumbnail or Image URL.</p>
+                    </div>
+
+                    <!-- 2. Content & AI Section -->
+                    <div class="space-y-2 p-4 bg-blue-50/30 rounded-sm border border-blue-100">
+                         <div class="flex justify-between items-center">
+                            <label class="block text-xs font-bold text-blue-400 uppercase tracking-wider">2. Content for AI</label>
+                            <button type="button" onclick="handleAIProcess()" id="ai-btn" class="bg-blue-600 text-white px-3 py-1 rounded-sm text-[10px] font-bold shadow-sm hover:bg-blue-700 transition flex items-center">
+                                <i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill
                             </button>
                         </div>
-                        <textarea id="input-content" rows="4" class="w-full bg-gray-50 border-none rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-black" placeholder="Paste content for AI Summary..."></textarea>
-                        <input type="text" id="input-title" required class="w-full text-xl font-serif border-b border-gray-200 py-2 bg-transparent placeholder-gray-300 focus:outline-none focus:border-black" placeholder="Title">
+                        <textarea id="input-content" rows="5" class="w-full bg-white border border-blue-100 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-blue-500 outline-none" placeholder="Paste article text here to generate Title, Summary & Tags automatically..."></textarea>
+                    </div>
+
+                    <!-- 3. Details Section -->
+                    <div class="space-y-5 border-t border-gray-100 pt-6">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Title</label>
+                            <input type="text" id="input-title" class="w-full text-lg font-serif border-b border-gray-200 py-2 bg-transparent placeholder-gray-300 focus:outline-none focus:border-black" placeholder="Entry Title">
+                        </div>
                         
                         <div class="grid grid-cols-2 gap-4">
-                            <select id="input-type" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm text-gray-600 focus:outline-none"><option value="news">Article</option><option value="video">Video</option><option value="image">Image</option></select>
-                            
-                            <!-- Folder Selector -->
-                            <div class="relative">
-                                <input type="text" id="input-folder" list="folder-options" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm placeholder-gray-300 focus:outline-none" placeholder="Select Folder">
-                                <datalist id="folder-options"></datalist>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Type</label>
+                                <select id="input-type" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm text-gray-600 focus:outline-none"><option value="news">Article</option><option value="video">Video</option><option value="image">Image</option></select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Folder</label>
+                                <div class="relative">
+                                    <input type="text" id="input-folder" list="folder-options" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm placeholder-gray-300 focus:outline-none" placeholder="Select/Type">
+                                    <datalist id="folder-options"></datalist>
+                                </div>
                             </div>
                         </div>
 
-                        <input type="text" id="input-tags" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm placeholder-gray-300 focus:outline-none" placeholder="#Tags">
-                        <textarea id="input-summary" maxlength="140" rows="3" class="w-full bg-gray-50 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-black" placeholder="Summary..."></textarea>
-                        <textarea id="input-memo" rows="3" class="w-full bg-yellow-50/50 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-yellow-600" placeholder="Memo..."></textarea>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tags</label>
+                            <input type="text" id="input-tags" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm placeholder-gray-300 focus:outline-none" placeholder="#Tags (comma separated)">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Summary</label>
+                            <textarea id="input-summary" maxlength="140" rows="3" class="w-full bg-gray-50 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-black outline-none" placeholder="Summary..."></textarea>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Memo</label>
+                            <textarea id="input-memo" rows="3" class="w-full bg-yellow-50/50 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-yellow-600 outline-none" placeholder="Personal Note..."></textarea>
+                        </div>
                         <input type="hidden" id="input-image-url">
                     </div>
-                </form>
+                </div>
             </div>
-            <div class="p-8 border-t border-gray-50 bg-white"><button onclick="handleSaveScrap()" id="save-button" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-xl hover:bg-gray-800 transition">Save</button></div>
+            <div class="p-8 border-t border-gray-50 bg-white">
+                <!-- Explicit Save Button Type -->
+                <button type="button" onclick="handleSaveScrap()" id="save-button" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-xl hover:bg-gray-800 transition">Save</button>
+            </div>
         </div>
     </div>
 
@@ -386,13 +373,10 @@
         <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMenuModal()"></div>
         <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel">
             <h3 id="menu-title" class="text-xl font-serif italic text-black mb-6 truncate">Title</h3>
-            
-            <!-- Insight Button -->
             <button onclick="openInsightModal(window.currentScrap)" class="w-full mb-6 flex items-center justify-center p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-sm border border-indigo-100 text-indigo-900 hover:shadow-md transition">
                 <i data-lucide="sparkles" class="w-5 h-5 mr-2 text-indigo-500"></i>
                 <span class="text-sm font-bold">Get AI Insight</span>
             </button>
-
             <div class="grid grid-cols-4 gap-4 mb-4">
                 <button onclick="menuAction('visit')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="external-link" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Open</span></button>
                 <button onclick="menuAction('memo')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="sticky-note" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Memo</span></button>
@@ -467,6 +451,20 @@
             else { document.getElementById('view-grid').classList.remove('hidden'); document.getElementById('view-folders').classList.add('hidden'); renderScraps(); }
         }
 
+        // Refresh Function
+        window.refreshData = function() {
+             if(window.userId) {
+                 // Simply re-triggering logic. Firestore listener handles updates automatically, 
+                 // but we can show a loading indicator or re-fetch logic if needed.
+                 // Here we'll just provide visual feedback.
+                 const btn = document.querySelector('button i[data-lucide="refresh-cw"]');
+                 if(btn) btn.classList.add('animate-spin');
+                 setTimeout(() => { if(btn) btn.classList.remove('animate-spin'); }, 1000);
+                 // Force re-render
+                 if(window.currentTab === 'folders') renderFolders(); else renderScraps();
+             }
+        }
+
         // Folder Management
         window.openFolderModal = function() { document.getElementById('folder-modal').classList.remove('hidden'); }
         window.closeFolderModal = function() { document.getElementById('folder-modal').classList.add('hidden'); }
@@ -495,6 +493,114 @@
             updateFolderDropdown();
         }
 
+        // Media & AI Handlers
+        window.handleMediaProcess = function() {
+            const url = document.getElementById('input-url').value;
+            const btn = document.getElementById('media-btn');
+            btn.textContent = 'Checking...';
+            
+            // Check YouTube
+            const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
+            if (ytMatch) {
+                document.getElementById('input-type').value = 'video';
+                document.getElementById('input-image-url').value = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set';
+                lucide.createIcons();
+                return;
+            }
+            
+            // Check Image Extension
+            if (url.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+                document.getElementById('input-type').value = 'image';
+                document.getElementById('input-image-url').value = url;
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set';
+                lucide.createIcons();
+                return;
+            }
+            
+            btn.innerHTML = '<i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Unknown';
+            lucide.createIcons();
+        }
+
+        window.handleAIProcess = async function() {
+            const content = document.getElementById('input-content').value;
+            const btn = document.getElementById('ai-btn');
+            
+            if(!content) { alert('Please paste text content first.'); return; }
+            
+            btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...';
+            lucide.createIcons();
+
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`; 
+            try { 
+                const res = await fetch(apiUrl, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: `Analyze this text: "${content}". Output JSON with keys: "title" (max 10 words), "summary" (max 140 chars Korean), "tags" (comma separated string). No markdown.` }] }] }) }); 
+                const data = await res.json(); 
+                const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+                const json = JSON.parse(text); 
+                document.getElementById('input-title').value = json.title || ''; 
+                document.getElementById('input-summary').value = json.summary || ''; 
+                if(json.tags) document.getElementById('input-tags').value = json.tags; 
+                
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done';
+            } catch(e) { 
+                console.error(e); 
+                btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed';
+            } 
+            lucide.createIcons();
+        }
+
+        // Save Function (Fixed)
+        window.handleSaveScrap = async function() { 
+            const btn = document.getElementById('save-button'); 
+            if(!window.userId) return; 
+            
+            btn.textContent = 'Saving...'; 
+            btn.disabled = true; 
+            
+            const tags = document.getElementById('input-tags').value.split(',').map(t => t.trim()).filter(t => t); 
+            
+            // Default image fallback if not set
+            let img = document.getElementById('input-image-url').value;
+            if(!img) {
+                const type = document.getElementById('input-type').value;
+                if(type === 'news') img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=News';
+                else if(type === 'video') img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=Video';
+                else img = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=Image';
+            }
+
+            const newItem = { 
+                userId: window.userId, 
+                title: document.getElementById('input-title').value, 
+                summary: document.getElementById('input-summary').value, 
+                sourceUrl: document.getElementById('input-url').value, 
+                imageUrl: img, 
+                type: document.getElementById('input-type').value, 
+                folder: document.getElementById('input-folder').value || 'General', 
+                memo: document.getElementById('input-memo').value, 
+                tags: tags, 
+                isFavorite: false, 
+                createdAt: serverTimestamp() 
+            }; 
+            
+            try { 
+                await addDoc(collection(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`), newItem); 
+                closeAddModal(); 
+                document.getElementById('scrap-form').reset(); 
+                // Reset buttons
+                document.getElementById('media-btn').textContent = 'Check Media';
+                document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Summary';
+                lucide.createIcons();
+            } catch(e) { 
+                console.error(e); 
+                alert('Save failed. Please try again.');
+            } finally { 
+                btn.textContent = 'Save'; 
+                btn.disabled = false; 
+            } 
+        }
+
+        // Interaction Listeners & Render
         window.attachCardListeners = function(card, scrap) {
             let startX = 0; let currentX = 0;
             card.addEventListener('touchstart', (e) => { window.longPressTimer = setTimeout(() => { openMenuModal(scrap); }, 500); startX = e.touches[0].clientX; });
@@ -532,7 +638,6 @@
             });
         }
 
-        // Modals & Logic
         window.openMenuModal = function(scrap) { window.currentScrap = scrap; window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }
         window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
         window.menuAction = function(action) { const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); if(!scrap) return; if (action === 'visit') window.open(scrap.sourceUrl, '_blank'); else if (action === 'memo') openMemoModal(scrap); else if (action === 'favorite') toggleFavorite(scrap); else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id); closeMenuModal(); }
@@ -545,33 +650,6 @@
         window.openAddModal = function() { document.getElementById('add-modal').classList.remove('hidden'); updateFolderDropdown(); setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); }
         window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 500); }
         
-        // AI Auto-Fill & Insight
-        window.handleLinkProcess = async function() { 
-            const url = document.getElementById('input-url').value; 
-            const content = document.getElementById('input-content').value; 
-            const btn = document.getElementById('link-process-btn'); 
-            btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i>';
-            
-            const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/); 
-            if (ytMatch) { document.getElementById('input-type').value = 'video'; document.getElementById('input-image-url').value = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`; } 
-            
-            if (content) { 
-                const apiKey = ""; 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`; 
-                try { 
-                    const res = await fetch(apiUrl, { method: 'POST', body: JSON.stringify({ contents: [{ parts: [{ text: `Analyze this text: "${content}". Output JSON with keys: "title" (max 10 words), "summary" (max 140 chars Korean), "tags" (comma separated array). No markdown.` }] }] }) }); 
-                    const data = await res.json(); 
-                    const text = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
-                    const json = JSON.parse(text); 
-                    document.getElementById('input-title').value = json.title || ''; 
-                    document.getElementById('input-summary').value = json.summary || ''; 
-                    if(json.tags) document.getElementById('input-tags').value = json.tags.join(', '); 
-                } catch(e) { console.error(e); } 
-            } 
-            btn.innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> Auto';
-            lucide.createIcons();
-        }
-
         window.openInsightModal = async function(scrap) {
             if(!scrap) return;
             closeMenuModal();
@@ -598,8 +676,6 @@
         }
 
         window.closeInsightModal = function() { document.getElementById('insight-modal').classList.add('hidden'); }
-
-        window.handleSaveScrap = async function() { const btn = document.getElementById('save-button'); if(!window.userId) return; btn.textContent = 'Saving...'; btn.disabled = true; const tags = document.getElementById('input-tags').value.split(',').map(t => t.trim()).filter(t => t); const newItem = { userId: window.userId, title: document.getElementById('input-title').value, summary: document.getElementById('input-summary').value, sourceUrl: document.getElementById('input-url').value, imageUrl: document.getElementById('input-image-url').value, type: document.getElementById('input-type').value, folder: document.getElementById('input-folder').value || 'General', memo: document.getElementById('input-memo').value, tags: tags, isFavorite: false, createdAt: serverTimestamp() }; try { await addDoc(collection(window.db, `artifacts/${window.appId}/users/${window.userId}/scraps`), newItem); closeAddModal(); document.getElementById('scrap-form').reset(); } catch(e) {} finally { btn.textContent = 'Save'; btn.disabled = false; } }
 
         window.initApp = async function() {
             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; window.appId = appId;

@@ -18,6 +18,7 @@
             overflow: hidden; 
             touch-action: none;
             margin: 0;
+            /* 1. Clean Solid Background (Off-White) */
             background-color: #f9fafb; 
             color: #18181b;
         }
@@ -44,10 +45,16 @@
             width: 100%;
             height: 100%;
             border-radius: 16px;
+            
+            /* Paper Texture Effect */
             background: #ffffff;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            
             border: 1px solid rgba(0, 0, 0, 0.06);
-            box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            box-shadow: 
+                0 20px 60px -10px rgba(0, 0, 0, 0.08),
+                0 0 0 1px rgba(0, 0, 0, 0.02);
+                
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -79,7 +86,9 @@
             transition: transform 0.5s ease;
         }
 
-        .poster-card:hover .poster-title-group { transform: scale(1.02); }
+        .poster-card:hover .poster-title-group {
+            transform: scale(1.02);
+        }
 
         .poster-title-main {
             font-family: 'Playfair Display', serif;
@@ -109,17 +118,18 @@
             gap: 30px;
         }
 
+        /* Enter Button (Translucent Oval) */
         .enter-btn {
             position: relative;
             padding: 16px 56px;
-            background: rgba(24, 24, 27, 0.9);
+            background: rgba(24, 24, 27, 0.9); /* Translucent Black */
             color: #fff;
             font-size: 11px;
             font-weight: 600;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             border: none;
-            border-radius: 9999px;
+            border-radius: 9999px; /* Oval Pill */
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -132,7 +142,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
 
-        /* --- 2. App Mode --- */
+        /* --- 2. App Mode (Expanded) --- */
         .mode-app-container {
             position: absolute;
             top: 0;
@@ -143,13 +153,16 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.6s ease;
-            background: #f9fafb;
+            background: #f9fafb; /* Match body bg */
             display: flex;
             flex-direction: column;
         }
-        .mode-app-active { opacity: 1; pointer-events: auto; }
+        .mode-app-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
-        /* Folder Tabs */
+        /* Folder Tabs (Instant Reaction) */
         .folder-tab {
             position: relative;
             padding: 14px 32px 12px;
@@ -158,13 +171,34 @@
             font-family: 'Playfair Display', serif;
             font-style: italic;
             font-size: 15px;
-            transition: background-color 0.15s ease, color 0.1s ease;
+            /* Removed 'all' to fix font-weight delay */
+            transition: background-color 0.15s ease, color 0.15s ease; 
             border: none;
             cursor: pointer;
         }
-        .folder-tab.active { background: #ffffff; color: #000000; z-index: 20; font-weight: 700; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
-        .folder-tab.inactive { background: #27272a; color: #a1a1aa; z-index: 10; margin-top: 8px; font-weight: 400; }
-        .folder-tab.inactive:hover { background: #3f3f46; color: #ffffff; }
+        
+        /* Active: White */
+        .folder-tab.active { 
+            background: #ffffff; 
+            color: #000000; 
+            z-index: 20; 
+            font-weight: 700; 
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+        }
+        
+        /* Inactive: Dark Gray */
+        .folder-tab.inactive { 
+            background: #27272a; 
+            color: #a1a1aa; 
+            z-index: 10; 
+            margin-top: 8px; 
+            font-weight: 400; 
+        }
+        
+        .folder-tab.inactive:hover { 
+            background: #3f3f46; 
+            color: #ffffff; 
+        }
 
         /* Mobile Swipe Layers */
         .card-swipe-container { position: relative; overflow: hidden; border-radius: 4px; }
@@ -183,36 +217,52 @@
 </head>
 <body class="h-screen w-screen overflow-hidden">
 
-    <!-- 1. Background -->
+    <!-- 1. Background: Clean Solid Color -->
     <div class="absolute inset-0 z-0 bg-[#f9fafb]"></div>
 
-    <!-- 2. Intro Scene -->
+    <!-- 2. Intro Scene: Minimal Poster -->
     <div id="intro-scene">
         <div class="poster-card">
+            
+            <!-- Header -->
             <div class="poster-header">
                 <span>VOL.01</span>
                 <span>COLLECTION</span>
             </div>
+
+            <!-- Main Title Group -->
             <div class="poster-title-group">
-                <h1 class="poster-title-main">Creative<br>Archive</h1>
-                <p class="poster-title-sub">Curate your inspiration</p>
+                <h1 class="poster-title-main">
+                    Creative<br>Archive
+                </h1>
+                <p class="poster-title-sub">
+                    Curate your inspiration
+                </p>
             </div>
+
+            <!-- Footer / Action -->
             <div class="poster-footer">
                 <div class="w-px h-16 bg-gray-200"></div>
-                <button onclick="expandToApp()" class="enter-btn">Enter</button>
+                <button onclick="expandToApp()" class="enter-btn">
+                    Enter
+                </button>
             </div>
+
         </div>
     </div>
 
     <!-- 3. App Content -->
     <div id="app-content" class="mode-app-container flex flex-col">
         
-        <!-- Header -->
+        <!-- App Header (Reduced Padding) -->
         <div class="pt-5 px-6 flex items-end justify-between select-none z-50 relative">
+            
             <div class="flex items-center">
+                <!-- Back to Home Button (Small X) -->
                 <button onclick="returnToIntro()" class="mr-4 w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 transition text-gray-400 hover:text-black border border-gray-200">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
+
                 <div class="flex items-end pl-2">
                     <button onclick="event.stopPropagation(); switchTab('scraps')" id="tab-scraps" class="folder-tab active">Scraps</button>
                     <button onclick="event.stopPropagation(); switchTab('folders')" id="tab-folders" class="folder-tab inactive">Folders</button>
@@ -223,19 +273,16 @@
             <div class="flex items-center space-x-3 mb-2">
                 <span id="user-id-display" class="text-[10px] text-gray-400 font-mono hidden md:inline-block px-3 py-1 border border-gray-200 rounded-full">Guest</span>
                 
-                <!-- Added Refresh Button -->
-                <button onclick="refreshData()" class="relative z-50 w-9 h-9 rounded-full bg-white text-gray-700 flex items-center justify-center shadow-sm border border-gray-200 hover:bg-gray-50 transition mr-2">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                </button>
-
+                <!-- Add Button Only (White Circle Refresh Removed) -->
                 <button onclick="openAddModal()" class="relative z-50 w-9 h-9 rounded-full bg-black text-white flex items-center justify-center shadow-lg hover:bg-gray-800 transition transform hover:scale-105 active:scale-95">
                     <i data-lucide="plus" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Main Body -->
+        <!-- Main App Body -->
         <div class="flex-grow relative overflow-hidden bg-white shadow-2xl z-10 flex flex-col rounded-t-lg border-t border-gray-100">
+            <!-- Toolbar -->
             <div class="px-8 py-5 flex items-center justify-between border-b border-gray-100 bg-white z-20">
                 <h2 id="view-title" class="font-serif italic text-xl text-black">All Scraps</h2>
                 <div class="relative group">
@@ -245,14 +292,20 @@
                 </div>
             </div>
 
+            <!-- Content Area -->
             <div class="relative flex-grow overflow-hidden bg-[#fafafa]">
+                
+                <!-- 1. SCRAP / FAVORITES GRID -->
                 <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32">
+                    <!-- Grid: 4 columns on medium screens -->
                     <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
                     <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
                         <i data-lucide="layers" class="w-8 h-8 mb-3 opacity-20 text-black"></i>
                         <p class="text-xs font-light tracking-widest uppercase">Empty Collection</p>
                     </div>
                 </div>
+
+                <!-- 2. FOLDERS VIEW (With Create Button) -->
                 <div id="view-folders" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32 hidden">
                     <div class="mb-6">
                          <button onclick="openFolderModal()" class="flex items-center space-x-2 text-sm font-bold text-black hover:text-gray-600 transition border border-gray-300 rounded-sm px-4 py-2 bg-white hover:shadow-sm">
@@ -273,10 +326,17 @@
         <div class="absolute inset-y-0 right-0 w-full md:w-[500px] bg-white shadow-2xl transform translate-x-full transition-transform duration-500 flex flex-col" id="add-panel">
             <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
                 <h2 class="font-serif italic text-2xl text-black">New Item</h2>
-                <button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-6 h-6 text-gray-500"></i></button>
+                <div class="flex items-center space-x-2">
+                    <!-- Reset/Refresh Button inside Modal -->
+                    <button onclick="resetForm()" class="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition" title="Reset Input">
+                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
             <div class="flex-grow overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                <!-- The form tag is used for layout but submission is handled via JS function -->
                 <div id="scrap-form-container">
                     
                     <!-- 1. Link & Media Section -->
@@ -336,6 +396,8 @@
                             <textarea id="input-memo" rows="3" class="w-full bg-yellow-50/50 rounded-sm p-4 text-sm resize-none focus:ring-1 focus:ring-yellow-600 outline-none" placeholder="Personal Note..."></textarea>
                         </div>
                         <input type="hidden" id="input-image-url">
+                        <!-- Hidden Form for Reset -->
+                        <form id="scrap-form" class="hidden"></form>
                     </div>
                 </div>
             </div>
@@ -441,7 +503,7 @@
         window.switchTab = function(tabName) {
             window.currentTab = tabName;
             const titleMap = {'scraps': 'All Scraps', 'folders': 'My Folders', 'favorites': 'Favorites'};
-            document.querySelector('#app-content h2').textContent = titleMap[tabName];
+            document.querySelector('#view-title').textContent = titleMap[tabName];
 
             ['scraps', 'folders', 'favorites'].forEach(t => {
                 const el = document.getElementById(`tab-${t}`);
@@ -449,20 +511,6 @@
             });
             if (tabName === 'folders') { document.getElementById('view-grid').classList.add('hidden'); document.getElementById('view-folders').classList.remove('hidden'); renderFolders(); } 
             else { document.getElementById('view-grid').classList.remove('hidden'); document.getElementById('view-folders').classList.add('hidden'); renderScraps(); }
-        }
-
-        // Refresh Function
-        window.refreshData = function() {
-             if(window.userId) {
-                 // Simply re-triggering logic. Firestore listener handles updates automatically, 
-                 // but we can show a loading indicator or re-fetch logic if needed.
-                 // Here we'll just provide visual feedback.
-                 const btn = document.querySelector('button i[data-lucide="refresh-cw"]');
-                 if(btn) btn.classList.add('animate-spin');
-                 setTimeout(() => { if(btn) btn.classList.remove('animate-spin'); }, 1000);
-                 // Force re-render
-                 if(window.currentTab === 'folders') renderFolders(); else renderScraps();
-             }
         }
 
         // Folder Management
@@ -547,6 +595,17 @@
                 console.error(e); 
                 btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed';
             } 
+            lucide.createIcons();
+        }
+
+        // Reset Form Function
+        window.resetForm = function() {
+            // Clear all inputs
+            const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea, #scrap-form-container select');
+            inputs.forEach(input => input.value = '');
+            // Reset buttons
+            document.getElementById('media-btn').textContent = 'Check Media';
+            document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill';
             lucide.createIcons();
         }
 
@@ -700,19 +759,3 @@
     </script>
 </body>
 </html>
-```
-
-발생한 오류 `TypeError: Cannot read properties of null (reading 'reset')`는 자바스크립트가 `scrap-form`이라는 아이디를 가진 폼 요소를 찾지 못했을 때 발생하는 문제입니다.
-
-**문제 해결 및 수정 사항:**
-
-1.  **에러 원인 분석:** `document.getElementById('scrap-form')`이 null을 반환하여 `reset()` 메서드를 호출할 수 없었습니다.
-2.  **해결책:** `handleSaveScrap` 함수 내에서 `document.getElementById('scrap-form')`을 호출하기 전에 해당 요소가 존재하는지 확인하는 안전장치(`if (formEl)`)를 추가했습니다.
-3.  **코드 수정:**
-    ```javascript
-    // 수정 전
-    // document.getElementById('scrap-form').reset();
-
-    // 수정 후
-    const formEl = document.getElementById('scrap-form');
-    if(formEl) formEl.reset();

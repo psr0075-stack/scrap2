@@ -28,8 +28,9 @@
         .card-press-active { transform: scale(0.95); transition: transform 0.2s ease; opacity: 0.8; }
         #add-modal, #menu-modal, #memo-modal, #insight-modal, #folder-modal, #detail-view-modal { z-index: 200; }
         
-        .img-fit-contain { object-fit: contain; background-color: #f3f4f6; }
-        .img-fit-cover { object-fit: cover; }
+        /* Updated Image Styles for Ratio Handling */
+        .img-natural { width: 100%; height: auto; display: block; }
+        .img-expanded { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden">
@@ -95,17 +96,20 @@
                 </div>
                 <hr class="border-gray-100">
                 <div class="flex flex-col md:flex-row gap-6 items-stretch">
-                    <div class="w-full md:w-1/2 aspect-video bg-gray-200 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group cursor-pointer hover:opacity-95 transition">
-                        <a id="detail-image-link" href="#" target="_blank" class="block w-full h-full relative">
-                            <img id="detail-image" src="" class="w-full h-full img-fit-cover transition-all duration-300" alt="Detail Image" onerror="this.style.display='none'; document.getElementById('detail-image-fallback').classList.remove('hidden');">
-                            <div id="detail-image-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-400">
+                    <div class="w-full md:w-1/2 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group">
+                        <a id="detail-image-link" href="#" target="_blank" class="block w-full h-full relative cursor-pointer hover:opacity-95 transition">
+                            <img id="detail-image" src="" class="w-full h-auto block" alt="Detail Image">
+                            
+                            <div id="detail-image-fallback" class="hidden w-full aspect-video flex items-center justify-center bg-gray-200 text-gray-400">
                                 <i id="detail-fallback-icon" data-lucide="image" class="w-16 h-16 opacity-50"></i>
                             </div>
                         </a>
-                        <button onclick="toggleImageFit(event)" class="absolute bottom-3 right-3 bg-black/70 hover:bg-black text-white p-2 rounded-full backdrop-blur-sm transition z-20" title="Fit / Fill">
+                        
+                        <button id="detail-resize-btn" onclick="toggleImageFit(event)" class="absolute bottom-3 right-3 bg-black/70 hover:bg-black text-white p-2 rounded-full backdrop-blur-sm transition z-20" title="Fit / Fill">
                             <i data-lucide="maximize" class="w-4 h-4"></i>
                         </button>
                     </div>
+
                     <div class="w-full md:w-1/2 flex flex-col justify-between space-y-4">
                         <div class="flex space-x-6 border-b border-gray-100 mb-2">
                             <button onclick="switchDetailTab('summary')" id="tab-btn-summary" class="detail-tab-btn active">Summary</button>
@@ -117,7 +121,7 @@
                             </div>
                             <div id="detail-content-full" class="hidden bg-white p-4 border border-gray-100 rounded-lg h-full overflow-y-auto max-h-[300px] custom-scrollbar text-sm text-gray-800 whitespace-pre-wrap"></div>
                         </div>
-                        </div>
+                    </div>
                 </div>
                 <div class="bg-yellow-50/50 rounded-lg p-6 border border-yellow-100 relative mt-4">
                     <div class="flex justify-between items-center mb-3">
@@ -192,7 +196,7 @@
         }
         window.closeFolderDetail = function() { document.getElementById('view-folder-detail').classList.add('hidden'); document.getElementById('view-folders').classList.remove('hidden'); document.getElementById('folder-back-btn').classList.add('hidden'); document.querySelector('#view-title').textContent = 'My Folders'; }
 
-        // --- Detail View Logic (Fixed Sync) ---
+        // --- Detail View Logic (Fixed Image Sync) ---
         window.openDetailView = function(scrap) {
             if(!scrap) return;
             window.currentScrap = scrap;
@@ -204,23 +208,30 @@
             const fallback = document.getElementById('detail-image-fallback');
             const fallbackIcon = document.getElementById('detail-fallback-icon');
             const linkWrapper = document.getElementById('detail-image-link');
+            const resizeBtn = document.getElementById('detail-resize-btn');
 
             fallbackIcon.setAttribute('data-lucide', typeInfo.icon);
             linkWrapper.href = scrap.sourceUrl || '#';
 
-            // Reset image fit state
-            img.classList.remove('img-fit-contain');
-            img.classList.add('img-fit-cover');
+            // Reset States
+            img.style.display = 'block';
+            fallback.classList.add('hidden');
+            resizeBtn.classList.remove('hidden');
 
-            // --- SYNC FIX: Logic to match Card View's fallback ---
-            // If URL exists, try to show it. If empty, force fallback immediately.
+            // --- CRITICAL FIX: Ensure Image Display ---
             if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { 
                 img.src = scrap.imageUrl; 
-                img.style.display = 'block'; 
-                fallback.classList.add('hidden'); 
+                // Error Handler to trigger fallback if link is broken
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    fallback.classList.remove('hidden');
+                    resizeBtn.classList.add('hidden'); // Hide resize if no image
+                };
             } else { 
+                // No image data -> Force Fallback
                 img.style.display = 'none'; 
                 fallback.classList.remove('hidden'); 
+                resizeBtn.classList.add('hidden');
             }
 
             document.getElementById('detail-summary-text').textContent = scrap.summary || "No summary available.";
@@ -237,15 +248,17 @@
         }
         window.closeDetailView = function() { document.getElementById('detail-view-modal').classList.add('hidden'); }
         
-        // Image Fit Toggle (Stop propagation to prevent link click)
+        // Image Fit Toggle logic
         window.toggleImageFit = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
+            e.preventDefault(); e.stopPropagation();
             const img = document.getElementById('detail-image');
-            if (img.classList.contains('img-fit-cover')) {
-                img.classList.remove('img-fit-cover'); img.classList.add('img-fit-contain');
+            // Toggle classes for fit vs fill
+            if (img.classList.contains('img-expanded')) {
+                img.classList.remove('img-expanded');
+                img.classList.add('img-natural'); // Show full image (natural ratio)
             } else {
-                img.classList.remove('img-fit-contain'); img.classList.add('img-fit-cover');
+                img.classList.remove('img-natural');
+                img.classList.add('img-expanded'); // Crop to fill container
             }
         }
 
@@ -348,7 +361,6 @@
             const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
             const typeInfo = getTypeInfo(item.type);
             let mediaContent = '';
-            // --- Card View Logic (Matches Detail View) ---
             if (item.imageUrl && item.imageUrl.trim() !== '') {
                 mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
             } else {

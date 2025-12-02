@@ -9,7 +9,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* 기본 설정 */
         body { font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; background-color: #f9fafb; color: #18181b; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -85,7 +84,10 @@
     <div id="detail-view-modal" class="fixed inset-0 z-[400] hidden bg-white flex flex-col transition-all duration-300">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white z-10 sticky top-0">
             <button onclick="closeDetailView()" class="p-2 hover:bg-gray-100 rounded-full transition text-gray-600"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
-            <span id="detail-type-badge" class="text-xs font-bold uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full text-gray-500">ITEM</span>
+            <button onclick="openTypeSelectionInDetail()" class="text-xs font-bold uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full text-gray-500 hover:bg-black hover:text-white transition flex items-center gap-1">
+                <span id="detail-type-badge">ITEM</span>
+                <i data-lucide="chevron-down" class="w-3 h-3"></i>
+            </button>
             <div class="w-10"></div>
         </div>
         <div class="flex-grow overflow-y-auto custom-scrollbar bg-white p-6 pb-20">
@@ -99,9 +101,9 @@
                 </div>
                 <hr class="border-gray-100">
                 <div class="flex flex-col md:flex-row gap-6 items-stretch">
-                    <div class="w-full md:w-1/2 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group">
+                    <div class="w-full md:w-1/2 bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group">
                         <a id="detail-image-link" href="#" target="_blank" class="block w-full h-full relative cursor-pointer hover:opacity-95 transition">
-                            <img id="detail-image" src="" class="w-full h-full object-contain bg-gray-100" alt="Detail Image">
+                            <img id="detail-image" src="" class="w-full h-full object-contain bg-gray-200" alt="Detail Image">
                             <div id="detail-image-fallback" class="hidden w-full aspect-video flex items-center justify-center bg-gray-200 text-gray-400">
                                 <i id="detail-fallback-icon" data-lucide="image" class="w-16 h-16 opacity-50"></i>
                             </div>
@@ -148,15 +150,25 @@
             <div class="grid grid-cols-5 gap-3 mb-4">
                 <button onclick="menuAction('open')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="maximize-2" class="w-5 h-5 text-gray-600"></i></div><span class="text-[10px] font-medium">Open</span></button>
                 <button onclick="menuAction('edit-thumb')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition"><i data-lucide="image-plus" class="w-5 h-5 text-blue-500"></i></div><span class="text-[10px] font-medium text-blue-500">Thumb</span></button>
+                <button onclick="showTypeSelection()" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center group-hover:bg-orange-100 transition"><i data-lucide="toggle-left" class="w-5 h-5 text-orange-600"></i></div><span class="text-[10px] font-medium text-orange-600">Type</span></button>
                 <button onclick="showFolderSelection()" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center group-hover:bg-green-100 transition"><i data-lucide="folder-input" class="w-5 h-5 text-green-600"></i></div><span class="text-[10px] font-medium text-green-600">Move</span></button>
-                <button onclick="menuAction('favorite')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="star" class="w-5 h-5 text-gray-600"></i></div><span class="text-[10px] font-medium">Fav</span></button>
                 <button onclick="menuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></div><span class="text-[10px] font-medium text-red-500">Del</span></button>
             </div>
             <button onclick="closeMenuModal()" class="w-full py-3 text-sm font-bold text-gray-400 mt-2 hover:text-black">CANCEL</button>
         </div>
         <div id="menu-folder-selection" class="hidden">
-            <div class="flex items-center justify-between mb-4"><span class="text-sm font-bold text-gray-500">Move to...</span><button onclick="hideFolderSelection()" class="text-xs bg-gray-100 px-2 py-1 rounded">Back</button></div>
+            <div class="flex items-center justify-between mb-4"><span class="text-sm font-bold text-gray-500">Move to...</span><button onclick="hideSubMenu()" class="text-xs bg-gray-100 px-2 py-1 rounded">Back</button></div>
             <div id="menu-folder-list-grid" class="grid grid-cols-2 gap-3 max-h-[40vh] overflow-y-auto"></div>
+        </div>
+        <div id="menu-type-selection" class="hidden">
+            <div class="flex items-center justify-between mb-4"><span class="text-sm font-bold text-gray-500">Change Type</span><button onclick="hideSubMenu()" class="text-xs bg-gray-100 px-2 py-1 rounded">Back</button></div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="changeType('news')" class="p-4 bg-gray-50 border border-gray-100 rounded flex items-center gap-3 hover:bg-black hover:text-white transition"><i data-lucide="newspaper" class="w-5 h-5"></i> Article</button>
+                <button onclick="changeType('video')" class="p-4 bg-gray-50 border border-gray-100 rounded flex items-center gap-3 hover:bg-black hover:text-white transition"><i data-lucide="youtube" class="w-5 h-5"></i> Video</button>
+                <button onclick="changeType('image')" class="p-4 bg-gray-50 border border-gray-100 rounded flex items-center gap-3 hover:bg-black hover:text-white transition"><i data-lucide="image" class="w-5 h-5"></i> Image</button>
+                <button onclick="changeType('paper')" class="p-4 bg-gray-50 border border-gray-100 rounded flex items-center gap-3 hover:bg-black hover:text-white transition"><i data-lucide="file-text" class="w-5 h-5"></i> Paper</button>
+                <button onclick="changeType('custom')" class="p-4 bg-gray-50 border border-gray-100 rounded flex items-center gap-3 hover:bg-black hover:text-white transition"><i data-lucide="box" class="w-5 h-5"></i> Other</button>
+            </div>
         </div>
     </div></div>
 
@@ -170,7 +182,21 @@
 
         function loadData() {
             const storedScraps = localStorage.getItem('my_archive_scraps');
-            if (storedScraps) { try { window.allScraps = JSON.parse(storedScraps); } catch(e) { window.allScraps = []; } window.allScraps.forEach(s => { if(s.folder) window.customFolders.add(s.folder); }); }
+            if (storedScraps) { 
+                try { 
+                    window.allScraps = JSON.parse(storedScraps); 
+                    // AUTO-FIX: Convert old hqdefault (black bars) to mqdefault (no bars)
+                    let modified = false;
+                    window.allScraps.forEach(s => {
+                        if(s.type === 'video' && s.imageUrl && s.imageUrl.includes('hqdefault.jpg')) {
+                            s.imageUrl = s.imageUrl.replace('hqdefault.jpg', 'mqdefault.jpg');
+                            modified = true;
+                        }
+                        if(s.folder) window.customFolders.add(s.folder);
+                    });
+                    if(modified) saveData(); // Save the fix immediately
+                } catch(e) { window.allScraps = []; } 
+            }
             const storedFolders = localStorage.getItem('my_archive_folders');
             if(storedFolders) { try { JSON.parse(storedFolders).forEach(f => window.customFolders.add(f)); } catch(e) { } }
             renderScraps(); renderFolders(); updateFolderDropdown();
@@ -256,10 +282,9 @@
             const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
             if(idx > -1) {
                 window.allScraps[idx].title = val;
-                window.currentScrap.title = val; // Update current ref
+                window.currentScrap.title = val;
                 saveData();
-                renderScraps(); // Update grid behind modal
-                // If inside a folder view, we might want to refresh that too, but renderScraps/renderFolders usually covers it.
+                renderScraps(); 
                 if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
                      const currentViewFolder = document.querySelector('#view-title').textContent;
                      openFolder(currentViewFolder);
@@ -268,21 +293,16 @@
         }
         
         window.handleTitleKey = function(e) {
-            if(e.key === 'Enter') {
-                e.preventDefault();
-                e.target.blur(); // Triggers onchange to save
-            }
+            if(e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
         }
 
         window.toggleImageFit = function(e) {
             e.preventDefault(); e.stopPropagation();
             const img = document.getElementById('detail-image');
             if (img.classList.contains('img-expanded')) {
-                img.classList.remove('img-expanded');
-                img.classList.add('img-natural');
+                img.classList.remove('img-expanded'); img.classList.add('img-natural');
             } else {
-                img.classList.remove('img-natural');
-                img.classList.add('img-expanded');
+                img.classList.remove('img-natural'); img.classList.add('img-expanded');
             }
         }
 
@@ -309,6 +329,7 @@
             document.getElementById('menu-title').textContent = scrap.title; 
             document.getElementById('menu-main-actions').classList.remove('hidden');
             document.getElementById('menu-folder-selection').classList.add('hidden');
+            document.getElementById('menu-type-selection').classList.add('hidden');
             document.getElementById('menu-modal').classList.remove('hidden'); 
             setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); 
         }
@@ -318,11 +339,9 @@
             const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); 
             if(!scrap) return; 
             if (action === 'open') openDetailView(scrap); 
-            else if (action === 'visit') window.open(scrap.sourceUrl, '_blank'); 
-            else if (action === 'memo') openMemoModal(scrap); 
+            else if (action === 'edit-thumb') document.getElementById('hidden-thumb-input').click(); 
             else if (action === 'favorite') toggleFavoriteById(scrap.id); 
             else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id);
-            else if (action === 'edit-thumb') document.getElementById('hidden-thumb-input').click(); 
             closeMenuModal(); 
         }
 
@@ -338,10 +357,49 @@
                 grid.appendChild(btn);
             });
         }
-        window.hideFolderSelection = function() {
+        
+        // --- Type Selection Logic (New) ---
+        window.showTypeSelection = function() {
+            document.getElementById('menu-main-actions').classList.add('hidden');
+            document.getElementById('menu-type-selection').classList.remove('hidden');
+        }
+        
+        window.openTypeSelectionInDetail = function() {
+            if(!window.currentScrap) return;
+            window.selectedScrapId = window.currentScrap.id;
+            openMenuModal(window.currentScrap);
+            showTypeSelection();
+        }
+
+        window.changeType = function(newType) {
+            const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId);
+            if(idx > -1) {
+                window.allScraps[idx].type = newType;
+                if(window.currentScrap && window.currentScrap.id === window.selectedScrapId) {
+                    window.currentScrap.type = newType;
+                    // Update Badge in Detail View
+                    const typeInfo = getTypeInfo(newType);
+                    document.getElementById('detail-type-badge').textContent = typeInfo.label;
+                    document.getElementById('detail-fallback-icon').setAttribute('data-lucide', typeInfo.icon);
+                    lucide.createIcons();
+                }
+                saveData();
+                renderScraps();
+                closeMenuModal();
+                // If checking inside folder, refresh
+                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
+                     const currentViewFolder = document.querySelector('#view-title').textContent;
+                     openFolder(currentViewFolder);
+                }
+            }
+        }
+
+        window.hideSubMenu = function() {
             document.getElementById('menu-folder-selection').classList.add('hidden');
+            document.getElementById('menu-type-selection').classList.add('hidden');
             document.getElementById('menu-main-actions').classList.remove('hidden');
         }
+        
         window.moveToFolder = function(targetFolder) {
             const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId);
             if(idx > -1) {
@@ -387,13 +445,13 @@
             let mediaContent = '';
             // --- UPDATED: Contain with Gray-100 Background ---
             if (item.imageUrl && item.imageUrl.trim() !== '') {
-                mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-100 transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-100 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
+                mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-200 transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
             } else {
-                mediaContent = `<div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400"><i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i></div>`;
+                mediaContent = `<div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400"><i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i></div>`;
             }
             card.innerHTML = `
                 <div class="relative w-full h-full bg-white z-10 flex flex-col pointer-events-none" id="card-inner-${item.id}">
-                    <div class="h-[60%] w-full overflow-hidden relative bg-gray-100">
+                    <div class="h-[60%] w-full overflow-hidden relative bg-gray-200">
                          ${mediaContent}
                          <div class="absolute bottom-2 left-2 z-20 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm">
                             <i data-lucide="${typeInfo.icon}" class="w-3 h-3 text-white"></i>
@@ -430,19 +488,30 @@
         }
         window.handleMediaProcess = function() {
             const url = document.getElementById('input-url').value; const btn = document.getElementById('media-btn'); 
-            const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
-            if (ytMatch) { 
+            // UPDATED: Much stronger YouTube regex
+            const ytRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const ytMatch = url.match(ytRegExp);
+            
+            if (ytMatch && ytMatch[2].length == 11) { 
                 document.getElementById('input-type-select').value = 'video'; 
                 window.handleTypeChange(document.getElementById('input-type-select')); 
-                // UPDATED: Use mqdefault.jpg (320x180, 16:9, No bars) instead of hqdefault (480x360, 4:3, Has bars)
-                const thumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`; 
+                // Always use mqdefault for no black bars
+                const thumbUrl = `https://img.youtube.com/vi/${ytMatch[2]}/mqdefault.jpg`; 
                 document.getElementById('input-image-url').value = thumbUrl; 
                 handleImageInputChanged(thumbUrl); 
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set'; 
                 lucide.createIcons(); 
                 return; 
             }
-            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) { document.getElementById('input-type-select').value = 'image'; window.handleTypeChange(document.getElementById('input-type-select')); document.getElementById('input-image-url').value = url; handleImageInputChanged(url); btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set'; lucide.createIcons(); return; }
+            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) { 
+                document.getElementById('input-type-select').value = 'image'; 
+                window.handleTypeChange(document.getElementById('input-type-select')); 
+                document.getElementById('input-image-url').value = url; 
+                handleImageInputChanged(url); 
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set'; 
+                lucide.createIcons(); 
+                return; 
+            }
             btn.innerHTML = '<i data-lucide="link" class="w-3 h-3 mr-1"></i> Link Ready'; lucide.createIcons();
         }
         window.handleFileUpload = function(event) { const file = event.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('input-image-url').value = e.target.result; handleImageInputChanged(e.target.result); }; reader.readAsDataURL(file); } }

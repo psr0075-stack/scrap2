@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Archive">
 
-    <title>Creative Archive v7.1 (Simple Folder)</title>
+    <title>Creative Archive v7.2 (Fixed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -29,7 +29,6 @@
         .folder-tab.inactive { background: #27272a; color: #a1a1aa; z-index: 10; margin-top: 8px; font-weight: 400; }
         .card-press-active { transform: scale(0.95); opacity: 0.8; transition: transform 0.2s; }
         
-        /* 버튼 눌림 효과 확실하게 */
         button:active { transform: scale(0.95); transition: 0.1s; }
     </style>
 </head>
@@ -114,7 +113,8 @@
         }
 
         window.allScraps = []; 
-        window.customFolders = new Set(['General', 'Design']); // 기본 폴더
+        // Set 초기화 보장
+        window.customFolders = new Set(['General', 'Design']); 
         window.currentTab = 'scraps'; 
         window.currentScrap = null;
 
@@ -127,50 +127,86 @@
             db.ref('scraps').on('value', (snapshot) => {
                 const data = snapshot.val();
                 window.allScraps = data ? data : [];
-                renderScraps();
+                if(window.currentTab === 'scraps') renderScraps();
+                else if(window.currentTab === 'folders') renderFolders();
             });
 
             db.ref('folders').on('value', (snapshot) => {
                 const data = snapshot.val();
+                // 🔥 중요 수정: Firebase에서 데이터가 넘어오면 Set을 안전하게 재성성합니다.
                 if(data) {
-                    window.customFolders = new Set(data);
+                    const folderList = Array.isArray(data) ? data : Object.values(data);
+                    window.customFolders = new Set(folderList);
                 }
-                renderFolders(); updateFolderDropdown();
+                updateFolderDropdown();
+                if(window.currentTab === 'folders') renderFolders();
             });
         }
 
         function saveData() {
             if (!db) return;
-            // 로컬 스토리지 오류 무시하고 서버로 전송
             try {
                 db.ref('scraps').set(window.allScraps);
+                // Set을 Array로 변환하여 저장
                 db.ref('folders').set(Array.from(window.customFolders));
             } catch(e) {
                 console.log("Save error (ignored): " + e.message);
             }
         }
 
-        // --- 🔥 [핵심] 폴더 생성 함수 (브라우저 기본 입력창 사용) ---
+        // --- 🔥 [핵심 기능 1] 폴더 생성 함수 (버그 수정) ---
         window.createNewFolderSimple = function() {
-            // 이 prompt 창은 노트북, 아이패드 어디서든 무조건 뜹니다.
             const name = prompt("새 폴더 이름을 입력하세요 (New Folder Name):");
             
             if (name && name.trim().length > 0) {
                 const cleanName = name.trim();
                 
-                // 1. 중복 체크
+                // 중복 체크
                 if(window.customFolders.has(cleanName)) {
-                    alert("이미 있는 폴더입니다 (Already exists).");
+                    alert("이미 존재하는 폴더입니다 (Already exists).");
                     return;
                 }
                 
-                // 2. 즉시 추가 및 화면 갱신
+                // 추가
                 window.customFolders.add(cleanName);
+                
+                // UI 갱신 및 저장
                 renderFolders(); 
                 updateFolderDropdown();
-                
-                // 3. 서버 저장
                 saveData();
+            }
+        }
+
+        // --- 🔥 [핵심 기능 2] 폴더 이름 변경 함수 (신규 추가) ---
+        window.renameFolder = function(oldName) {
+            const newName = prompt(`Rename Folder '${oldName}' to:`, oldName);
+            
+            if (newName && newName.trim().length > 0 && newName !== oldName) {
+                const cleanName = newName.trim();
+                
+                if(window.customFolders.has(cleanName)) {
+                    alert("Folder name already exists!");
+                    return;
+                }
+
+                // 1. 폴더 목록 업데이트
+                window.customFolders.delete(oldName);
+                window.customFolders.add(cleanName);
+
+                // 2. 해당 폴더에 있던 모든 스크랩 아이템들의 폴더명도 업데이트
+                let updatedCount = 0;
+                window.allScraps.forEach(scrap => {
+                    if (scrap.folder === oldName) {
+                        scrap.folder = cleanName;
+                        updatedCount++;
+                    }
+                });
+
+                // 3. 저장 및 렌더링
+                saveData();
+                renderFolders();
+                updateFolderDropdown();
+                // alert(`Folder renamed and ${updatedCount} items updated.`);
             }
         }
 
@@ -185,7 +221,7 @@
             if (tabName === 'folders') {
                 document.getElementById('view-grid').classList.add('hidden');
                 document.getElementById('view-folders').classList.remove('hidden');
-                renderFolders(); // 폴더 탭 누를 때마다 렌더링
+                renderFolders();
             } else {
                 document.getElementById('view-grid').classList.remove('hidden');
                 document.getElementById('view-folders').classList.add('hidden');
@@ -198,20 +234,53 @@
         window.renderFolders = function() {
             const list = document.getElementById('folder-list');
             list.innerHTML = '';
+            
+            // Set이 아닌 경우 방어 코드
+            if (!(window.customFolders instanceof Set)) {
+                window.customFolders = new Set(['General']);
+            }
+
             Array.from(window.customFolders).forEach(f => {
                 const count = window.allScraps.filter(s => s.folder === f).length;
                 const btn = document.createElement('div');
-                btn.className = "aspect-square bg-gray-50 border border-gray-200 rounded-sm flex flex-col items-center justify-center cursor-pointer active:bg-gray-200 hover:bg-gray-100 transition";
+                btn.className = "aspect-square bg-gray-50 border border-gray-200 rounded-sm flex flex-col items-center justify-center cursor-pointer active:bg-gray-200 hover:bg-gray-100 transition relative group select-none";
+                
+                // 클릭 시 열기
                 btn.onclick = () => openFolder(f);
-                btn.innerHTML = `<i data-lucide="folder" class="w-8 h-8 text-black mb-2 opacity-80"></i><span class="font-serif italic text-lg font-bold">${f}</span><span class="text-xs text-gray-400 mt-1">${count} items</span>`;
+
+                // 🔥 우클릭(PC) 시 이름 변경
+                btn.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    window.renameFolder(f);
+                };
+
+                // 🔥 길게 누르기(모바일) 시 이름 변경
+                let pressTimer;
+                btn.addEventListener('touchstart', () => { 
+                    pressTimer = setTimeout(() => {
+                        window.renameFolder(f);
+                    }, 600); 
+                });
+                btn.addEventListener('touchend', () => clearTimeout(pressTimer));
+                
+                // 디자인 유지
+                btn.innerHTML = `
+                    <i data-lucide="folder" class="w-8 h-8 text-black mb-2 opacity-80"></i>
+                    <span class="font-serif italic text-lg font-bold text-center px-2 break-all">${f}</span>
+                    <span class="text-xs text-gray-400 mt-1">${count} items</span>
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition text-gray-300 text-[10px] hidden md:block">Right Click to Rename</div>
+                `;
                 list.appendChild(btn);
             });
             lucide.createIcons();
         }
 
         window.updateFolderDropdown = function() {
-            const dl = document.getElementById('folder-options'); dl.innerHTML = '';
-            Array.from(window.customFolders).forEach(f => { const op = document.createElement('option'); op.value = f; dl.appendChild(op); });
+            const dl = document.getElementById('folder-options'); 
+            dl.innerHTML = '';
+            if(window.customFolders) {
+                Array.from(window.customFolders).forEach(f => { const op = document.createElement('option'); op.value = f; dl.appendChild(op); });
+            }
         }
 
         window.openFolder = function(folderName) {
@@ -288,6 +357,12 @@
             };
             
             window.allScraps.unshift(newItem);
+            
+            // 만약 입력한 폴더가 기존 목록에 없다면 자동으로 추가 (UX 개선)
+            if(newItem.folder && !window.customFolders.has(newItem.folder)) {
+                window.customFolders.add(newItem.folder);
+            }
+
             saveData();
             
             closeAddModal();

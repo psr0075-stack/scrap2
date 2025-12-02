@@ -9,12 +9,13 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* 기존 디자인 스타일 유지 */
+        /* [원래 디자인 스타일 복구] */
         body { font-family: 'Inter', sans-serif; overflow: hidden; touch-action: pan-y; margin: 0; background-color: #f9fafb; color: #18181b; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .noselect { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
         
+        /* Intro Scene (Poster Card) */
         #intro-scene { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; height: 80vh; min-height: 600px; z-index: 100; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); pointer-events: auto; display: flex; }
         .poster-card { width: 100%; height: 100%; border-radius: 16px; background: #ffffff; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"); border: 1px solid rgba(0, 0, 0, 0.06); box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02); display: flex; flex-direction: column; justify-content: space-between; padding: 60px 40px; position: relative; overflow: hidden; text-align: center; }
         .enter-btn { padding: 16px 56px; background: rgba(24, 24, 27, 0.9); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; border-radius: 9999px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(4px); }
@@ -22,6 +23,7 @@
         .mode-app-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.6s ease; background: #f9fafb; display: flex; flex-direction: column; }
         .mode-app-active { opacity: 1; pointer-events: auto; }
         
+        /* Tab Styles */
         .folder-tab { padding: 14px 32px 12px; border-radius: 8px 8px 0 0; margin-right: -4px; font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; transition: background-color 0.15s ease, color 0.1s ease; }
         .folder-tab.active { background: #ffffff; color: #000000; z-index: 20; font-weight: 700; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
         .folder-tab.inactive { background: #27272a; color: #a1a1aa; z-index: 10; margin-top: 8px; font-weight: 400; }
@@ -31,8 +33,8 @@
         
         .card-press-active { transform: scale(0.95); transition: transform 0.2s ease; opacity: 0.8; }
         
-        /* 이미지 비율 처리 클래스 */
-        .img-contain { object-fit: contain; background-color: #e5e7eb; } /* gray-200 */
+        /* 썸네일 비율 처리 (회색 여백) */
+        .img-contain { object-fit: contain; background-color: #e5e7eb; } 
         .img-cover { object-fit: cover; }
 
         #add-modal, #menu-modal, #memo-modal, #insight-modal, #folder-modal, #detail-view-modal, #settings-modal { z-index: 200; }
@@ -55,7 +57,7 @@
     <div id="app-content" class="mode-app-container flex flex-col">
         <div class="pt-5 px-6 flex items-end justify-between select-none z-50 relative">
             <div class="flex items-center">
-                <button onclick="returnToIntro()" class="mr-4 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <button onclick="returnToIntro()" class="mr-4 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition"><i data-lucide="x" class="w-4 h-4"></i></button>
                 <div class="flex items-end pl-2">
                     <button onclick="switchTab('scraps')" id="tab-scraps" class="folder-tab active">Scraps</button>
                     <button onclick="switchTab('folders')" id="tab-folders" class="folder-tab inactive">Folders</button>
@@ -195,12 +197,30 @@
         window.onload = function() { loadData(); lucide.createIcons(); };
 
         function loadData() {
-            // Revert to original key 'my_archive_scraps' to find old data
-            const storedScraps = localStorage.getItem('my_archive_scraps');
+            // 1. Try to load original data key
+            let storedScraps = localStorage.getItem('my_archive_scraps');
+            
+            // 2. If empty, check if there is data in the temporary 'ARCHIVE_DB' (Recovery)
+            if (!storedScraps) {
+                const tempDB = localStorage.getItem('ARCHIVE_DB');
+                if (tempDB) {
+                    try {
+                        const parsedTemp = JSON.parse(tempDB);
+                        if (parsedTemp.scraps && parsedTemp.scraps.length > 0) {
+                            window.allScraps = parsedTemp.scraps;
+                            window.customFolders = new Set(parsedTemp.folders || []);
+                            saveData(); // Migrate back to original key
+                            storedScraps = JSON.stringify(window.allScraps); // Update variable
+                        }
+                    } catch(e) {}
+                }
+            }
+
+            // 3. Load Data
             if (storedScraps) { 
                 try { 
                     window.allScraps = JSON.parse(storedScraps); 
-                    // FIX: Youtube Thumbnails on Load
+                    // AUTO-FIX: Youtube Thumbnails (Black Bars Fix)
                     let fixed = false;
                     window.allScraps.forEach(s => {
                         if(s.type === 'video' && s.imageUrl && s.imageUrl.includes('hqdefault.jpg')) {
@@ -217,35 +237,6 @@
             renderScraps(); renderFolders(); updateFolderDropdown();
         }
         function saveData() { localStorage.setItem('my_archive_scraps', JSON.stringify(window.allScraps)); localStorage.setItem('my_archive_folders', JSON.stringify(Array.from(window.customFolders))); }
-
-        // Settings Logic
-        window.openSettingsModal = function() { document.getElementById('settings-modal').classList.remove('hidden'); }
-        window.closeSettingsModal = function() { document.getElementById('settings-modal').classList.add('hidden'); }
-        window.exportData = function() {
-            const dataStr = JSON.stringify({ scraps: window.allScraps, folders: Array.from(window.customFolders) });
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            const exportFileDefaultName = 'archive_backup.json';
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-        }
-        window.importData = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if(parsed.scraps) {
-                        window.allScraps = parsed.scraps;
-                        window.customFolders = new Set(parsed.folders || []);
-                        saveData(); loadData(); alert('Data restored successfully!'); closeSettingsModal();
-                    } else { alert('Invalid backup file'); }
-                } catch(err) { alert('Error reading file'); }
-            };
-            reader.readAsText(file);
-        }
 
         window.expandToApp = function() { const introScene = document.getElementById('intro-scene'); const appContent = document.getElementById('app-content'); introScene.style.opacity = "0"; introScene.style.transform = "translate(-50%, -50%) scale(1.05)"; introScene.style.pointerEvents = "none"; setTimeout(() => { introScene.style.display = 'none'; appContent.classList.add('mode-app-active'); }, 600); }
         window.returnToIntro = function() { const introScene = document.getElementById('intro-scene'); const appContent = document.getElementById('app-content'); appContent.classList.remove('mode-app-active'); setTimeout(() => { introScene.style.display = 'flex'; requestAnimationFrame(() => { introScene.style.opacity = "1"; introScene.style.transform = "translate(-50%, -50%) scale(1)"; introScene.style.pointerEvents = "auto"; }); }, 300); }
@@ -366,13 +357,7 @@
         window.showTypeSelection = function() { document.getElementById('menu-main-actions').classList.add('hidden'); document.getElementById('menu-type-selection').classList.remove('hidden'); }
         window.hideSubMenu = function() { document.getElementById('menu-folder-selection').classList.add('hidden'); document.getElementById('menu-type-selection').classList.add('hidden'); document.getElementById('menu-main-actions').classList.remove('hidden'); }
         
-        // Detail View Type Change Trigger
-        window.openTypeSelectionInDetail = function() {
-            if(!window.currentScrap) return;
-            window.selectedScrapId = window.currentScrap.id;
-            openMenuModal(window.currentScrap);
-            showTypeSelection();
-        }
+        window.openTypeSelectionInDetail = function() { if(!window.currentScrap) return; window.selectedScrapId = window.currentScrap.id; openMenuModal(window.currentScrap); showTypeSelection(); }
 
         window.changeType = function(newType) {
             const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId);
@@ -471,11 +456,9 @@
             const url = document.getElementById('input-url').value; const btn = document.getElementById('media-btn'); 
             const ytRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const ytMatch = url.match(ytRegExp);
-            
             if (ytMatch && ytMatch[2].length == 11) { 
                 document.getElementById('input-type-select').value = 'video'; 
                 window.handleTypeChange(document.getElementById('input-type-select')); 
-                // Always use mqdefault to avoid black bars
                 const thumbUrl = `https://img.youtube.com/vi/${ytMatch[2]}/mqdefault.jpg`; 
                 document.getElementById('input-image-url').value = thumbUrl; 
                 handleImageInputChanged(thumbUrl); 
@@ -527,7 +510,47 @@
             if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden'); else document.getElementById('empty-state').classList.add('hidden');
             filtered.forEach(item => { try { grid.appendChild(createCardElement(item)); } catch(e) {} }); lucide.createIcons();
         }
+        window.renderFolders = function() {
+            const list = document.getElementById('folder-list'); list.innerHTML = ''; const folders = Array.from(window.customFolders).sort();
+            folders.forEach(folder => { const items = window.allScraps.filter(s => s.folder === folder); const folderEl = document.createElement('div'); folderEl.className = "bg-white rounded-sm p-6 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition flex flex-col items-center justify-center aspect-square"; folderEl.onclick = () => openFolder(folder); folderEl.innerHTML = `<div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3 text-gray-700"><i data-lucide="folder" class="w-6 h-6"></i></div><h3 class="font-serif italic text-lg text-black text-center">${folder}</h3><span class="text-xs text-gray-400 mt-1">${items.length} Items</span>`; list.appendChild(folderEl); }); lucide.createIcons();
+        }
+        window.deleteScrap = function(id) { window.allScraps = window.allScraps.filter(s => s.id !== id); saveData(); if(window.currentTab === 'folders' && !document.getElementById('view-folder-detail').classList.contains('hidden')) { const folderName = document.querySelector('#view-title').textContent; openFolder(folderName); } else if (window.currentTab === 'folders') { renderFolders(); } else { renderScraps(); } }
+        window.toggleFavoriteById = function(id) { const idx = window.allScraps.findIndex(s => s.id === id); if(idx > -1) { window.allScraps[idx].isFavorite = !window.allScraps[idx].isFavorite; saveData(); if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { const folderName = document.querySelector('#view-title').textContent; openFolder(folderName); } else if (window.currentTab !== 'folders') { renderScraps(); } } }
+        window.openFolderModal = function() { document.getElementById('folder-modal').classList.remove('hidden'); }
+        window.closeFolderModal = function() { document.getElementById('folder-modal').classList.add('hidden'); }
+        window.createFolder = function() { const name = document.getElementById('new-folder-input').value.trim(); if(name) { window.customFolders.add(name); saveData(); closeFolderModal(); renderFolders(); updateFolderDropdown(); } }
+        window.updateFolderDropdown = function() { const datalist = document.getElementById('folder-options'); datalist.innerHTML = ''; window.customFolders.forEach(f => { const opt = document.createElement('option'); opt.value = f; datalist.appendChild(opt); }); }
+        window.closeInsightModal = function() { document.getElementById('insight-modal').classList.add('hidden'); }
+        window.openInsightModal = async function(scrap) { if(!scrap) return; closeMenuModal(); const modal = document.getElementById('insight-modal'); const contentDiv = document.getElementById('insight-content'); modal.classList.remove('hidden'); contentDiv.innerHTML = '<div class="flex justify-center py-10"><i data-lucide="loader" class="animate-spin text-slate-400 w-8 h-8"></i></div>'; lucide.createIcons(); const userKey = getGeminiKey(); if(!userKey) { contentDiv.innerHTML = '<p class="text-red-500 text-center">API Key Required.</p>'; return; } const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; const prompt = `Analyze: Title: ${scrap.title}, Summary: ${scrap.summary}. Insight in Korean (HTML format). Sections: 🔑 Key Themes, ✨ Creative Spark, 🚀 Action.`; try { const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }); const data = await res.json(); const text = data.candidates[0].content.parts[0].text; contentDiv.innerHTML = marked.parse(text); } catch(e) { contentDiv.innerHTML = `<p class="text-red-500 text-center">Failed</p>`; } }
         window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
+        // Settings / Export / Import
+        window.openSettingsModal = function() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        window.closeSettingsModal = function() { document.getElementById('settings-modal').classList.add('hidden'); }
+        window.exportData = function() {
+            const data = JSON.stringify({ scraps: window.allScraps, folders: Array.from(window.customFolders) });
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'archive_backup.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        }
+        window.importData = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if(parsed.scraps) {
+                        window.allScraps = parsed.scraps;
+                        window.customFolders = new Set(parsed.folders || []);
+                        saveData(); loadData(); 
+                        alert('Data restored successfully!');
+                        closeSettingsModal();
+                    } else { alert('Invalid backup file'); }
+                } catch(err) { alert('Error reading file'); }
+            };
+            reader.readAsText(file);
+        }
     </script>
 </body>
 </html>

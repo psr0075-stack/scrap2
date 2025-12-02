@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Archive">
 
-    <title>Creative Archive v6.2 (Final)</title>
+    <title>Creative Archive v6.3 (Folder Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -240,51 +240,37 @@
             // Listen for Cloud Data
             scrapsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                
                 if (data) {
                     window.allScraps = data;
                 } else {
-                    // Cloud is empty -> Check LocalStorage (Silent Recovery)
+                    // Cloud empty -> check local
                     const localScraps = localStorage.getItem('my_archive_scraps');
                     if (localScraps) {
                         try {
                             const parsedLocal = JSON.parse(localScraps);
-                            if (parsedLocal.length > 0) {
-                                console.log("Cloud empty. Showing Local Data temporarily.");
-                                window.allScraps = parsedLocal;
-                            } else {
-                                window.allScraps = [];
-                            }
+                            if (parsedLocal.length > 0) window.allScraps = parsedLocal;
+                            else window.allScraps = [];
                         } catch(e) { window.allScraps = []; }
                     } else {
                         window.allScraps = [];
                     }
                 }
-                
-                // Fix thumbnails
-                let modified = false;
-                window.allScraps.forEach(s => {
-                    if(s.type === 'video' && s.imageUrl && s.imageUrl.includes('hqdefault.jpg')) {
-                        s.imageUrl = s.imageUrl.replace('hqdefault.jpg', 'mqdefault.jpg');
-                        modified = true;
-                    }
-                });
-                if(modified) saveData();
                 renderScraps();
             });
 
             foldersRef.on('value', (snapshot) => {
                 const data = snapshot.val();
+                // [CRITICAL FIX] Handle null or non-array data safely
                 if (data) {
                     window.customFolders = new Set(data);
                 } else {
-                     const localFolders = localStorage.getItem('my_archive_folders');
-                     if(localFolders) {
-                         try { 
-                             const parsed = JSON.parse(localFolders);
-                             window.customFolders = new Set(parsed);
-                         } catch(e){}
-                     }
+                    // If cloud is empty, fallback to default or local
+                    const localFolders = localStorage.getItem('my_archive_folders');
+                    if(localFolders) {
+                        try { window.customFolders = new Set(JSON.parse(localFolders)); } catch(e){ window.customFolders = new Set(['General', 'Design']); }
+                    } else {
+                        window.customFolders = new Set(['General', 'Design']); // Minimal default
+                    }
                 }
                 renderFolders(); updateFolderDropdown();
             });
@@ -319,10 +305,10 @@
                 return;
             }
             db.ref('scraps').set(window.allScraps).catch(e => console.error("Scrap Save Error:", e));
-            // FIXED: Ensure folders are saved as Array
+            // Ensure folders are saved as Array
             db.ref('folders').set(Array.from(window.customFolders)).catch(e => {
                 console.error("Folder Save Error:", e);
-                alert("⚠️ 저장 실패! Firebase Console > Build > Realtime Database > [규칙(Rules)]에서 read/write를 true로 변경했는지 확인해주세요.");
+                alert("⚠️ 저장 실패! Firebase Rules를 확인해주세요.");
             });
         }
 
@@ -338,13 +324,11 @@
                 customInput.classList.remove('hidden');
                 customInput.focus();
                 preview.innerHTML = `<i data-lucide="box" class="w-4 h-4 text-white"></i>`;
-                // Set logic to 'custom'
                 select.value = 'custom';
             } else {
                 // Show Select
                 customInput.classList.add('hidden');
                 select.classList.remove('hidden');
-                // Reset to default
                 select.value = 'news';
                 window.handleTypeChange(select);
             }

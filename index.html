@@ -3,10 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Archive v7.5 (Fixed Image)</title>
+    
+    <link rel="apple-touch-icon" href="https://placehold.co/180/white/black.png?text=A&font=playfair-display">
+    <link rel="icon" type="image/png" href="https://placehold.co/180/white/black.png?text=A&font=playfair-display">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Archive">
+
+    <title>Creative Archive v7.2 (Folder Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -18,19 +27,23 @@
         .folder-tab { padding: 14px 32px 12px; border-radius: 8px 8px 0 0; margin-right: -4px; font-family: 'Playfair Display', serif; font-style: italic; font-size: 15px; cursor: pointer; }
         .folder-tab.active { background: #ffffff; color: #000000; z-index: 20; font-weight: 700; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
         .folder-tab.inactive { background: #27272a; color: #a1a1aa; z-index: 10; margin-top: 8px; font-weight: 400; }
+        .card-press-active { transform: scale(0.95); opacity: 0.8; transition: transform 0.2s; }
         
         button:active { transform: scale(0.95); transition: 0.1s; }
         
         /* 모달 애니메이션 */
-        .modal-bg-enter { opacity: 0; }
-        .modal-bg-enter-active { opacity: 1; transition: opacity 0.3s ease-out; }
-        .modal-content-enter { opacity: 0; transform: scale(0.95) translateY(10px); }
-        .modal-content-enter-active { opacity: 1; transform: scale(1) translateY(0); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.2s ease-out; }
+        .modal-exit { opacity: 0; transform: scale(0.95); transition: all 0.1s ease-in; }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden bg-[#f9fafb]">
-    
-    <div id="app-content" class="flex flex-col h-full relative z-10">
+<body class="h-screen w-screen overflow-hidden">
+    <div class="absolute inset-0 z-0 bg-[#f9fafb]"></div>
+    <input type="file" id="hidden-thumb-input" accept="image/*" class="hidden" onchange="handleThumbUpdate(event)">
+
+    <div id="status-bar" class="fixed top-0 left-0 w-full h-1 z-[9999] bg-gray-300"></div>
+
+    <div id="app-content" class="mode-app-container flex flex-col h-full relative z-10">
         <div class="pt-5 px-6 flex items-end justify-between select-none z-50 relative">
             <div class="flex items-center">
                 <div class="flex items-end pl-2">
@@ -46,13 +59,15 @@
             <div class="px-8 py-5 flex items-center justify-between border-b border-gray-100 bg-white z-20">
                 <div class="flex items-center">
                     <button id="folder-back-btn" onclick="closeFolderDetail()" class="mr-3 hidden p-2 hover:bg-gray-100 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5 text-black"></i></button>
-                    <h2 id="view-title" class="font-serif italic text-xl text-black">All Scraps</h2>
+                    <div class="flex items-center gap-2">
+                        <h2 id="view-title" class="font-serif italic text-xl text-black">All Scraps</h2>
+                        <button id="rename-folder-btn" onclick="openRenameModal()" class="hidden p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition"><i data-lucide="pencil" class="w-3 h-3"></i></button>
+                    </div>
                 </div>
                 <div class="relative"><i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i><input type="text" oninput="handleSearchInput(event)" placeholder="Search..." class="pl-9 pr-4 py-2 bg-gray-50 border border-transparent rounded-sm text-sm focus:bg-white w-32 focus:w-48 transition-all outline-none"></div>
             </div>
             
             <div class="relative flex-grow overflow-hidden bg-[#fafafa]">
-                
                 <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32">
                     <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
                     <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20"><i data-lucide="layers" class="w-8 h-8 mb-3 opacity-20 text-black"></i><p class="text-xs font-light tracking-widest uppercase">Empty Collection</p></div>
@@ -60,7 +75,7 @@
                 
                 <div id="view-folders" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32 hidden">
                     <div class="mb-6">
-                        <button onclick="openFolderModal('create')" class="flex items-center space-x-2 text-sm font-bold text-black border border-gray-300 rounded-sm px-6 py-3 bg-white hover:bg-gray-50 shadow-sm w-full md:w-auto justify-center transition-transform active:scale-95">
+                        <button onclick="openCreateFolderModal()" class="flex items-center space-x-2 text-sm font-bold text-black border border-gray-300 rounded-sm px-6 py-3 bg-white hover:bg-gray-50 shadow-sm w-full md:w-auto justify-center">
                             <i data-lucide="folder-plus" class="w-4 h-4"></i>
                             <span>New Folder</span>
                         </button>
@@ -76,29 +91,30 @@
         </div>
     </div>
 
-    <div id="folder-modal" class="fixed inset-0 z-[999] hidden flex items-center justify-center">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 transition-opacity duration-300" id="folder-modal-bg" onclick="closeFolderModal()"></div>
-        <div class="bg-white w-[85%] max-w-sm p-8 rounded-lg shadow-2xl relative z-10 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center" id="folder-modal-content">
-            <div class="mb-5 p-4 bg-gray-50 rounded-full shadow-inner">
-                <i data-lucide="folder-plus" class="w-8 h-8 text-black opacity-80"></i>
-            </div>
-            <h3 id="folder-modal-title" class="font-serif italic text-2xl mb-1 text-center text-black">New Folder</h3>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-8">Enter folder name below</p>
-            <input type="text" id="folder-input" class="w-full text-center border-b-2 border-gray-100 py-3 text-lg font-bold focus:outline-none focus:border-black transition-colors mb-8 bg-transparent text-black placeholder-gray-300" placeholder="Type Name..." onkeydown="if(event.key === 'Enter') confirmFolderAction()">
-            <div class="flex w-full space-x-3">
-                <button onclick="closeFolderModal()" class="flex-1 py-3 text-xs font-bold uppercase text-gray-400 hover:text-black hover:bg-gray-50 rounded transition">Cancel</button>
-                <button onclick="confirmFolderAction()" class="flex-1 py-3 bg-black text-white text-xs font-bold uppercase rounded shadow-lg hover:bg-gray-800 transition transform active:scale-95">Confirm</button>
-            </div>
-        </div>
-    </div>
-
     <div id="add-modal" class="fixed inset-0 hidden z-[200]"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeAddModal()"></div><div class="absolute inset-y-0 right-0 w-full md:w-[500px] bg-white shadow-2xl transform translate-x-full transition-transform duration-500 flex flex-col" id="add-panel"><div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-white z-10"><h2 class="font-serif italic text-2xl text-black">New Item</h2><div class="flex items-center space-x-4"><button type="button" id="new-favorite-btn" onclick="toggleNewFavorite()" class="text-gray-400 hover:text-red-500 transition"><i data-lucide="heart" class="w-5 h-5"></i></button><button onclick="resetForm()" class="p-2 hover:bg-gray-100 rounded-full transition"><i data-lucide="rotate-ccw" class="w-5 h-5"></i></button><button onclick="closeAddModal()" class="p-2 hover:bg-gray-100 rounded-full transition"><i data-lucide="x" class="w-5 h-5"></i></button></div></div><div class="flex-grow overflow-y-auto p-8 space-y-8 custom-scrollbar"><div id="scrap-form-container"><div class="space-y-2 p-4 bg-gray-50 rounded-sm border border-gray-100"><label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">1. Media Source</label><div class="flex gap-2"><input type="url" id="input-url" class="flex-1 bg-white border border-gray-200 rounded-sm px-4 py-3 text-sm" placeholder="Paste Link..."><button type="button" onclick="handleMediaProcess()" id="media-btn" class="bg-white border border-gray-200 text-black px-4 rounded-sm text-xs font-bold">Check</button></div></div><div class="space-y-2 p-4 bg-gray-50 rounded-sm border border-gray-100"><label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Image URL</label><input type="text" id="input-image-url" oninput="handleImageInputChanged(this.value)" class="w-full bg-white border border-gray-200 rounded-sm px-3 py-2 text-xs" placeholder="Image URL"></div><div class="space-y-2 p-4 bg-blue-50/30 rounded-sm border border-blue-100"><label class="block text-xs font-bold text-blue-400 uppercase tracking-wider">Content</label><textarea id="input-content" rows="5" class="w-full bg-white border border-blue-100 rounded-sm p-4 text-sm" placeholder="Paste content..."></textarea></div><div class="space-y-5 border-t border-gray-100 pt-6"><div class="space-y-1"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Title</label><input type="text" id="input-title" class="w-full text-lg font-serif border-b border-gray-200 py-2 bg-transparent" placeholder="Entry Title"></div><div class="grid grid-cols-2 gap-4"><div class="space-y-1"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Type</label><select id="input-type-select" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm"><option value="news">Article</option><option value="video">Video</option><option value="image">Image</option><option value="paper">Paper</option><option value="custom">Other</option></select></div><div class="space-y-1"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Folder</label><input type="text" id="input-folder" list="folder-options" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm" placeholder="Select/Type"><datalist id="folder-options"></datalist></div></div><div class="space-y-1"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Summary</label><textarea id="input-summary" rows="2" class="w-full bg-gray-50 rounded-sm p-4 text-sm"></textarea></div><div class="space-y-1"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Memo</label><textarea id="input-memo" rows="2" class="w-full bg-yellow-50/50 rounded-sm p-4 text-sm"></textarea></div></div></div></div><div class="p-8 border-t border-gray-50 bg-white"><button type="button" onclick="handleSaveScrap()" id="save-button" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-xl hover:bg-gray-800 transition">Save</button></div></div></div>
 
     <div id="detail-view-modal" class="fixed inset-0 z-[300] hidden bg-white flex flex-col"><div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white z-10"><button onclick="closeDetailView()" class="p-2"><i data-lucide="arrow-left" class="w-6 h-6"></i></button><span class="font-serif italic" id="detail-type-badge">ITEM</span><div class="w-10"></div></div><div class="flex-grow overflow-y-auto p-6 pb-20"><h1 id="detail-title-input" class="text-3xl font-serif italic text-center mb-6"></h1><img id="detail-image" class="w-full h-auto mb-6 bg-gray-100 object-contain"><p id="detail-summary-text" class="text-sm text-gray-700 leading-relaxed mb-6"></p><div class="bg-yellow-50 p-4 rounded"><p id="detail-memo-input" class="font-serif italic text-sm"></p></div></div></div>
 
     <div id="menu-modal" class="fixed inset-0 hidden z-[400]"><div class="absolute inset-0 bg-black/20" onclick="closeMenuModal()"></div><div class="absolute bottom-0 w-full bg-white p-6 rounded-t-lg shadow-2xl transition-transform" id="menu-panel"><button onclick="menuAction('delete')" class="w-full py-4 text-red-500 font-bold mb-2 bg-red-50 rounded">DELETE</button><button onclick="closeMenuModal()" class="w-full py-4 text-black font-bold">CANCEL</button></div></div>
 
+    <div id="folder-input-modal" class="fixed inset-0 z-[500] hidden flex items-center justify-center transition-opacity duration-200 opacity-0">
+        <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeFolderModal()"></div>
+        <div class="bg-white p-8 rounded-sm shadow-2xl w-[90%] max-w-sm relative z-10 border border-gray-100 transform transition-all duration-200 scale-95" id="folder-modal-content">
+            <h3 id="folder-modal-title" class="font-serif italic text-2xl mb-6 text-center text-black">New Folder</h3>
+            
+            <div class="space-y-4">
+                <input type="text" id="folder-name-input" class="w-full border-b-2 border-gray-200 py-3 text-lg font-medium text-center focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300" placeholder="Type name..." onkeypress="handleFolderEnter(event)">
+                
+                <div class="flex gap-2 pt-4">
+                    <button onclick="closeFolderModal()" class="flex-1 py-3 text-xs font-bold text-gray-400 hover:bg-gray-50 rounded-sm transition">CANCEL</button>
+                    <button onclick="submitFolderInput()" class="flex-1 bg-black text-white py-3 rounded-sm text-xs font-bold hover:bg-gray-800 shadow-lg transition transform active:scale-95">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // --- YOUR FIREBASE CONFIGURATION ---
         const firebaseConfig = {
           apiKey: "AIzaSyBqbdAQoIbzGQnD3w35xYkjXWzjc1c8zDs",
           authDomain: "scrap-2e367.firebaseapp.com",
@@ -114,38 +130,44 @@
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
-            console.log("Firebase initialized");
+            document.getElementById('status-bar').classList.add('bg-green-500'); 
         } catch (e) {
-            console.error("Firebase Error:", e);
+            document.getElementById('status-bar').classList.add('bg-red-500');
+            console.error(e);
         }
 
         window.allScraps = []; 
-        window.customFolders = new Set(['General', 'Design']); 
+        window.customFolders = new Set(['General', 'Design']); // 기본 폴더
         window.currentTab = 'scraps'; 
         window.currentScrap = null;
-
-        window.folderAction = 'create'; 
-        window.targetFolderOldName = '';
+        window.currentFolderContext = null; // 현재 보고 있는 폴더 이름 저장용
+        
+        // Modal Logic Variables
+        let folderModalMode = 'create'; // 'create' or 'rename'
+        let targetFolderOldName = '';
 
         window.onload = function() { loadData(); lucide.createIcons(); };
 
+        // --- Data Sync ---
         function loadData() {
             if (!db) return;
+            
             db.ref('scraps').on('value', (snapshot) => {
                 const data = snapshot.val();
                 window.allScraps = data ? data : [];
-                if(window.currentTab === 'scraps') renderScraps();
-                else if(window.currentTab === 'folders') renderFolders();
+                renderScraps();
+                // If inside a folder, refresh it
+                if(window.currentFolderContext && !document.getElementById('view-folder-detail').classList.contains('hidden')) {
+                     openFolder(window.currentFolderContext);
+                }
             });
 
             db.ref('folders').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if(data) {
-                    const folderList = Array.isArray(data) ? data : Object.values(data);
-                    window.customFolders = new Set(folderList);
+                    window.customFolders = new Set(data);
                 }
-                updateFolderDropdown();
-                if(window.currentTab === 'folders') renderFolders();
+                renderFolders(); updateFolderDropdown();
             });
         }
 
@@ -154,71 +176,133 @@
             try {
                 db.ref('scraps').set(window.allScraps);
                 db.ref('folders').set(Array.from(window.customFolders));
-            } catch(e) { console.error(e); }
+            } catch(e) {
+                console.log("Save error: " + e.message);
+            }
         }
 
-        window.openFolderModal = function(action, oldName = '') {
-            window.folderAction = action;
-            window.targetFolderOldName = oldName;
+        // --- 🔥 [FIXED & UPGRADED] Folder Logic ---
+        
+        // 1. Open Modal for Creation
+        window.openCreateFolderModal = function() {
+            folderModalMode = 'create';
+            targetFolderOldName = '';
+            document.getElementById('folder-modal-title').textContent = 'New Folder';
+            document.getElementById('folder-name-input').value = '';
             
-            const modal = document.getElementById('folder-modal');
-            const bg = document.getElementById('folder-modal-bg');
+            const modal = document.getElementById('folder-input-modal');
             const content = document.getElementById('folder-modal-content');
-            const input = document.getElementById('folder-input');
-            const title = document.getElementById('folder-modal-title');
-
-            input.value = action === 'rename' ? oldName : '';
-            title.textContent = action === 'rename' ? 'Rename Folder' : 'New Folder';
-
             modal.classList.remove('hidden');
+            // Small timeout for transition
             setTimeout(() => {
-                bg.classList.remove('opacity-0');
-                content.classList.remove('opacity-0', 'scale-95');
-                content.classList.add('opacity-100', 'scale-100');
-                input.focus();
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                document.getElementById('folder-name-input').focus();
             }, 10);
         }
 
-        window.closeFolderModal = function() {
-            const modal = document.getElementById('folder-modal');
-            const bg = document.getElementById('folder-modal-bg');
+        // 2. Open Modal for Rename
+        window.openRenameModal = function() {
+            if(!window.currentFolderContext) return;
+            
+            folderModalMode = 'rename';
+            targetFolderOldName = window.currentFolderContext;
+            
+            document.getElementById('folder-modal-title').textContent = 'Rename Folder';
+            document.getElementById('folder-name-input').value = window.currentFolderContext;
+            
+            const modal = document.getElementById('folder-input-modal');
             const content = document.getElementById('folder-modal-content');
-
-            bg.classList.add('opacity-0');
-            content.classList.remove('opacity-100', 'scale-100');
-            content.classList.add('opacity-0', 'scale-95');
-
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                document.getElementById('folder-name-input').focus();
+            }, 10);
         }
 
-        window.confirmFolderAction = function() {
-            const input = document.getElementById('folder-input');
-            const name = input.value;
+        // 3. Close Modal
+        window.closeFolderModal = function() {
+            const modal = document.getElementById('folder-input-modal');
+            const content = document.getElementById('folder-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
 
-            if (!name || name.trim().length === 0) { alert("Please enter a name."); return; }
+        // 4. Handle Enter Key
+        window.handleFolderEnter = function(e) {
+            if (e.key === 'Enter') submitFolderInput();
+        }
 
-            const cleanName = name.trim();
-
-            if (window.folderAction === 'create') {
-                if(window.customFolders.has(cleanName)) { alert("Already exists."); return; }
-                window.customFolders.add(cleanName);
-            } else if (window.folderAction === 'rename') {
-                if (cleanName !== window.targetFolderOldName) {
-                    if(window.customFolders.has(cleanName)) { alert("Exists!"); return; }
-                    window.customFolders.delete(window.targetFolderOldName);
-                    window.customFolders.add(cleanName);
-                    window.allScraps.forEach(scrap => {
-                        if (scrap.folder === window.targetFolderOldName) scrap.folder = cleanName;
-                    });
-                }
+        // 5. Submit Logic (Create or Rename)
+        window.submitFolderInput = function() {
+            const input = document.getElementById('folder-name-input');
+            const name = input.value.trim();
+            
+            if (!name) {
+                input.focus();
+                return;
             }
 
-            saveData();
+            if (folderModalMode === 'create') {
+                // Create Logic
+                if(window.customFolders.has(name)) {
+                    alert("This folder already exists.");
+                    return;
+                }
+                window.customFolders.add(name);
+            } 
+            else if (folderModalMode === 'rename') {
+                // Rename Logic
+                if (name === targetFolderOldName) {
+                    closeFolderModal();
+                    return;
+                }
+                if (window.customFolders.has(name)) {
+                    alert("Folder name already exists.");
+                    return;
+                }
+
+                // 1. Update Folder List
+                window.customFolders.delete(targetFolderOldName);
+                window.customFolders.add(name);
+                
+                // 2. Update All Scraps inside this folder
+                let updatedCount = 0;
+                window.allScraps.forEach(scrap => {
+                    if (scrap.folder === targetFolderOldName) {
+                        scrap.folder = name;
+                        updatedCount++;
+                    }
+                });
+
+                // 3. Update Current View Context
+                window.currentFolderContext = name;
+                document.querySelector('#view-title').textContent = name;
+                
+                // Refresh the detailed view immediately
+                const items = window.allScraps.filter(s => s.folder === name);
+                const grid = document.getElementById('folder-detail-grid');
+                grid.innerHTML = '';
+                if(items.length === 0) document.getElementById('folder-empty-state').classList.remove('hidden');
+                else {
+                    document.getElementById('folder-empty-state').classList.add('hidden');
+                    items.forEach(item => grid.appendChild(createCardElement(item)));
+                }
+                lucide.createIcons();
+            }
+
+            // Common Final Steps
             renderFolders();
             updateFolderDropdown();
+            saveData();
             closeFolderModal();
         }
 
+        // --- View Logic ---
         window.switchTab = function(tabName) {
             window.currentTab = tabName;
             document.querySelectorAll('.folder-tab').forEach(el => {
@@ -229,7 +313,7 @@
             if (tabName === 'folders') {
                 document.getElementById('view-grid').classList.add('hidden');
                 document.getElementById('view-folders').classList.remove('hidden');
-                renderFolders();
+                renderFolders(); 
             } else {
                 document.getElementById('view-grid').classList.remove('hidden');
                 document.getElementById('view-folders').classList.add('hidden');
@@ -237,49 +321,41 @@
             }
             document.getElementById('view-folder-detail').classList.add('hidden');
             document.getElementById('folder-back-btn').classList.add('hidden');
+            document.getElementById('rename-folder-btn').classList.add('hidden'); // Hide edit button
         }
 
         window.renderFolders = function() {
             const list = document.getElementById('folder-list');
             list.innerHTML = '';
+            // Sort folders alphabetically
+            const sortedFolders = Array.from(window.customFolders).sort();
             
-            if (!(window.customFolders instanceof Set)) {
-                window.customFolders = new Set(['General']);
-            }
-
-            Array.from(window.customFolders).forEach(f => {
+            sortedFolders.forEach(f => {
                 const count = window.allScraps.filter(s => s.folder === f).length;
                 const btn = document.createElement('div');
-                btn.className = "aspect-square bg-gray-50 border border-gray-200 rounded-sm flex flex-col items-center justify-center cursor-pointer active:bg-gray-200 hover:bg-gray-100 transition relative group select-none";
-                
+                btn.className = "aspect-square bg-gray-50 border border-gray-200 rounded-sm flex flex-col items-center justify-center cursor-pointer active:bg-gray-200 hover:bg-gray-100 transition";
                 btn.onclick = () => openFolder(f);
-                btn.oncontextmenu = (e) => { e.preventDefault(); openFolderModal('rename', f); };
-                let pressTimer;
-                btn.addEventListener('touchstart', () => { pressTimer = setTimeout(() => { openFolderModal('rename', f); }, 600); });
-                btn.addEventListener('touchend', () => clearTimeout(pressTimer));
-                
-                btn.innerHTML = `
-                    <i data-lucide="folder" class="w-8 h-8 text-black mb-2 opacity-80"></i>
-                    <span class="font-serif italic text-lg font-bold text-center px-2 break-all">${f}</span>
-                    <span class="text-xs text-gray-400 mt-1">${count} items</span>
-                `;
+                btn.innerHTML = `<i data-lucide="folder" class="w-8 h-8 text-black mb-2 opacity-80"></i><span class="font-serif italic text-lg font-bold text-center px-2 truncate w-full">${f}</span><span class="text-xs text-gray-400 mt-1">${count} items</span>`;
                 list.appendChild(btn);
             });
             lucide.createIcons();
         }
 
         window.updateFolderDropdown = function() {
-            const dl = document.getElementById('folder-options'); 
-            dl.innerHTML = '';
-            if(window.customFolders) {
-                Array.from(window.customFolders).forEach(f => { const op = document.createElement('option'); op.value = f; dl.appendChild(op); });
-            }
+            const dl = document.getElementById('folder-options'); dl.innerHTML = '';
+            Array.from(window.customFolders).forEach(f => { const op = document.createElement('option'); op.value = f; dl.appendChild(op); });
         }
 
         window.openFolder = function(folderName) {
+            window.currentFolderContext = folderName; // Set context
+            
             document.getElementById('view-folders').classList.add('hidden');
             document.getElementById('view-folder-detail').classList.remove('hidden');
             document.getElementById('folder-back-btn').classList.remove('hidden');
+            
+            // Show Rename Button
+            document.getElementById('rename-folder-btn').classList.remove('hidden');
+            
             document.querySelector('#view-title').textContent = folderName;
             
             const items = window.allScraps.filter(s => s.folder === folderName);
@@ -295,28 +371,29 @@
         }
 
         window.closeFolderDetail = function() {
+            window.currentFolderContext = null;
             document.getElementById('view-folder-detail').classList.add('hidden');
             document.getElementById('view-folders').classList.remove('hidden');
             document.getElementById('folder-back-btn').classList.add('hidden');
+            document.getElementById('rename-folder-btn').classList.add('hidden'); // Hide edit button
             document.querySelector('#view-title').textContent = 'All Scraps';
         }
 
-        // --- 🔥 FIXED CARD LOGIC (Full Image Contain + Gray Bg) ---
+        // --- Card Logic ---
         function createCardElement(item) {
             const card = document.createElement('div');
             card.className = "relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden";
             
-            let media = `<div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400"><i data-lucide="image" class="w-8 h-8"></i></div>`;
+            let media = `<div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300"><i data-lucide="image" class="w-8 h-8"></i></div>`;
             if (item.imageUrl) {
-                // object-contain: 비율 유지, bg-gray-200: 여백 회색
-                media = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-200">`;
+                media = `<img src="${item.imageUrl}" class="w-full h-full object-cover bg-gray-100">`;
             }
 
             card.innerHTML = `
                 <div class="h-[65%] w-full overflow-hidden relative">${media}</div>
                 <div class="h-[35%] p-4 flex flex-col justify-between bg-white">
                     <h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${item.title}</h3>
-                    <div class="flex justify-between items-center"><span class="text-[10px] text-gray-400 uppercase">${item.folder}</span></div>
+                    <div class="flex justify-between items-center"><span class="text-[10px] text-gray-400 uppercase truncate max-w-[80px]">${item.folder}</span></div>
                 </div>
             `;
             
@@ -335,6 +412,13 @@
             if(!title) { alert("Title is required"); return; }
             
             btn.textContent = 'Saving...';
+            // Ensure folder exists if typed manually
+            const folderInput = document.getElementById('input-folder').value || 'General';
+            if(!window.customFolders.has(folderInput)) {
+                window.customFolders.add(folderInput);
+                renderFolders(); // Update folder list silently
+            }
+
             const newItem = {
                 id: Date.now().toString(),
                 title: title,
@@ -343,23 +427,24 @@
                 sourceUrl: document.getElementById('input-url').value,
                 imageUrl: document.getElementById('input-image-url').value,
                 type: document.getElementById('input-type-select').value,
-                folder: document.getElementById('input-folder').value || 'General',
+                folder: folderInput,
                 memo: document.getElementById('input-memo').value,
                 isFavorite: false,
                 createdAt: new Date().toISOString()
             };
             
             window.allScraps.unshift(newItem);
-            if(newItem.folder && !window.customFolders.has(newItem.folder)) {
-                window.customFolders.add(newItem.folder);
-            }
             saveData();
+            
             closeAddModal();
             window.resetForm();
+            // If we are currently viewing a folder, switch back to All Scraps or reload that folder?
+            // User UX choice: Switch to All Scraps to see the new item.
             switchTab('scraps');
             btn.textContent = 'Save';
         }
 
+        // --- Helper Functions ---
         window.openAddModal = function() { document.getElementById('add-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); updateFolderDropdown(); }
         window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 300); }
         window.resetForm = function() { document.querySelectorAll('input, textarea').forEach(i => i.value = ''); }
@@ -381,19 +466,31 @@
                     window.allScraps = window.allScraps.filter(s => s.id !== window.currentScrap.id);
                     saveData();
                     closeMenuModal();
-                    alert("Deleted");
-                    renderScraps();
+                    
+                    // Re-render based on current view
+                    if(window.currentFolderContext && !document.getElementById('view-folder-detail').classList.contains('hidden')) {
+                        openFolder(window.currentFolderContext);
+                    } else {
+                        renderScraps();
+                    }
                 }
             }
         }
         window.renderScraps = function() {
             const grid = document.getElementById('scrap-grid');
             grid.innerHTML = '';
-            window.allScraps.forEach(item => grid.appendChild(createCardElement(item)));
+            // Simple filter logic
+            const filtered = window.searchText 
+                ? window.allScraps.filter(s => s.title.toLowerCase().includes(window.searchText.toLowerCase())) 
+                : window.allScraps;
+
+            filtered.forEach(item => grid.appendChild(createCardElement(item)));
             lucide.createIcons();
-            if(window.allScraps.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+            if(filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
             else document.getElementById('empty-state').classList.add('hidden');
         }
+        
+        window.searchText = "";
         window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
         
         window.handleMediaProcess = function() {

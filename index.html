@@ -9,7 +9,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; touch-action: none; margin: 0; background-color: #f9fafb; color: #18181b; -webkit-tap-highlight-color: transparent; }
+        /* touch-action: none 제거하여 입력창 포커스 문제 해결 */
+        body { font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; background-color: #f9fafb; color: #18181b; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .noselect { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
@@ -89,9 +90,12 @@
         </div>
         <div class="flex-grow overflow-y-auto custom-scrollbar bg-white p-6 pb-20">
             <div class="max-w-4xl mx-auto space-y-6">
-                <div class="text-center">
-                    <input type="text" id="detail-title-input" class="w-full font-serif italic text-2xl md:text-3xl text-black text-center bg-transparent border-b border-transparent focus:border-gray-300 outline-none transition mb-3 placeholder-gray-300" onchange="updateDetailTitle(this.value)" placeholder="Enter Title">
-                    <div id="detail-tags" class="flex flex-wrap justify-center gap-2"></div>
+                <div class="text-center relative group">
+                    <div class="relative inline-block w-full max-w-2xl">
+                        <input type="text" id="detail-title-input" class="w-full font-serif italic text-2xl md:text-3xl text-black text-center bg-transparent border-b border-transparent focus:border-gray-300 outline-none transition px-2 py-1 placeholder-gray-300" onchange="updateDetailTitle(this.value)" onkeydown="handleTitleKey(event)" placeholder="Enter Title">
+                        <i data-lucide="pencil" class="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition pointer-events-none"></i>
+                    </div>
+                    <div id="detail-tags" class="flex flex-wrap justify-center gap-2 mt-3"></div>
                 </div>
                 <hr class="border-gray-100">
                 <div class="flex flex-col md:flex-row gap-6 items-stretch">
@@ -260,6 +264,13 @@
                      const currentViewFolder = document.querySelector('#view-title').textContent;
                      openFolder(currentViewFolder);
                 }
+            }
+        }
+        
+        window.handleTitleKey = function(e) {
+            if(e.key === 'Enter') {
+                e.preventDefault();
+                e.target.blur(); // Triggers onchange to save
             }
         }
 

@@ -169,7 +169,7 @@
         .swipe-right { background-color: #18181b; left: 0; }
         
         /* Z-Index */
-        #add-modal, #menu-modal, #memo-modal, #insight-modal, #folder-modal { z-index: 200; }
+        #add-modal, #menu-modal, #memo-modal, #insight-modal, #folder-modal, #detail-view-modal { z-index: 200; }
 
         /* Markdown */
         .prose p { margin-bottom: 0.5em; line-height: 1.6; font-size: 0.9rem; }
@@ -261,6 +261,56 @@
                         <p class="text-xs font-light tracking-widest uppercase">No items in this folder</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="detail-view-modal" class="fixed inset-0 z-[400] hidden bg-white flex flex-col transition-all duration-300">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white z-10 sticky top-0">
+            <button onclick="closeDetailView()" class="p-2 hover:bg-gray-100 rounded-full transition flex items-center text-gray-600">
+                <i data-lucide="arrow-left" class="w-6 h-6"></i>
+            </button>
+            <span id="detail-type-badge" class="text-xs font-bold uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full text-gray-500">ARTICLE</span>
+            <div class="w-10"></div> </div>
+
+        <div class="flex-grow overflow-y-auto custom-scrollbar bg-white pb-20">
+            <div class="w-full h-64 md:h-80 bg-gray-100 relative group overflow-hidden">
+                <img id="detail-image" src="" class="w-full h-full object-cover" alt="Detail Image" onerror="this.style.display='none'; document.getElementById('detail-image-fallback').style.display='flex';">
+                <div id="detail-image-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-400">
+                    <i id="detail-fallback-icon" data-lucide="image" class="w-16 h-16 opacity-50"></i>
+                </div>
+            </div>
+
+            <div class="max-w-3xl mx-auto px-8 py-10 space-y-8">
+                
+                <div class="text-center space-y-4">
+                    <h1 id="detail-title" class="font-serif italic text-3xl md:text-4xl text-black leading-tight">Title Goes Here</h1>
+                    <div id="detail-tags" class="flex flex-wrap justify-center gap-2"></div>
+                </div>
+
+                <div class="flex justify-center pt-2">
+                    <a id="detail-link-btn" href="#" target="_blank" class="flex items-center px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <span class="font-bold mr-2 text-sm tracking-widest uppercase">Visit Source</span>
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                    </a>
+                </div>
+
+                <hr class="border-gray-100">
+
+                <div class="bg-gray-50 rounded-lg p-8 border border-gray-100 relative">
+                    <div class="absolute -top-3 left-6 bg-white px-2 text-xs font-bold text-gray-400 uppercase tracking-widest border border-gray-100 rounded-sm">
+                        <i data-lucide="align-left" class="w-3 h-3 inline mr-1 mb-0.5"></i>Summary
+                    </div>
+                    <p id="detail-summary" class="text-gray-700 leading-relaxed text-sm md:text-base">No summary available.</p>
+                </div>
+
+                <div class="bg-yellow-50/50 rounded-lg p-8 border border-yellow-100 relative">
+                    <div class="absolute -top-3 left-6 bg-white px-2 text-xs font-bold text-yellow-600 uppercase tracking-widest border border-yellow-100 rounded-sm">
+                        <i data-lucide="sticky-note" class="w-3 h-3 inline mr-1 mb-0.5"></i>Memo
+                    </div>
+                    <p id="detail-memo" class="text-gray-800 font-serif italic leading-relaxed text-sm md:text-base">No memo.</p>
+                </div>
+
             </div>
         </div>
     </div>
@@ -408,7 +458,7 @@
                 <span class="text-sm font-bold">Get AI Insight</span>
             </button>
             <div class="grid grid-cols-4 gap-4 mb-4">
-                <button onclick="menuAction('visit')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="external-link" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Open</span></button>
+                <button onclick="menuAction('open')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="maximize-2" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Open</span></button>
                 <button onclick="menuAction('memo')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="sticky-note" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Memo</span></button>
                 <button onclick="menuAction('favorite')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="star" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Fav</span></button>
                 <button onclick="menuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></div><span class="text-xs font-medium text-red-500">Delete</span></button>
@@ -427,7 +477,7 @@
     </div>
 
     <script>
-        // --- CONFIG: Type Icons & Labels ---
+        // --- CONFIG ---
         window.TYPE_CONFIG = {
             'news': { icon: 'newspaper', label: 'Article' },
             'video': { icon: 'youtube', label: 'Video' },
@@ -445,32 +495,22 @@
         window.customFolders = new Set(['General', 'Design', 'Ideas', 'Work']); 
         window.isNewItemFavorite = false;
 
-        // Initialize
         window.onload = function() {
             loadData();
             lucide.createIcons();
         };
 
-        // --- Data Management ---
+        // --- Data ---
         function loadData() {
             const storedScraps = localStorage.getItem('my_archive_scraps');
             if (storedScraps) {
-                try {
-                    window.allScraps = JSON.parse(storedScraps);
-                } catch(e) { window.allScraps = []; }
-                
-                window.allScraps.forEach(s => {
-                    if(s.folder) window.customFolders.add(s.folder);
-                });
+                try { window.allScraps = JSON.parse(storedScraps); } catch(e) { window.allScraps = []; }
+                window.allScraps.forEach(s => { if(s.folder) window.customFolders.add(s.folder); });
             }
-            
             const storedFolders = localStorage.getItem('my_archive_folders');
             if(storedFolders) {
-                try {
-                    JSON.parse(storedFolders).forEach(f => window.customFolders.add(f));
-                } catch(e) { }
+                try { JSON.parse(storedFolders).forEach(f => window.customFolders.add(f)); } catch(e) { }
             }
-            
             renderScraps();
             renderFolders();
             updateFolderDropdown();
@@ -481,7 +521,7 @@
             localStorage.setItem('my_archive_folders', JSON.stringify(Array.from(window.customFolders)));
         }
 
-        // --- Core UI Functions ---
+        // --- Navigation ---
         window.expandToApp = function() {
             const introScene = document.getElementById('intro-scene');
             const appContent = document.getElementById('app-content');
@@ -513,7 +553,6 @@
             const titleMap = {'scraps': 'All Scraps', 'folders': 'My Folders', 'favorites': 'Favorites'};
             document.querySelector('#view-title').textContent = titleMap[tabName];
 
-            // Reset View
             document.getElementById('view-folder-detail').classList.add('hidden');
             document.getElementById('folder-back-btn').classList.add('hidden');
 
@@ -532,7 +571,7 @@
             }
         }
 
-        // Folder Logic
+        // --- Folder Logic ---
         window.openFolder = function(folderName) {
             document.getElementById('view-folders').classList.add('hidden');
             document.getElementById('view-folder-detail').classList.remove('hidden');
@@ -578,30 +617,87 @@
             window.customFolders.forEach(f => { const opt = document.createElement('option'); opt.value = f; datalist.appendChild(opt); });
         }
 
-        // Custom Type Logic
+        // --- Detail View Logic (NEW) ---
+        window.openDetailView = function(scrap) {
+            if(!scrap) return;
+            window.currentScrap = scrap;
+            
+            // Populate Data
+            document.getElementById('detail-title').textContent = scrap.title;
+            
+            // Type & Icon
+            const typeInfo = getTypeInfo(scrap.type);
+            const badge = document.getElementById('detail-type-badge');
+            badge.textContent = typeInfo.label || scrap.type;
+            
+            // Image
+            const img = document.getElementById('detail-image');
+            const fallback = document.getElementById('detail-image-fallback');
+            const fallbackIcon = document.getElementById('detail-fallback-icon');
+            
+            // Update fallback icon to match type
+            fallbackIcon.setAttribute('data-lucide', typeInfo.icon);
+
+            if(scrap.imageUrl && scrap.imageUrl.trim() !== '') {
+                img.src = scrap.imageUrl;
+                img.style.display = 'block';
+                fallback.classList.add('hidden');
+            } else {
+                img.style.display = 'none';
+                fallback.classList.remove('hidden');
+            }
+
+            // Summary & Memo
+            document.getElementById('detail-summary').textContent = scrap.summary || "No summary available.";
+            document.getElementById('detail-memo').textContent = scrap.memo || "No memo.";
+
+            // Tags
+            const tagContainer = document.getElementById('detail-tags');
+            tagContainer.innerHTML = '';
+            (scrap.tags || []).forEach(t => {
+                const span = document.createElement('span');
+                span.className = "text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full";
+                span.textContent = `#${t}`;
+                tagContainer.appendChild(span);
+            });
+
+            // Action Button
+            const btn = document.getElementById('detail-link-btn');
+            btn.href = scrap.sourceUrl || '#';
+            if(!scrap.sourceUrl) {
+                btn.classList.add('opacity-50', 'pointer-events-none');
+                btn.querySelector('span').textContent = "No Link";
+            } else {
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+                btn.querySelector('span').textContent = "Visit Source";
+            }
+
+            // Show Modal
+            document.getElementById('detail-view-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        window.closeDetailView = function() {
+            document.getElementById('detail-view-modal').classList.add('hidden');
+        }
+
+        // --- Form Logic ---
         window.handleTypeChange = function(select) {
             const customInput = document.getElementById('input-type-custom');
             const preview = document.getElementById('type-icon-preview');
-            
             let val = select.value;
-            
             if(val === 'custom') {
                 select.classList.add('hidden');
                 customInput.classList.remove('hidden');
                 customInput.focus();
-                // Default icon for custom
                 preview.innerHTML = `<i data-lucide="box" class="w-4 h-4 text-white"></i>`;
             } else {
-                // Update Icon Preview
                 const info = window.TYPE_CONFIG[val];
-                if(info) {
-                    preview.innerHTML = `<i data-lucide="${info.icon}" class="w-4 h-4 text-white"></i>`;
-                }
+                if(info) preview.innerHTML = `<i data-lucide="${info.icon}" class="w-4 h-4 text-white"></i>`;
             }
             lucide.createIcons();
         }
 
-        // Media & AI Handlers
         window.handleImageInputChanged = function(val) {
             const img = document.getElementById('thumb-preview-img');
             const icon = document.getElementById('thumb-preview-icon');
@@ -619,35 +715,26 @@
         window.handleMediaProcess = function() {
             const url = document.getElementById('input-url').value;
             const btn = document.getElementById('media-btn');
-            
-            // Check YouTube
             const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
             if (ytMatch) {
                 document.getElementById('input-type-select').value = 'video';
-                window.handleTypeChange(document.getElementById('input-type-select')); // Force icon update
-                
+                window.handleTypeChange(document.getElementById('input-type-select'));
                 const thumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
                 document.getElementById('input-image-url').value = thumbUrl;
                 handleImageInputChanged(thumbUrl);
-                
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set';
                 lucide.createIcons();
                 return;
             }
-            
-            // Check Direct Image Link
             if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) {
                 document.getElementById('input-type-select').value = 'image';
-                window.handleTypeChange(document.getElementById('input-type-select')); // Force icon update
-
+                window.handleTypeChange(document.getElementById('input-type-select'));
                 document.getElementById('input-image-url').value = url;
                 handleImageInputChanged(url);
-                
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set';
                 lucide.createIcons();
                 return;
             }
-            
             btn.innerHTML = '<i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Unknown';
             lucide.createIcons();
         }
@@ -667,10 +754,7 @@
 
         function getGeminiKey() {
              let key = localStorage.getItem('gemini_api_key');
-             if (!key) {
-                 key = prompt("Gemini API Key Required:");
-                 if (key) localStorage.setItem('gemini_api_key', key);
-             }
+             if (!key) { key = prompt("Gemini API Key Required:"); if (key) localStorage.setItem('gemini_api_key', key); }
              return key;
         }
 
@@ -679,10 +763,8 @@
             const btn = document.getElementById('ai-btn');
             if(!content) { alert('Please paste text content first.'); return; }
             const userKey = getGeminiKey(); if(!userKey) return;
-            
             btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...';
             lucide.createIcons();
-
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; 
             try { 
                 const res = await fetch(apiUrl, { 
@@ -701,10 +783,7 @@
                 document.getElementById('input-summary').value = json.summary || ''; 
                 if(json.tags) document.getElementById('input-tags').value = json.tags; 
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done';
-            } catch(e) { 
-                console.error(e); 
-                btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed';
-            } 
+            } catch(e) { console.error(e); btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed'; } 
             lucide.createIcons();
         }
 
@@ -743,27 +822,18 @@
             lucide.createIcons();
         }
 
-        // Save Function - FIXED
+        // Save Function
         window.handleSaveScrap = function() { 
             const btn = document.getElementById('save-button'); 
-            btn.textContent = 'Saving...'; 
-            btn.disabled = true; 
-            
+            btn.textContent = 'Saving...'; btn.disabled = true; 
             const title = document.getElementById('input-title').value;
             if(!title) { alert('Title is required!'); btn.textContent = 'Save'; btn.disabled = false; return; }
-
             const tagsInput = document.getElementById('input-tags').value;
             const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : []; 
-            
             let img = document.getElementById('input-image-url').value;
-            
             let type = document.getElementById('input-type-select').value;
-            if(type === 'custom') {
-                type = document.getElementById('input-type-custom').value || 'custom';
-            }
-            
+            if(type === 'custom') { type = document.getElementById('input-type-custom').value || 'custom'; }
             if(!img) { img = ""; }
-
             const newItem = { 
                 id: Date.now().toString(),
                 title: title, 
@@ -777,19 +847,13 @@
                 isFavorite: window.isNewItemFavorite, 
                 createdAt: new Date().toISOString()
             }; 
-            
             window.allScraps.unshift(newItem); 
             saveData();
-            
             closeAddModal(); 
             window.resetForm();
-            
-            // FIXED: Force switch to 'scraps' tab to ensure visibility
             switchTab('scraps');
             renderScraps();
-            
-            btn.textContent = 'Save'; 
-            btn.disabled = false; 
+            btn.textContent = 'Save'; btn.disabled = false; 
         }
 
         // Helper
@@ -799,24 +863,17 @@
             return window.TYPE_CONFIG['custom'];
         }
 
-        // Card Logic
+        // Card Creation
         function createCardElement(item) {
             const card = document.createElement('div');
             card.className = "card-swipe-container relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300";
-            
             const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
             const typeInfo = getTypeInfo(item.type);
-            
-            // Image Area
             let mediaContent = '';
             if (item.imageUrl && item.imageUrl.trim() !== '') {
-                // Safety check for image loading
                 mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
             } else {
-                mediaContent = `
-                <div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-                    <i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i>
-                </div>`;
+                mediaContent = `<div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400"><i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i></div>`;
             }
 
             card.innerHTML = `
@@ -825,12 +882,10 @@
                 <div class="relative w-full h-full bg-white z-10 transition-transform duration-200 flex flex-col" id="card-inner-${item.id}">
                     <div class="h-[60%] w-full overflow-hidden relative">
                          ${mediaContent}
-                         
                          <div class="absolute bottom-2 left-2 z-20 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm">
                             <i data-lucide="${typeInfo.icon}" class="w-3 h-3 text-white"></i>
                             <span class="text-[9px] text-white font-bold uppercase tracking-wide pt-0.5">${typeInfo.label || item.type}</span>
                          </div>
-
                          <div class="absolute top-2 right-2 z-20 p-2 cursor-pointer" onclick="event.stopPropagation(); toggleFavoriteById('${item.id}')">
                              <div class="bg-black/20 hover:bg-black/40 backdrop-blur-sm p-1.5 rounded-full transition">
                                 <i data-lucide="heart" class="w-4 h-4 ${favIconClass}"></i>
@@ -847,38 +902,21 @@
                         </div>
                     </div>
                 </div>`;
-                
             const inner = card.querySelector(`#card-inner-${item.id}`);
             inner.onclick = () => openMenuModal(item);
             return card;
         }
 
-        // Rendering - Fixed Safety
+        // Rendering
         window.renderScraps = function() {
             const grid = document.getElementById('scrap-grid'); 
-            if(!grid) return; // Safety
-            grid.innerHTML = '';
+            if(!grid) return; grid.innerHTML = '';
             let filtered = window.allScraps;
-            
-            if (window.currentTab === 'favorites') {
-                filtered = filtered.filter(s => s.isFavorite);
-            }
-
-            if (window.searchText) { 
-                const term = window.searchText.toLowerCase(); 
-                filtered = filtered.filter(s => s.title && s.title.toLowerCase().includes(term)); 
-            }
-            
+            if (window.currentTab === 'favorites') { filtered = filtered.filter(s => s.isFavorite); }
+            if (window.searchText) { const term = window.searchText.toLowerCase(); filtered = filtered.filter(s => s.title && s.title.toLowerCase().includes(term)); }
             if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
             else document.getElementById('empty-state').classList.add('hidden');
-
-            filtered.forEach(item => {
-                try {
-                    grid.appendChild(createCardElement(item));
-                } catch(e) {
-                    console.error("Skipping bad item", item);
-                }
-            });
+            filtered.forEach(item => { try { grid.appendChild(createCardElement(item)); } catch(e) {} });
             lucide.createIcons();
         }
 
@@ -891,12 +929,9 @@
                 folderEl.className = "bg-white rounded-sm p-6 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition flex flex-col items-center justify-center aspect-square";
                 folderEl.onclick = () => openFolder(folder);
                 folderEl.innerHTML = `
-                    <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3 text-gray-700">
-                        <i data-lucide="folder" class="w-6 h-6"></i>
-                    </div>
+                    <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3 text-gray-700"><i data-lucide="folder" class="w-6 h-6"></i></div>
                     <h3 class="font-serif italic text-lg text-black text-center">${folder}</h3>
-                    <span class="text-xs text-gray-400 mt-1">${items.length} Items</span>
-                `;
+                    <span class="text-xs text-gray-400 mt-1">${items.length} Items</span>`;
                 list.appendChild(folderEl);
             });
             lucide.createIcons();
@@ -909,11 +944,7 @@
             if(window.currentTab === 'folders' && !document.getElementById('view-folder-detail').classList.contains('hidden')) {
                  const folderName = document.querySelector('#view-title').textContent;
                  openFolder(folderName); 
-            } else if (window.currentTab === 'folders') {
-                renderFolders();
-            } else {
-                renderScraps();
-            }
+            } else if (window.currentTab === 'folders') { renderFolders(); } else { renderScraps(); }
         }
 
         window.toggleFavoriteById = function(id) {
@@ -924,9 +955,7 @@
                 if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
                       const folderName = document.querySelector('#view-title').textContent;
                       openFolder(folderName);
-                } else if (window.currentTab !== 'folders') {
-                    renderScraps();
-                }
+                } else if (window.currentTab !== 'folders') { renderScraps(); }
             }
         }
 
@@ -935,7 +964,19 @@
         window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 500); }
         window.openMenuModal = function(scrap) { window.currentScrap = scrap; window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }
         window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
-        window.menuAction = function(action) { const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); if(!scrap) return; if (action === 'visit') window.open(scrap.sourceUrl, '_blank'); else if (action === 'memo') openMemoModal(scrap); else if (action === 'favorite') toggleFavoriteById(scrap.id); else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id); closeMenuModal(); }
+        window.menuAction = function(action) { 
+            const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); 
+            if(!scrap) return; 
+            
+            // CHANGED: Open triggers detail view instead of direct window.open
+            if (action === 'open') openDetailView(scrap); 
+            else if (action === 'visit') window.open(scrap.sourceUrl, '_blank'); 
+            else if (action === 'memo') openMemoModal(scrap); 
+            else if (action === 'favorite') toggleFavoriteById(scrap.id); 
+            else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id); 
+            
+            closeMenuModal(); 
+        }
         window.openMemoModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('edit-memo-input').value = scrap.memo || ''; document.getElementById('memo-modal').classList.remove('hidden'); }
         window.closeMemoModal = function() { document.getElementById('memo-modal').classList.add('hidden'); }
         window.saveMemo = function() { const newMemo = document.getElementById('edit-memo-input').value; const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId); if(idx > -1) { window.allScraps[idx].memo = newMemo; saveData(); closeMemoModal(); } }

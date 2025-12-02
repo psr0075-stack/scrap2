@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Creative Archive</title>
+    <title>Creative Archive v5.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        /* 터치 및 기본 설정 */
         body { font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; background-color: #f9fafb; color: #18181b; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -84,9 +85,9 @@
     <div id="detail-view-modal" class="fixed inset-0 z-[400] hidden bg-white flex flex-col transition-all duration-300">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white z-10 sticky top-0">
             <button onclick="closeDetailView()" class="p-2 hover:bg-gray-100 rounded-full transition text-gray-600"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
-            <button onclick="openTypeSelectionInDetail()" class="text-xs font-bold uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full text-gray-500 hover:bg-black hover:text-white transition flex items-center gap-1">
+            <button onclick="openTypeSelectionInDetail()" class="text-xs font-bold uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full text-gray-500 hover:bg-black hover:text-white transition flex items-center gap-1 group">
                 <span id="detail-type-badge">ITEM</span>
-                <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                <i data-lucide="chevron-down" class="w-3 h-3 group-hover:rotate-180 transition"></i>
             </button>
             <div class="w-10"></div>
         </div>
@@ -101,7 +102,7 @@
                 </div>
                 <hr class="border-gray-100">
                 <div class="flex flex-col md:flex-row gap-6 items-stretch">
-                    <div class="w-full md:w-1/2 bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group">
+                    <div class="w-full md:w-1/2 bg-gray-200 rounded-lg overflow-hidden border border-gray-200 shadow-sm relative group">
                         <a id="detail-image-link" href="#" target="_blank" class="block w-full h-full relative cursor-pointer hover:opacity-95 transition">
                             <img id="detail-image" src="" class="w-full h-full object-contain bg-gray-200" alt="Detail Image">
                             <div id="detail-image-fallback" class="hidden w-full aspect-video flex items-center justify-center bg-gray-200 text-gray-400">
@@ -145,6 +146,7 @@
 
     <div id="menu-modal" class="fixed inset-0 hidden"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMenuModal()"></div><div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel">
         <h3 id="menu-title" class="text-xl font-serif italic text-black mb-6 truncate">Title</h3>
+        
         <div id="menu-main-actions">
             <button onclick="openInsightModal(window.currentScrap)" class="w-full mb-6 flex items-center justify-center p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-sm border border-indigo-100 text-indigo-900 hover:shadow-md transition"><i data-lucide="sparkles" class="w-5 h-5 mr-2 text-indigo-500"></i><span class="text-sm font-bold">Get AI Insight</span></button>
             <div class="grid grid-cols-5 gap-3 mb-4">
@@ -156,10 +158,12 @@
             </div>
             <button onclick="closeMenuModal()" class="w-full py-3 text-sm font-bold text-gray-400 mt-2 hover:text-black">CANCEL</button>
         </div>
+
         <div id="menu-folder-selection" class="hidden">
             <div class="flex items-center justify-between mb-4"><span class="text-sm font-bold text-gray-500">Move to...</span><button onclick="hideSubMenu()" class="text-xs bg-gray-100 px-2 py-1 rounded">Back</button></div>
             <div id="menu-folder-list-grid" class="grid grid-cols-2 gap-3 max-h-[40vh] overflow-y-auto"></div>
         </div>
+
         <div id="menu-type-selection" class="hidden">
             <div class="flex items-center justify-between mb-4"><span class="text-sm font-bold text-gray-500">Change Type</span><button onclick="hideSubMenu()" class="text-xs bg-gray-100 px-2 py-1 rounded">Back</button></div>
             <div class="grid grid-cols-2 gap-3">
@@ -185,7 +189,7 @@
             if (storedScraps) { 
                 try { 
                     window.allScraps = JSON.parse(storedScraps); 
-                    // AUTO-FIX: Convert old hqdefault (black bars) to mqdefault (no bars)
+                    // [AUTO-FIX] OLD DATA REPAIR: Force hqdefault -> mqdefault for existing videos
                     let modified = false;
                     window.allScraps.forEach(s => {
                         if(s.type === 'video' && s.imageUrl && s.imageUrl.includes('hqdefault.jpg')) {
@@ -194,7 +198,7 @@
                         }
                         if(s.folder) window.customFolders.add(s.folder);
                     });
-                    if(modified) saveData(); // Save the fix immediately
+                    if(modified) { saveData(); console.log("Fixed old thumbnails."); }
                 } catch(e) { window.allScraps = []; } 
             }
             const storedFolders = localStorage.getItem('my_archive_folders');
@@ -228,9 +232,7 @@
             if(!scrap) return;
             window.currentScrap = scrap;
             
-            // Set Title Input Value
             document.getElementById('detail-title-input').value = scrap.title || '';
-            
             const typeInfo = getTypeInfo(scrap.type);
             document.getElementById('detail-type-badge').textContent = typeInfo.label || scrap.type;
             
@@ -243,28 +245,17 @@
             fallbackIcon.setAttribute('data-lucide', typeInfo.icon);
             linkWrapper.href = scrap.sourceUrl || '#';
 
-            // Reset States
-            img.style.display = 'block';
-            fallback.classList.add('hidden');
-            resizeBtn.classList.remove('hidden');
+            img.style.display = 'block'; fallback.classList.add('hidden'); resizeBtn.classList.remove('hidden');
 
-            // Image handling (Sync with card view logic)
             if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { 
                 img.src = scrap.imageUrl; 
-                img.onerror = function() {
-                    this.style.display = 'none';
-                    fallback.classList.remove('hidden');
-                    resizeBtn.classList.add('hidden');
-                };
+                img.onerror = function() { this.style.display = 'none'; fallback.classList.remove('hidden'); resizeBtn.classList.add('hidden'); };
             } else { 
-                img.style.display = 'none'; 
-                fallback.classList.remove('hidden'); 
-                resizeBtn.classList.add('hidden');
+                img.style.display = 'none'; fallback.classList.remove('hidden'); resizeBtn.classList.add('hidden');
             }
 
             document.getElementById('detail-summary-text').textContent = scrap.summary || "No summary available.";
             document.getElementById('detail-content-full').textContent = scrap.fullContent || "No full content saved.";
-            
             switchDetailTab('summary');
             document.getElementById('detail-memo-input').value = scrap.memo || "";
 
@@ -276,34 +267,20 @@
         }
         window.closeDetailView = function() { document.getElementById('detail-view-modal').classList.add('hidden'); }
         
-        // --- Title Update Logic ---
         window.updateDetailTitle = function(val) {
             if(!window.currentScrap) return;
             const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
             if(idx > -1) {
-                window.allScraps[idx].title = val;
-                window.currentScrap.title = val;
-                saveData();
-                renderScraps(); 
-                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
-                     const currentViewFolder = document.querySelector('#view-title').textContent;
-                     openFolder(currentViewFolder);
-                }
+                window.allScraps[idx].title = val; window.currentScrap.title = val; saveData(); renderScraps(); 
+                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { openFolder(document.querySelector('#view-title').textContent); }
             }
         }
-        
-        window.handleTitleKey = function(e) {
-            if(e.key === 'Enter') { e.preventDefault(); e.target.blur(); }
-        }
+        window.handleTitleKey = function(e) { if(e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }
 
         window.toggleImageFit = function(e) {
             e.preventDefault(); e.stopPropagation();
             const img = document.getElementById('detail-image');
-            if (img.classList.contains('img-expanded')) {
-                img.classList.remove('img-expanded'); img.classList.add('img-natural');
-            } else {
-                img.classList.remove('img-natural'); img.classList.add('img-expanded');
-            }
+            if (img.classList.contains('img-expanded')) { img.classList.remove('img-expanded'); img.classList.add('img-natural'); } else { img.classList.remove('img-natural'); img.classList.add('img-expanded'); }
         }
 
         window.switchDetailTab = function(tab) {
@@ -345,31 +322,11 @@
             closeMenuModal(); 
         }
 
-        window.showFolderSelection = function() {
-            document.getElementById('menu-main-actions').classList.add('hidden');
-            document.getElementById('menu-folder-selection').classList.remove('hidden');
-            const grid = document.getElementById('menu-folder-list-grid'); grid.innerHTML = '';
-            Array.from(window.customFolders).forEach(f => {
-                const btn = document.createElement('button');
-                btn.className = "p-4 bg-gray-50 border border-gray-100 rounded text-sm font-medium text-black hover:bg-black hover:text-white transition truncate";
-                btn.textContent = f;
-                btn.onclick = () => moveToFolder(f);
-                grid.appendChild(btn);
-            });
-        }
+        window.showFolderSelection = function() { document.getElementById('menu-main-actions').classList.add('hidden'); document.getElementById('menu-folder-selection').classList.remove('hidden'); const grid = document.getElementById('menu-folder-list-grid'); grid.innerHTML = ''; Array.from(window.customFolders).forEach(f => { const btn = document.createElement('button'); btn.className = "p-4 bg-gray-50 border border-gray-100 rounded text-sm font-medium text-black hover:bg-black hover:text-white transition truncate"; btn.textContent = f; btn.onclick = () => moveToFolder(f); grid.appendChild(btn); }); }
+        window.showTypeSelection = function() { document.getElementById('menu-main-actions').classList.add('hidden'); document.getElementById('menu-type-selection').classList.remove('hidden'); }
+        window.hideSubMenu = function() { document.getElementById('menu-folder-selection').classList.add('hidden'); document.getElementById('menu-type-selection').classList.add('hidden'); document.getElementById('menu-main-actions').classList.remove('hidden'); }
         
-        // --- Type Selection Logic (New) ---
-        window.showTypeSelection = function() {
-            document.getElementById('menu-main-actions').classList.add('hidden');
-            document.getElementById('menu-type-selection').classList.remove('hidden');
-        }
-        
-        window.openTypeSelectionInDetail = function() {
-            if(!window.currentScrap) return;
-            window.selectedScrapId = window.currentScrap.id;
-            openMenuModal(window.currentScrap);
-            showTypeSelection();
-        }
+        window.openTypeSelectionInDetail = function() { if(!window.currentScrap) return; window.selectedScrapId = window.currentScrap.id; openMenuModal(window.currentScrap); showTypeSelection(); }
 
         window.changeType = function(newType) {
             const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId);
@@ -377,42 +334,22 @@
                 window.allScraps[idx].type = newType;
                 if(window.currentScrap && window.currentScrap.id === window.selectedScrapId) {
                     window.currentScrap.type = newType;
-                    // Update Badge in Detail View
                     const typeInfo = getTypeInfo(newType);
                     document.getElementById('detail-type-badge').textContent = typeInfo.label;
                     document.getElementById('detail-fallback-icon').setAttribute('data-lucide', typeInfo.icon);
                     lucide.createIcons();
                 }
-                saveData();
-                renderScraps();
-                closeMenuModal();
-                // If checking inside folder, refresh
-                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
-                     const currentViewFolder = document.querySelector('#view-title').textContent;
-                     openFolder(currentViewFolder);
-                }
+                saveData(); renderScraps(); closeMenuModal();
+                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { openFolder(document.querySelector('#view-title').textContent); }
             }
         }
 
-        window.hideSubMenu = function() {
-            document.getElementById('menu-folder-selection').classList.add('hidden');
-            document.getElementById('menu-type-selection').classList.add('hidden');
-            document.getElementById('menu-main-actions').classList.remove('hidden');
-        }
-        
         window.moveToFolder = function(targetFolder) {
             const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId);
             if(idx > -1) {
-                window.allScraps[idx].folder = targetFolder;
-                saveData();
-                renderScraps();
-                renderFolders();
-                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
-                     const currentViewFolder = document.querySelector('#view-title').textContent;
-                     openFolder(currentViewFolder);
-                }
-                alert(`Moved to ${targetFolder}`);
-                closeMenuModal();
+                window.allScraps[idx].folder = targetFolder; saveData(); renderScraps(); renderFolders();
+                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { openFolder(document.querySelector('#view-title').textContent); }
+                alert(`Moved to ${targetFolder}`); closeMenuModal();
             }
         }
 
@@ -423,10 +360,7 @@
                 reader.onload = function(evt) {
                     const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
                     if(idx > -1) {
-                        window.allScraps[idx].imageUrl = evt.target.result;
-                        saveData();
-                        renderScraps();
-                        alert('Thumbnail updated!');
+                        window.allScraps[idx].imageUrl = evt.target.result; saveData(); renderScraps(); alert('Thumbnail updated!');
                     }
                 };
                 reader.readAsDataURL(file);
@@ -443,7 +377,7 @@
             const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
             const typeInfo = getTypeInfo(item.type);
             let mediaContent = '';
-            // --- UPDATED: Contain with Gray-100 Background ---
+            // --- UPDATED: Contain with Visible Gray-200 Background ---
             if (item.imageUrl && item.imageUrl.trim() !== '') {
                 mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-200 transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
             } else {
@@ -488,20 +422,19 @@
         }
         window.handleMediaProcess = function() {
             const url = document.getElementById('input-url').value; const btn = document.getElementById('media-btn'); 
-            // UPDATED: Much stronger YouTube regex
+            // [FIXED] Robust YouTube Regex
             const ytRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const ytMatch = url.match(ytRegExp);
             
             if (ytMatch && ytMatch[2].length == 11) { 
                 document.getElementById('input-type-select').value = 'video'; 
                 window.handleTypeChange(document.getElementById('input-type-select')); 
-                // Always use mqdefault for no black bars
+                // Always use mqdefault to avoid black bars
                 const thumbUrl = `https://img.youtube.com/vi/${ytMatch[2]}/mqdefault.jpg`; 
                 document.getElementById('input-image-url').value = thumbUrl; 
                 handleImageInputChanged(thumbUrl); 
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set'; 
-                lucide.createIcons(); 
-                return; 
+                lucide.createIcons(); return; 
             }
             if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) { 
                 document.getElementById('input-type-select').value = 'image'; 
@@ -509,8 +442,7 @@
                 document.getElementById('input-image-url').value = url; 
                 handleImageInputChanged(url); 
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set'; 
-                lucide.createIcons(); 
-                return; 
+                lucide.createIcons(); return; 
             }
             btn.innerHTML = '<i data-lucide="link" class="w-3 h-3 mr-1"></i> Link Ready'; lucide.createIcons();
         }
@@ -549,18 +481,6 @@
             if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden'); else document.getElementById('empty-state').classList.add('hidden');
             filtered.forEach(item => { try { grid.appendChild(createCardElement(item)); } catch(e) {} }); lucide.createIcons();
         }
-        window.renderFolders = function() {
-            const list = document.getElementById('folder-list'); list.innerHTML = ''; const folders = Array.from(window.customFolders).sort();
-            folders.forEach(folder => { const items = window.allScraps.filter(s => s.folder === folder); const folderEl = document.createElement('div'); folderEl.className = "bg-white rounded-sm p-6 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition flex flex-col items-center justify-center aspect-square"; folderEl.onclick = () => openFolder(folder); folderEl.innerHTML = `<div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3 text-gray-700"><i data-lucide="folder" class="w-6 h-6"></i></div><h3 class="font-serif italic text-lg text-black text-center">${folder}</h3><span class="text-xs text-gray-400 mt-1">${items.length} Items</span>`; list.appendChild(folderEl); }); lucide.createIcons();
-        }
-        window.deleteScrap = function(id) { window.allScraps = window.allScraps.filter(s => s.id !== id); saveData(); if(window.currentTab === 'folders' && !document.getElementById('view-folder-detail').classList.contains('hidden')) { const folderName = document.querySelector('#view-title').textContent; openFolder(folderName); } else if (window.currentTab === 'folders') { renderFolders(); } else { renderScraps(); } }
-        window.toggleFavoriteById = function(id) { const idx = window.allScraps.findIndex(s => s.id === id); if(idx > -1) { window.allScraps[idx].isFavorite = !window.allScraps[idx].isFavorite; saveData(); if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { const folderName = document.querySelector('#view-title').textContent; openFolder(folderName); } else if (window.currentTab !== 'folders') { renderScraps(); } } }
-        window.openFolderModal = function() { document.getElementById('folder-modal').classList.remove('hidden'); }
-        window.closeFolderModal = function() { document.getElementById('folder-modal').classList.add('hidden'); }
-        window.createFolder = function() { const name = document.getElementById('new-folder-input').value.trim(); if(name) { window.customFolders.add(name); saveData(); closeFolderModal(); renderFolders(); updateFolderDropdown(); } }
-        window.updateFolderDropdown = function() { const datalist = document.getElementById('folder-options'); datalist.innerHTML = ''; window.customFolders.forEach(f => { const opt = document.createElement('option'); opt.value = f; datalist.appendChild(opt); }); }
-        window.closeInsightModal = function() { document.getElementById('insight-modal').classList.add('hidden'); }
-        window.openInsightModal = async function(scrap) { if(!scrap) return; closeMenuModal(); const modal = document.getElementById('insight-modal'); const contentDiv = document.getElementById('insight-content'); modal.classList.remove('hidden'); contentDiv.innerHTML = '<div class="flex justify-center py-10"><i data-lucide="loader" class="animate-spin text-slate-400 w-8 h-8"></i></div>'; lucide.createIcons(); const userKey = getGeminiKey(); if(!userKey) { contentDiv.innerHTML = '<p class="text-red-500 text-center">API Key Required.</p>'; return; } const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; const prompt = `Analyze: Title: ${scrap.title}, Summary: ${scrap.summary}. Insight in Korean (HTML format). Sections: 🔑 Key Themes, ✨ Creative Spark, 🚀 Action.`; try { const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }); const data = await res.json(); const text = data.candidates[0].content.parts[0].text; contentDiv.innerHTML = marked.parse(text); } catch(e) { contentDiv.innerHTML = `<p class="text-red-500 text-center">Failed</p>`; } }
         window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
     </script>
 </body>

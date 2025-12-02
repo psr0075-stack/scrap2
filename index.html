@@ -12,7 +12,6 @@
         body { font-family: 'Inter', sans-serif; overflow: hidden; touch-action: none; margin: 0; background-color: #f9fafb; color: #18181b; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .noselect { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
         
         #intro-scene { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; height: 80vh; min-height: 600px; z-index: 100; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); pointer-events: auto; display: flex; }
         .poster-card { width: 100%; height: 100%; border-radius: 16px; background: #ffffff; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"); border: 1px solid rgba(0, 0, 0, 0.06); box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02); display: flex; flex-direction: column; justify-content: space-between; padding: 60px 40px; position: relative; overflow: hidden; text-align: center; }
@@ -25,7 +24,6 @@
         .folder-tab.inactive { background: #27272a; color: #a1a1aa; z-index: 10; margin-top: 8px; font-weight: 400; }
         .detail-tab-btn { padding-bottom: 8px; font-size: 14px; font-weight: 600; color: #9ca3af; border-bottom: 2px solid transparent; transition: all 0.2s; }
         .detail-tab-btn.active { color: #000; border-bottom-color: #000; }
-        .card-press-active { transform: scale(0.95); transition: transform 0.2s ease; opacity: 0.8; }
         #add-modal, #menu-modal, #memo-modal, #insight-modal, #folder-modal, #detail-view-modal { z-index: 200; }
     </style>
 </head>
@@ -104,7 +102,7 @@
                             </div>
                         </div>
                         <div class="flex items-center justify-between px-1">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider"><i data-lucide="move-vertical" class="w-3 h-3 inline mr-1"></i>Size</span>
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider"><i data-lucide="move-vertical" class="w-3 h-3 inline mr-1"></i>Adjust Size</span>
                             <input type="range" min="150" max="600" value="300" class="w-full ml-3 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="resizeDetailImage(this.value)">
                         </div>
                     </div>
@@ -145,8 +143,6 @@
 
     <div id="menu-modal" class="fixed inset-0 hidden"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMenuModal()"></div><div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel"><h3 id="menu-title" class="text-xl font-serif italic text-black mb-6 truncate">Title</h3><button onclick="openInsightModal(window.currentScrap)" class="w-full mb-6 flex items-center justify-center p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-sm border border-indigo-100 text-indigo-900 hover:shadow-md transition"><i data-lucide="sparkles" class="w-5 h-5 mr-2 text-indigo-500"></i><span class="text-sm font-bold">Get AI Insight</span></button><div class="grid grid-cols-4 gap-4 mb-4"><button onclick="menuAction('open')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="maximize-2" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Open</span></button><button onclick="menuAction('edit-thumb')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition"><i data-lucide="image-plus" class="w-5 h-5 text-blue-500"></i></div><span class="text-xs font-medium text-blue-500">Thumb</span></button><button onclick="menuAction('favorite')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="star" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Fav</span></button><button onclick="menuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></div><span class="text-xs font-medium text-red-500">Delete</span></button></div><button onclick="closeMenuModal()" class="w-full py-3 text-sm font-bold text-gray-400 mt-2 hover:text-black">CANCEL</button></div></div>
 
-    <div id="memo-modal" class="fixed inset-0 hidden flex items-center justify-center px-6"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMemoModal()"></div><div class="bg-white w-full max-w-md rounded-lg p-8 shadow-2xl relative z-10 border border-gray-100"><h3 class="font-serif italic text-xl text-black mb-6">Thoughts</h3><textarea id="edit-memo-input" rows="6" class="w-full bg-gray-50 border-none rounded-sm p-5 text-sm resize-none mb-6 focus:ring-1 focus:ring-black" placeholder="Write something..."></textarea><button onclick="saveMemo()" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-lg">Save Memo</button></div></div>
-
     <script>
         window.TYPE_CONFIG = { 'news': { icon: 'newspaper', label: 'Article' }, 'video': { icon: 'youtube', label: 'Video' }, 'image': { icon: 'image', label: 'Image' }, 'paper': { icon: 'file-text', label: 'Paper' }, 'custom': { icon: 'box', label: 'Other' } };
         window.allScraps = []; window.currentTab = 'scraps'; window.selectedScrapId = null; window.searchText = ''; window.currentScrap = null; window.customFolders = new Set(['General', 'Design', 'Ideas', 'Work']); window.isNewItemFavorite = false;
@@ -182,7 +178,7 @@
         }
         window.closeFolderDetail = function() { document.getElementById('view-folder-detail').classList.add('hidden'); document.getElementById('view-folders').classList.remove('hidden'); document.getElementById('folder-back-btn').classList.add('hidden'); document.querySelector('#view-title').textContent = 'My Folders'; }
 
-        // --- Detail View (SMART RATIO LOGIC) ---
+        // --- Detail View Logic ---
         window.resizeDetailImage = function(val) {
             const container = document.getElementById('detail-image-container');
             if(container) container.style.height = val + 'px';
@@ -201,28 +197,24 @@
             const fallbackIcon = document.getElementById('detail-fallback-icon');
             fallbackIcon.setAttribute('data-lucide', typeInfo.icon);
 
-            // Apply Smart Ratio Styles
+            // Apply Smart Ratio & Styles
             container.className = "w-full rounded-lg overflow-hidden shadow-sm relative group flex items-center justify-center transition-all duration-300"; // Reset classes
             img.className = "w-full h-full transition-all duration-300"; // Reset classes
 
             if (scrap.type === 'video') {
-                // Video: 16:9, Contain, Black BG
                 container.classList.add('aspect-video', 'bg-black');
-                container.style.height = 'auto'; // Let aspect-ratio handle it
+                container.style.height = 'auto'; 
                 img.classList.add('object-contain');
             } else if (scrap.type === 'paper') {
-                // Paper: 3:4 (Vertical), Contain, Gray BG
                 container.classList.add('aspect-[3/4]', 'bg-gray-100');
                 container.style.height = 'auto';
                 img.classList.add('object-contain');
             } else {
-                // News/Image/Custom: 4:3 (Photo), Cover, Gray BG
                 container.classList.add('aspect-[4/3]', 'bg-gray-100');
                 container.style.height = 'auto';
                 img.classList.add('object-cover');
             }
 
-            // Always show container, img logic
             if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { 
                 img.src = scrap.imageUrl; 
                 img.style.display = 'block'; 
@@ -275,10 +267,9 @@
             if(!scrap) return; 
             if (action === 'open') openDetailView(scrap); 
             else if (action === 'visit') window.open(scrap.sourceUrl, '_blank'); 
-            else if (action === 'memo') openMemoModal(scrap); 
+            else if (action === 'edit-thumb') document.getElementById('hidden-thumb-input').click(); 
             else if (action === 'favorite') toggleFavoriteById(scrap.id); 
             else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id);
-            else if (action === 'edit-thumb') document.getElementById('hidden-thumb-input').click(); 
             closeMenuModal(); 
         }
 
@@ -290,77 +281,82 @@
                     const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
                     if(idx > -1) {
                         window.allScraps[idx].imageUrl = evt.target.result;
+                        window.currentScrap.imageUrl = evt.target.result; // Update current
                         saveData();
                         renderScraps(); 
-                        alert('Thumbnail updated!');
+                        alert('Thumbnail updated! Re-open to see changes.');
                     }
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        window.openMemoModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('edit-memo-input').value = scrap.memo || ''; document.getElementById('memo-modal').classList.remove('hidden'); }
-        window.closeMemoModal = function() { document.getElementById('memo-modal').classList.add('hidden'); }
-        window.saveMemo = function() { const newMemo = document.getElementById('edit-memo-input').value; const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId); if(idx > -1) { window.allScraps[idx].memo = newMemo; saveData(); closeMemoModal(); } }
-
         function createCardElement(item) {
             const card = document.createElement('div');
             card.className = "noselect relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300";
             const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
             const typeInfo = getTypeInfo(item.type);
+            
             let mediaContent = '';
             if (item.imageUrl && item.imageUrl.trim() !== '') {
                 mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
             } else {
                 mediaContent = `<div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400"><i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i></div>`;
             }
+            
             card.innerHTML = `
-                <div class="relative w-full h-full bg-white z-10 flex flex-col pointer-events-none" id="card-inner-${item.id}">
+                <div class="relative w-full h-full bg-white z-10 flex flex-col" id="card-inner-${item.id}">
                     <div class="h-[60%] w-full overflow-hidden relative">
                          ${mediaContent}
                          <div class="absolute bottom-2 left-2 z-20 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm">
                             <i data-lucide="${typeInfo.icon}" class="w-3 h-3 text-white"></i>
                             <span class="text-[9px] text-white font-bold uppercase tracking-wide pt-0.5">${typeInfo.label || item.type}</span>
                          </div>
-                         <div class="absolute top-2 right-2 z-20 p-2">
-                             <div class="bg-black/20 backdrop-blur-sm p-1.5 rounded-full"><i data-lucide="heart" class="w-4 h-4 ${favIconClass}"></i></div>
+                         <div class="absolute top-2 right-2 z-30 p-2" onclick="event.stopPropagation(); openMenuModal(window.allScraps.find(s => s.id === '${item.id}'));">
+                             <div class="bg-black/20 hover:bg-black/50 backdrop-blur-sm p-1.5 rounded-full transition text-white">
+                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                             </div>
                          </div>
                     </div>
                     <div class="h-[40%] p-5 flex flex-col justify-between bg-white">
                         <div><span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block truncate">${item.folder || 'Uncategorized'}</span><h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${item.title}</h3></div>
-                        <div class="flex flex-wrap gap-1 mt-1">${(item.tags || []).slice(0,2).map(t => `<span class="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">#${t}</span>`).join('')}</div>
+                        <div class="flex justify-between items-center mt-1">
+                            <div class="flex flex-wrap gap-1">${(item.tags || []).slice(0,2).map(t => `<span class="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">#${t}</span>`).join('')}</div>
+                            <i data-lucide="heart" class="w-3 h-3 ${item.isFavorite ? 'text-red-500 fill-current' : 'text-gray-300'}"></i>
+                        </div>
                     </div>
                 </div>`;
-            let pressTimer; let isLongPress = false;
-            const startPress = (e) => { isLongPress = false; card.classList.add('card-press-active'); pressTimer = setTimeout(() => { isLongPress = true; card.classList.remove('card-press-active'); if(navigator.vibrate) navigator.vibrate(50); openMenuModal(item); }, 600); };
-            const cancelPress = (e) => { clearTimeout(pressTimer); card.classList.remove('card-press-active'); };
-            const handleEnd = (e) => { clearTimeout(pressTimer); card.classList.remove('card-press-active'); if (!isLongPress) { openDetailView(item); } };
-            card.addEventListener('touchstart', startPress, {passive: true}); card.addEventListener('touchend', handleEnd); card.addEventListener('touchmove', cancelPress);
-            card.addEventListener('mousedown', startPress); card.addEventListener('mouseup', handleEnd); card.addEventListener('mouseleave', cancelPress);
-            card.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
+            
+            // Standard Click Event
+            card.onclick = () => openDetailView(item);
             return card;
         }
         
         function getTypeInfo(type) { const t = type ? type.toLowerCase() : 'custom'; return window.TYPE_CONFIG[t] || window.TYPE_CONFIG['custom']; }
+        
         window.handleTypeChange = function(select) {
             const customInput = document.getElementById('input-type-custom'); const preview = document.getElementById('type-icon-preview'); let val = select.value;
             if(val === 'custom') { select.classList.add('hidden'); customInput.classList.remove('hidden'); customInput.focus(); preview.innerHTML = `<i data-lucide="box" class="w-4 h-4 text-white"></i>`; } 
             else { const info = window.TYPE_CONFIG[val]; if(info) preview.innerHTML = `<i data-lucide="${info.icon}" class="w-4 h-4 text-white"></i>`; } lucide.createIcons();
         }
+        
         window.handleImageInputChanged = function(val) {
             const img = document.getElementById('thumb-preview-img'); const icon = document.getElementById('thumb-preview-icon');
             if(val && val.trim() !== '') { img.src = val; img.classList.remove('hidden'); icon.style.display = 'none'; } else { img.src = ''; img.classList.add('hidden'); icon.style.display = 'block'; }
         }
+        
         window.handleMediaProcess = function() {
             const url = document.getElementById('input-url').value; const btn = document.getElementById('media-btn'); 
             const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
             if (ytMatch) { document.getElementById('input-type-select').value = 'video'; window.handleTypeChange(document.getElementById('input-type-select')); const thumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`; document.getElementById('input-image-url').value = thumbUrl; handleImageInputChanged(thumbUrl); btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set'; lucide.createIcons(); return; }
             if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) { document.getElementById('input-type-select').value = 'image'; window.handleTypeChange(document.getElementById('input-type-select')); document.getElementById('input-image-url').value = url; handleImageInputChanged(url); btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set'; lucide.createIcons(); return; }
-            // Force Link Ready
             btn.innerHTML = '<i data-lucide="link" class="w-3 h-3 mr-1"></i> Link Ready'; lucide.createIcons();
         }
+        
         window.handleFileUpload = function(event) { const file = event.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('input-image-url').value = e.target.result; handleImageInputChanged(e.target.result); }; reader.readAsDataURL(file); } }
+        
         function getGeminiKey() { let key = localStorage.getItem('gemini_api_key'); if (!key) { key = prompt("Gemini API Key Required:"); if (key) localStorage.setItem('gemini_api_key', key); } return key; }
+        
         window.handleAIProcess = async function() {
             const content = document.getElementById('input-content').value; const btn = document.getElementById('ai-btn'); if(!content) { alert('Please paste text content first.'); return; } const userKey = getGeminiKey(); if(!userKey) return;
             btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...'; lucide.createIcons();
@@ -370,23 +366,47 @@
             document.getElementById('input-title').value = json.title || ''; document.getElementById('input-summary').value = json.summary || ''; if(json.tags) document.getElementById('input-tags').value = json.tags; btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done';
             } catch(e) { console.error(e); btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed'; } lucide.createIcons();
         }
+        
         window.resetForm = function() {
             const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea'); inputs.forEach(input => input.value = ''); handleImageInputChanged('');
             const typeSelect = document.getElementById('input-type-select'); typeSelect.value = 'news'; typeSelect.classList.remove('hidden'); document.getElementById('input-type-custom').classList.add('hidden'); window.handleTypeChange(typeSelect); 
             document.getElementById('media-btn').textContent = 'Check Media'; document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill';
             window.isNewItemFavorite = false; updateNewFavoriteBtn(); lucide.createIcons();
         }
+        
         window.toggleNewFavorite = function() { window.isNewItemFavorite = !window.isNewItemFavorite; updateNewFavoriteBtn(); }
+        
         function updateNewFavoriteBtn() { const btn = document.getElementById('new-favorite-btn'); if(window.isNewItemFavorite) { btn.classList.remove('text-gray-400'); btn.classList.add('text-red-500', 'fill-current'); btn.innerHTML = '<i data-lucide="heart" class="w-5 h-5 fill-current"></i>'; } else { btn.classList.add('text-gray-400'); btn.classList.remove('text-red-500', 'fill-current'); btn.innerHTML = '<i data-lucide="heart" class="w-5 h-5"></i>'; } lucide.createIcons(); }
+        
         window.handleSaveScrap = function() { 
             const btn = document.getElementById('save-button'); btn.textContent = 'Saving...'; btn.disabled = true; 
             const title = document.getElementById('input-title').value; if(!title) { alert('Title is required!'); btn.textContent = 'Save'; btn.disabled = false; return; }
             const tagsInput = document.getElementById('input-tags').value; const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : []; 
-            let img = document.getElementById('input-image-url').value; let type = document.getElementById('input-type-select').value; if(type === 'custom') { type = document.getElementById('input-type-custom').value || 'custom'; } if(!img) { img = ""; }
+            let img = document.getElementById('input-image-url').value; 
+            
+            // AUTO DETECT TYPE IF NOT CHECKED
+            const url = document.getElementById('input-url').value;
+            let type = document.getElementById('input-type-select').value;
+            if(type === 'custom') { type = document.getElementById('input-type-custom').value || 'custom'; }
+            
+            // Auto-fill logic on save if missing
+            if(!img && url) {
+                const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
+                if (ytMatch) { 
+                    type = 'video'; 
+                    img = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`; 
+                } else if(url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+                    type = 'image';
+                    img = url;
+                }
+            }
+            if(!img) img = "";
+
             const fullContent = document.getElementById('input-content').value;
             const newItem = { id: Date.now().toString(), title: title, summary: document.getElementById('input-summary').value, fullContent: fullContent, sourceUrl: document.getElementById('input-url').value, imageUrl: img, type: type, folder: document.getElementById('input-folder').value || 'General', memo: document.getElementById('input-memo').value, tags: tags, isFavorite: window.isNewItemFavorite, createdAt: new Date().toISOString() }; 
             window.allScraps.unshift(newItem); saveData(); closeAddModal(); window.resetForm(); switchTab('scraps'); renderScraps(); btn.textContent = 'Save'; btn.disabled = false; 
         }
+        
         window.renderScraps = function() {
             const grid = document.getElementById('scrap-grid'); if(!grid) return; grid.innerHTML = ''; let filtered = window.allScraps;
             if (window.currentTab === 'favorites') { filtered = filtered.filter(s => s.isFavorite); }

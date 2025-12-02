@@ -91,13 +91,24 @@
                     <div id="detail-tags" class="flex flex-wrap justify-center gap-2"></div>
                 </div>
                 <hr class="border-gray-100">
-                <div class="flex flex-col md:flex-row gap-6 items-stretch">
-                    <div class="w-full md:w-1/2 aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group">
-                        <img id="detail-image" src="" class="w-full h-full object-cover" alt="Detail Image" onerror="this.style.display='none'; document.getElementById('detail-image-fallback').style.display='flex';">
-                        <div id="detail-image-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-400">
-                            <i id="detail-fallback-icon" data-lucide="image" class="w-16 h-16 opacity-50"></i>
+                
+                <div class="flex flex-col md:flex-row gap-6 items-start">
+                    <div class="w-full md:w-1/2 flex flex-col gap-2">
+                        <div id="detail-image-container" class="w-full rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group flex items-center justify-center transition-all duration-300">
+                            <img id="detail-image" src="" class="w-full h-full transition-all duration-300" alt="Detail Image" onerror="this.style.display='none'; document.getElementById('detail-image-fallback').style.display='flex';">
+                            <div id="detail-image-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-400">
+                                <div class="text-center">
+                                    <i id="detail-fallback-icon" data-lucide="image" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
+                                    <span class="text-xs uppercase font-bold tracking-wider opacity-50">No Preview</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between px-1">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider"><i data-lucide="move-vertical" class="w-3 h-3 inline mr-1"></i>Size</span>
+                            <input type="range" min="150" max="600" value="300" class="w-full ml-3 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="resizeDetailImage(this.value)">
                         </div>
                     </div>
+
                     <div class="w-full md:w-1/2 flex flex-col justify-between space-y-4">
                         <div class="flex space-x-6 border-b border-gray-100 mb-2">
                             <button onclick="switchDetailTab('summary')" id="tab-btn-summary" class="detail-tab-btn active">Summary</button>
@@ -171,7 +182,12 @@
         }
         window.closeFolderDetail = function() { document.getElementById('view-folder-detail').classList.add('hidden'); document.getElementById('view-folders').classList.remove('hidden'); document.getElementById('folder-back-btn').classList.add('hidden'); document.querySelector('#view-title').textContent = 'My Folders'; }
 
-        // --- Detail View (Fixed) ---
+        // --- Detail View (SMART RATIO LOGIC) ---
+        window.resizeDetailImage = function(val) {
+            const container = document.getElementById('detail-image-container');
+            if(container) container.style.height = val + 'px';
+        }
+
         window.openDetailView = function(scrap) {
             if(!scrap) return;
             window.currentScrap = scrap;
@@ -180,13 +196,41 @@
             document.getElementById('detail-type-badge').textContent = typeInfo.label || scrap.type;
             
             const img = document.getElementById('detail-image');
+            const container = document.getElementById('detail-image-container');
             const fallback = document.getElementById('detail-image-fallback');
             const fallbackIcon = document.getElementById('detail-fallback-icon');
             fallbackIcon.setAttribute('data-lucide', typeInfo.icon);
 
-            // Always attempt to show image, fallback if empty
-            if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { img.src = scrap.imageUrl; img.style.display = 'block'; fallback.classList.add('hidden'); } 
-            else { img.style.display = 'none'; fallback.classList.remove('hidden'); }
+            // Apply Smart Ratio Styles
+            container.className = "w-full rounded-lg overflow-hidden shadow-sm relative group flex items-center justify-center transition-all duration-300"; // Reset classes
+            img.className = "w-full h-full transition-all duration-300"; // Reset classes
+
+            if (scrap.type === 'video') {
+                // Video: 16:9, Contain, Black BG
+                container.classList.add('aspect-video', 'bg-black');
+                container.style.height = 'auto'; // Let aspect-ratio handle it
+                img.classList.add('object-contain');
+            } else if (scrap.type === 'paper') {
+                // Paper: 3:4 (Vertical), Contain, Gray BG
+                container.classList.add('aspect-[3/4]', 'bg-gray-100');
+                container.style.height = 'auto';
+                img.classList.add('object-contain');
+            } else {
+                // News/Image/Custom: 4:3 (Photo), Cover, Gray BG
+                container.classList.add('aspect-[4/3]', 'bg-gray-100');
+                container.style.height = 'auto';
+                img.classList.add('object-cover');
+            }
+
+            // Always show container, img logic
+            if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { 
+                img.src = scrap.imageUrl; 
+                img.style.display = 'block'; 
+                fallback.classList.add('hidden'); 
+            } else { 
+                img.style.display = 'none'; 
+                fallback.classList.remove('hidden'); 
+            }
 
             document.getElementById('detail-summary-text').textContent = scrap.summary || "No summary available.";
             document.getElementById('detail-full-text').textContent = scrap.fullContent || "No full content saved.";
@@ -226,7 +270,6 @@
         window.openMenuModal = function(scrap) { window.currentScrap = scrap; window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }
         window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
         
-        // --- UPDATED Menu Actions with Thumb Edit ---
         window.menuAction = function(action) { 
             const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); 
             if(!scrap) return; 
@@ -248,7 +291,7 @@
                     if(idx > -1) {
                         window.allScraps[idx].imageUrl = evt.target.result;
                         saveData();
-                        renderScraps(); // Re-render grid
+                        renderScraps(); 
                         alert('Thumbnail updated!');
                     }
                 };
@@ -313,7 +356,7 @@
             const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
             if (ytMatch) { document.getElementById('input-type-select').value = 'video'; window.handleTypeChange(document.getElementById('input-type-select')); const thumbUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`; document.getElementById('input-image-url').value = thumbUrl; handleImageInputChanged(thumbUrl); btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set'; lucide.createIcons(); return; }
             if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) { document.getElementById('input-type-select').value = 'image'; window.handleTypeChange(document.getElementById('input-type-select')); document.getElementById('input-image-url').value = url; handleImageInputChanged(url); btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set'; lucide.createIcons(); return; }
-            // Allow unknown links (Articles)
+            // Force Link Ready
             btn.innerHTML = '<i data-lucide="link" class="w-3 h-3 mr-1"></i> Link Ready'; lucide.createIcons();
         }
         window.handleFileUpload = function(event) { const file = event.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('input-image-url').value = e.target.result; handleImageInputChanged(e.target.result); }; reader.readAsDataURL(file); } }

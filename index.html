@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Archive">
 
-    <title>Creative Archive v6.1 (Final Fix)</title>
+    <title>Creative Archive v6.2 (Final)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -225,6 +225,7 @@
         // --- 2. DATA SYNC + RECOVERY LOGIC ---
         function loadData() {
             if (!db) {
+                // Fallback: No Firebase
                 const storedScraps = localStorage.getItem('my_archive_scraps');
                 if (storedScraps) { try { window.allScraps = JSON.parse(storedScraps); } catch(e) { window.allScraps = []; } }
                 const storedFolders = localStorage.getItem('my_archive_folders');
@@ -318,9 +319,10 @@
                 return;
             }
             db.ref('scraps').set(window.allScraps).catch(e => console.error("Scrap Save Error:", e));
+            // FIXED: Ensure folders are saved as Array
             db.ref('folders').set(Array.from(window.customFolders)).catch(e => {
                 console.error("Folder Save Error:", e);
-                alert("⚠️ 저장 실패! Firebase Rules를 확인해주세요.");
+                alert("⚠️ 저장 실패! Firebase Console > Build > Realtime Database > [규칙(Rules)]에서 read/write를 true로 변경했는지 확인해주세요.");
             });
         }
 
@@ -372,7 +374,7 @@
             }
         }
 
-        // --- IMPROVED: Folder Creation Logic ---
+        // --- IMPROVED: Folder Creation Logic (UI Update First) ---
         window.createFolder = function() {
             const input = document.getElementById('new-folder-input');
             const name = input.value.trim();
@@ -381,8 +383,14 @@
                     alert("이미 존재하는 폴더입니다.");
                     return;
                 }
+                // 1. Update UI Immediately (Optimistic)
                 window.customFolders.add(name);
+                renderFolders(); 
+                updateFolderDropdown();
+                
+                // 2. Save to Server
                 saveData(); 
+                
                 input.value = '';
                 closeFolderModal();
             } else {

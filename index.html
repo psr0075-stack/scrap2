@@ -28,7 +28,6 @@
         .card-press-active { transform: scale(0.95); transition: transform 0.2s ease; opacity: 0.8; }
         #add-modal, #menu-modal, #memo-modal, #insight-modal, #folder-modal, #detail-view-modal { z-index: 200; }
         
-        /* Updated Image Styles for Ratio Handling */
         .img-natural { width: 100%; height: auto; display: block; }
         .img-expanded { width: 100%; height: 100%; object-fit: cover; }
     </style>
@@ -91,7 +90,7 @@
         <div class="flex-grow overflow-y-auto custom-scrollbar bg-white p-6 pb-20">
             <div class="max-w-4xl mx-auto space-y-6">
                 <div class="text-center">
-                    <h1 id="detail-title" class="font-serif italic text-3xl md:text-5xl text-black leading-tight mb-3">Title Here</h1>
+                    <input type="text" id="detail-title-input" class="w-full font-serif italic text-2xl md:text-3xl text-black text-center bg-transparent border-b border-transparent focus:border-gray-300 outline-none transition mb-3 placeholder-gray-300" onchange="updateDetailTitle(this.value)" placeholder="Enter Title">
                     <div id="detail-tags" class="flex flex-wrap justify-center gap-2"></div>
                 </div>
                 <hr class="border-gray-100">
@@ -99,12 +98,10 @@
                     <div class="w-full md:w-1/2 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group">
                         <a id="detail-image-link" href="#" target="_blank" class="block w-full h-full relative cursor-pointer hover:opacity-95 transition">
                             <img id="detail-image" src="" class="w-full h-auto block" alt="Detail Image">
-                            
                             <div id="detail-image-fallback" class="hidden w-full aspect-video flex items-center justify-center bg-gray-200 text-gray-400">
                                 <i id="detail-fallback-icon" data-lucide="image" class="w-16 h-16 opacity-50"></i>
                             </div>
                         </a>
-                        
                         <button id="detail-resize-btn" onclick="toggleImageFit(event)" class="absolute bottom-3 right-3 bg-black/70 hover:bg-black text-white p-2 rounded-full backdrop-blur-sm transition z-20" title="Fit / Fill">
                             <i data-lucide="maximize" class="w-4 h-4"></i>
                         </button>
@@ -196,11 +193,14 @@
         }
         window.closeFolderDetail = function() { document.getElementById('view-folder-detail').classList.add('hidden'); document.getElementById('view-folders').classList.remove('hidden'); document.getElementById('folder-back-btn').classList.add('hidden'); document.querySelector('#view-title').textContent = 'My Folders'; }
 
-        // --- Detail View Logic (Fixed Image Sync) ---
+        // --- Detail View Logic ---
         window.openDetailView = function(scrap) {
             if(!scrap) return;
             window.currentScrap = scrap;
-            document.getElementById('detail-title').textContent = scrap.title;
+            
+            // Set Title Input Value
+            document.getElementById('detail-title-input').value = scrap.title || '';
+            
             const typeInfo = getTypeInfo(scrap.type);
             document.getElementById('detail-type-badge').textContent = typeInfo.label || scrap.type;
             
@@ -218,17 +218,15 @@
             fallback.classList.add('hidden');
             resizeBtn.classList.remove('hidden');
 
-            // --- CRITICAL FIX: Ensure Image Display ---
+            // Image handling (Sync with card view logic)
             if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { 
                 img.src = scrap.imageUrl; 
-                // Error Handler to trigger fallback if link is broken
                 img.onerror = function() {
                     this.style.display = 'none';
                     fallback.classList.remove('hidden');
-                    resizeBtn.classList.add('hidden'); // Hide resize if no image
+                    resizeBtn.classList.add('hidden');
                 };
             } else { 
-                // No image data -> Force Fallback
                 img.style.display = 'none'; 
                 fallback.classList.remove('hidden'); 
                 resizeBtn.classList.add('hidden');
@@ -248,17 +246,32 @@
         }
         window.closeDetailView = function() { document.getElementById('detail-view-modal').classList.add('hidden'); }
         
-        // Image Fit Toggle logic
+        // --- Title Update Logic ---
+        window.updateDetailTitle = function(val) {
+            if(!window.currentScrap) return;
+            const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
+            if(idx > -1) {
+                window.allScraps[idx].title = val;
+                window.currentScrap.title = val; // Update current ref
+                saveData();
+                renderScraps(); // Update grid behind modal
+                // If inside a folder view, we might want to refresh that too, but renderScraps/renderFolders usually covers it.
+                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
+                     const currentViewFolder = document.querySelector('#view-title').textContent;
+                     openFolder(currentViewFolder);
+                }
+            }
+        }
+
         window.toggleImageFit = function(e) {
             e.preventDefault(); e.stopPropagation();
             const img = document.getElementById('detail-image');
-            // Toggle classes for fit vs fill
             if (img.classList.contains('img-expanded')) {
                 img.classList.remove('img-expanded');
-                img.classList.add('img-natural'); // Show full image (natural ratio)
+                img.classList.add('img-natural');
             } else {
                 img.classList.remove('img-natural');
-                img.classList.add('img-expanded'); // Crop to fill container
+                img.classList.add('img-expanded');
             }
         }
 

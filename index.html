@@ -12,6 +12,7 @@
         body { font-family: 'Inter', sans-serif; overflow: hidden; touch-action: none; margin: 0; background-color: #f9fafb; color: #18181b; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .noselect { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
         
         #intro-scene { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; height: 80vh; min-height: 600px; z-index: 100; transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); pointer-events: auto; display: flex; }
         .poster-card { width: 100%; height: 100%; border-radius: 16px; background: #ffffff; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"); border: 1px solid rgba(0, 0, 0, 0.06); box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02); display: flex; flex-direction: column; justify-content: space-between; padding: 60px 40px; position: relative; overflow: hidden; text-align: center; }
@@ -89,16 +90,12 @@
                     <div id="detail-tags" class="flex flex-wrap justify-center gap-2"></div>
                 </div>
                 <hr class="border-gray-100">
-                
                 <div class="flex flex-col md:flex-row gap-6 items-start">
                     <div class="w-full md:w-1/2 flex flex-col gap-2">
                         <div id="detail-image-container" class="w-full rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group flex items-center justify-center transition-all duration-300">
                             <img id="detail-image" src="" class="w-full h-full transition-all duration-300" alt="Detail Image" onerror="this.style.display='none'; document.getElementById('detail-image-fallback').style.display='flex';">
                             <div id="detail-image-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-400">
-                                <div class="text-center">
-                                    <i id="detail-fallback-icon" data-lucide="image" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
-                                    <span class="text-xs uppercase font-bold tracking-wider opacity-50">No Preview</span>
-                                </div>
+                                <div class="text-center"><i id="detail-fallback-icon" data-lucide="image" class="w-12 h-12 mx-auto mb-2 opacity-50"></i><span class="text-xs uppercase font-bold tracking-wider opacity-50">No Preview</span></div>
                             </div>
                         </div>
                         <div class="flex items-center justify-between px-1">
@@ -106,22 +103,16 @@
                             <input type="range" min="150" max="600" value="300" class="w-full ml-3 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="resizeDetailImage(this.value)">
                         </div>
                     </div>
-
                     <div class="w-full md:w-1/2 flex flex-col justify-between space-y-4">
                         <div class="flex space-x-6 border-b border-gray-100 mb-2">
                             <button onclick="switchDetailTab('summary')" id="tab-btn-summary" class="detail-tab-btn active">Summary</button>
                             <button onclick="switchDetailTab('full')" id="tab-btn-full" class="detail-tab-btn">Full Text</button>
                         </div>
                         <div class="flex-grow min-h-[120px]">
-                            <div id="detail-content-summary" class="block bg-gray-50 rounded-lg p-4 border border-gray-100 h-full overflow-y-auto max-h-[300px] custom-scrollbar">
-                                <p id="detail-summary-text" class="text-gray-700 leading-relaxed text-sm">No summary.</p>
-                            </div>
+                            <div id="detail-content-summary" class="block bg-gray-50 rounded-lg p-4 border border-gray-100 h-full overflow-y-auto max-h-[300px] custom-scrollbar"><p id="detail-summary-text" class="text-gray-700 leading-relaxed text-sm">No summary.</p></div>
                             <div id="detail-content-full" class="hidden bg-white p-4 border border-gray-100 rounded-lg h-full overflow-y-auto max-h-[300px] custom-scrollbar text-sm text-gray-800 whitespace-pre-wrap"></div>
                         </div>
-                        <a id="detail-link-btn" href="#" target="_blank" class="w-full flex items-center justify-center px-6 py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition shadow-md">
-                            <span class="font-bold mr-2 text-sm tracking-widest uppercase">Visit Source</span>
-                            <i data-lucide="external-link" class="w-4 h-4"></i>
-                        </a>
+                        <a id="detail-link-btn" href="#" target="_blank" class="w-full flex items-center justify-center px-6 py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition shadow-md"><span class="font-bold mr-2 text-sm tracking-widest uppercase">Visit Source</span><i data-lucide="external-link" class="w-4 h-4"></i></a>
                     </div>
                 </div>
                 <div class="bg-yellow-50/50 rounded-lg p-6 border border-yellow-100 relative mt-4">
@@ -141,7 +132,7 @@
 
     <div id="insight-modal" class="fixed inset-0 hidden flex items-center justify-center px-6"><div class="absolute inset-0 bg-white/90 backdrop-blur-md" onclick="closeInsightModal()"></div><div class="bg-white w-full max-w-lg rounded-lg p-8 shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative z-10 border border-gray-100"><div class="flex items-center justify-between mb-6"><h3 class="font-serif italic text-2xl text-black flex items-center"><i data-lucide="sparkles" class="w-5 h-5 mr-2 text-indigo-500"></i> AI Insight</h3><button onclick="closeInsightModal()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button></div><div id="insight-content" class="prose prose-sm text-gray-600 max-h-[60vh] overflow-y-auto custom-scrollbar"></div></div></div>
 
-    <div id="menu-modal" class="fixed inset-0 hidden"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMenuModal()"></div><div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel"><h3 id="menu-title" class="text-xl font-serif italic text-black mb-6 truncate">Title</h3><button onclick="openDetailView(window.currentScrap); closeMenuModal();" class="w-full mb-6 flex items-center justify-center p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-sm border border-indigo-100 text-indigo-900 hover:shadow-md transition"><i data-lucide="maximize-2" class="w-5 h-5 mr-2 text-indigo-500"></i><span class="text-sm font-bold">Open Detail</span></button><div class="grid grid-cols-4 gap-4 mb-4"><button onclick="openInsightModal(window.currentScrap); closeMenuModal();" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center group-hover:bg-purple-100 transition"><i data-lucide="sparkles" class="w-5 h-5 text-purple-600"></i></div><span class="text-xs font-medium">AI</span></button><button onclick="menuAction('edit-thumb')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition"><i data-lucide="image-plus" class="w-5 h-5 text-blue-500"></i></div><span class="text-xs font-medium text-blue-500">Thumb</span></button><button onclick="menuAction('favorite')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="star" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Fav</span></button><button onclick="menuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></div><span class="text-xs font-medium text-red-500">Delete</span></button></div><button onclick="closeMenuModal()" class="w-full py-3 text-sm font-bold text-gray-400 mt-2 hover:text-black">CANCEL</button></div></div>
+    <div id="menu-modal" class="fixed inset-0 hidden"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMenuModal()"></div><div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel"><h3 id="menu-title" class="text-xl font-serif italic text-black mb-6 truncate">Title</h3><button onclick="onMenuAction('open')" class="w-full mb-6 flex items-center justify-center p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-sm border border-indigo-100 text-indigo-900 hover:shadow-md transition"><i data-lucide="maximize-2" class="w-5 h-5 mr-2 text-indigo-500"></i><span class="text-sm font-bold">Open Detail</span></button><div class="grid grid-cols-4 gap-4 mb-4"><button onclick="onMenuAction('ai')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center group-hover:bg-purple-100 transition"><i data-lucide="sparkles" class="w-5 h-5 text-purple-600"></i></div><span class="text-xs font-medium">AI</span></button><button onclick="onMenuAction('edit-thumb')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition"><i data-lucide="image-plus" class="w-5 h-5 text-blue-500"></i></div><span class="text-xs font-medium text-blue-500">Thumb</span></button><button onclick="onMenuAction('favorite')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-gray-200 transition"><i data-lucide="star" class="w-5 h-5 text-gray-600"></i></div><span class="text-xs font-medium">Fav</span></button><button onclick="onMenuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></div><span class="text-xs font-medium text-red-500">Delete</span></button></div><button onclick="closeMenuModal()" class="w-full py-3 text-sm font-bold text-gray-400 mt-2 hover:text-black">CANCEL</button></div></div>
 
     <div id="memo-modal" class="fixed inset-0 hidden flex items-center justify-center px-6"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMemoModal()"></div><div class="bg-white w-full max-w-md rounded-lg p-8 shadow-2xl relative z-10 border border-gray-100"><h3 class="font-serif italic text-xl text-black mb-6">Thoughts</h3><textarea id="edit-memo-input" rows="6" class="w-full bg-gray-50 border-none rounded-sm p-5 text-sm resize-none mb-6 focus:ring-1 focus:ring-black" placeholder="Write something..."></textarea><button onclick="saveMemo()" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-lg">Save Memo</button></div></div>
 
@@ -155,9 +146,9 @@
             const storedScraps = localStorage.getItem('my_archive_scraps');
             if (storedScraps) { 
                 try { window.allScraps = JSON.parse(storedScraps); } catch(e) { window.allScraps = []; } 
-                // Legacy Fix: Ensure all items have a type
+                // Legacy Fix
                 window.allScraps = window.allScraps.map(item => {
-                    if (!item.type) item.type = 'custom';
+                    if (!item.type) item.type = 'news'; // Default to news
                     return item;
                 });
                 window.allScraps.forEach(s => { if(s.folder) window.customFolders.add(s.folder); }); 
@@ -188,6 +179,7 @@
         }
         window.closeFolderDetail = function() { document.getElementById('view-folder-detail').classList.add('hidden'); document.getElementById('view-folders').classList.remove('hidden'); document.getElementById('folder-back-btn').classList.add('hidden'); document.querySelector('#view-title').textContent = 'My Folders'; }
 
+        // --- Detail View ---
         window.resizeDetailImage = function(val) {
             const container = document.getElementById('detail-image-container');
             if(container) container.style.height = val + 'px';
@@ -206,11 +198,9 @@
             const fallbackIcon = document.getElementById('detail-fallback-icon');
             fallbackIcon.setAttribute('data-lucide', typeInfo.icon);
 
-            // Reset classes
             container.className = "w-full rounded-lg overflow-hidden shadow-sm relative group flex items-center justify-center transition-all duration-300"; 
             img.className = "w-full h-full transition-all duration-300";
 
-            // Smart Ratio
             if (scrap.type === 'video') {
                 container.classList.add('aspect-video', 'bg-black');
                 container.style.height = 'auto'; 
@@ -270,21 +260,33 @@
         window.openAddModal = function() { document.getElementById('add-modal').classList.remove('hidden'); updateFolderDropdown(); setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); }
         window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 500); }
         
-        window.openMenuModal = function(scrap) { 
-            window.currentScrap = scrap; 
-            window.selectedScrapId = scrap.id; 
-            document.getElementById('menu-title').textContent = scrap.title; 
-            document.getElementById('menu-modal').classList.remove('hidden'); 
-            setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); 
+        // --- Explicit Click Handlers (Guaranteed Logic) ---
+        window.onCardClick = function(id) {
+            const scrap = window.allScraps.find(s => s.id === id);
+            if(scrap) openDetailView(scrap);
         }
+
+        window.onMenuClick = function(event, id) {
+            event.stopPropagation(); // Block bubble
+            const scrap = window.allScraps.find(s => s.id === id);
+            if(scrap) {
+                window.currentScrap = scrap;
+                window.selectedScrapId = id;
+                document.getElementById('menu-title').textContent = scrap.title;
+                document.getElementById('menu-modal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10);
+            }
+        }
+
         window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
         
-        window.menuAction = function(action) { 
-            const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); 
+        window.onMenuAction = function(action) { 
+            const scrap = window.currentScrap;
             if(!scrap) return; 
-            // 'open' is now handled by inline click, but kept for compatibility
             if (action === 'open') openDetailView(scrap); 
+            else if (action === 'visit') window.open(scrap.sourceUrl, '_blank'); 
             else if (action === 'edit-thumb') document.getElementById('hidden-thumb-input').click(); 
+            else if (action === 'ai') openInsightModal(scrap);
             else if (action === 'favorite') toggleFavoriteById(scrap.id); 
             else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id);
             closeMenuModal(); 
@@ -314,13 +316,10 @@
 
         function createCardElement(item) {
             const card = document.createElement('div');
-            // Removed complex touch/pointer events logic. Plain click works best.
             card.className = "relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300";
+            card.setAttribute('onclick', `onCardClick('${item.id}')`);
             
-            // Legacy Data Safety
             if(!item.type) item.type = 'custom';
-            
-            const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
             const typeInfo = getTypeInfo(item.type);
             
             let mediaContent = '';
@@ -347,27 +346,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="absolute top-2 right-2 z-30 p-2" id="menu-btn-${item.id}">
+                <div class="absolute top-2 right-2 z-30 p-2" onclick="onMenuClick(event, '${item.id}')">
                      <div class="bg-black/20 hover:bg-black/50 backdrop-blur-sm p-1.5 rounded-full transition text-white">
                         <i data-lucide="more-vertical" class="w-4 h-4"></i>
                      </div>
                 </div>`;
-            
-            // 1. CLICK CARD -> DETAIL
-            card.onclick = () => openDetailView(item);
-            
-            // 2. CLICK MENU -> MENU (Stop Propagation)
-            // Use timeout to ensure DOM is ready
-            setTimeout(() => {
-                const menuBtn = card.querySelector(`#menu-btn-${item.id}`);
-                if(menuBtn) {
-                    menuBtn.onclick = (e) => {
-                        e.stopPropagation(); // CRITICAL: Stop clicking card
-                        openMenuModal(item);
-                    };
-                }
-            }, 0);
-
             return card;
         }
         
@@ -417,25 +400,26 @@
         
         function updateNewFavoriteBtn() { const btn = document.getElementById('new-favorite-btn'); if(window.isNewItemFavorite) { btn.classList.remove('text-gray-400'); btn.classList.add('text-red-500', 'fill-current'); btn.innerHTML = '<i data-lucide="heart" class="w-5 h-5 fill-current"></i>'; } else { btn.classList.add('text-gray-400'); btn.classList.remove('text-red-500', 'fill-current'); btn.innerHTML = '<i data-lucide="heart" class="w-5 h-5"></i>'; } lucide.createIcons(); }
         
+        // --- FORCE AUTO DETECT ON SAVE ---
         window.handleSaveScrap = function() { 
             const btn = document.getElementById('save-button'); btn.textContent = 'Saving...'; btn.disabled = true; 
             const title = document.getElementById('input-title').value; if(!title) { alert('Title is required!'); btn.textContent = 'Save'; btn.disabled = false; return; }
             const tagsInput = document.getElementById('input-tags').value; const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : []; 
             let img = document.getElementById('input-image-url').value; 
             
-            // AUTO DETECT TYPE ON SAVE
             const url = document.getElementById('input-url').value;
             let type = document.getElementById('input-type-select').value;
             if(type === 'custom') { type = document.getElementById('input-type-custom').value || 'custom'; }
             
-            if(!img && url) {
+            // FORCE DETECTION
+            if(url) {
                 const ytMatch = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/);
                 if (ytMatch) { 
                     type = 'video'; 
-                    img = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`; 
+                    if(!img) img = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`; 
                 } else if(url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
                     type = 'image';
-                    img = url;
+                    if(!img) img = url;
                 }
             }
             if(!img) img = "";

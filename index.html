@@ -326,8 +326,7 @@
             
             let media = `<div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300"><i data-lucide="image" class="w-8 h-8"></i></div>`;
             if (item.imageUrl) {
-                media = `<img src="${item.imageUrl}" class="w-full h-full object-cover bg-gray-100">`;
-            }
+               media = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-100">`;
 
             card.innerHTML = `
                 <div class="h-[65%] w-full overflow-hidden relative">${media}</div>

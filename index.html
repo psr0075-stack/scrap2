@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/500/000000/natural-user-interface-2.png">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Archive">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/500/000000/natural-user-interface-2.png?v=final">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/500/000000/natural-user-interface-2.png?v=final">
+
     <title>Creative Archive v5.0 (Synced)</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -187,7 +193,7 @@
     <div id="memo-modal" class="fixed inset-0 hidden flex items-center justify-center px-6"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMemoModal()"></div><div class="bg-white w-full max-w-md rounded-lg p-8 shadow-2xl relative z-10 border border-gray-100"><h3 class="font-serif italic text-xl text-black mb-6">Thoughts</h3><textarea id="edit-memo-input" rows="6" class="w-full bg-gray-50 border-none rounded-sm p-5 text-sm resize-none mb-6 focus:ring-1 focus:ring-black" placeholder="Write something..."></textarea><button onclick="saveMemo()" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-lg">Save Memo</button></div></div>
 
     <script>
-        // --- 1. FIREBASE 설정 (제공해주신 코드를 여기에 적용했습니다!) ---
+        // --- FIREBASE 설정 (기존 키 적용됨) ---
         const firebaseConfig = {
           apiKey: "AIzaSyBqbdAQoIbzGQnD3w35xYkjXWzjc1c8zDs",
           authDomain: "scrap-2e367.firebaseapp.com",
@@ -207,7 +213,6 @@
             console.log("Firebase Connected Successfully!");
         } catch (e) {
             console.error("Firebase Connection Error:", e);
-            alert("Firebase 연결 중 문제가 발생했습니다.");
         }
 
         window.TYPE_CONFIG = { 'news': { icon: 'newspaper', label: 'Article' }, 'video': { icon: 'youtube', label: 'Video' }, 'image': { icon: 'image', label: 'Image' }, 'paper': { icon: 'file-text', label: 'Paper' }, 'custom': { icon: 'box', label: 'Other' } };
@@ -215,7 +220,6 @@
 
         window.onload = function() { loadData(); lucide.createIcons(); };
 
-        // --- 2. 데이터 연동 로직 (Realtime Database) ---
         function loadData() {
             if (!db) {
                 const storedScraps = localStorage.getItem('my_archive_scraps');
@@ -226,14 +230,12 @@
                 return;
             }
 
-            // Firebase 실시간 리스너 연결
             const scrapsRef = db.ref('scraps');
             const foldersRef = db.ref('folders');
 
             scrapsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 window.allScraps = data ? data : [];
-                // [AUTO-FIX] 데이터 마이그레이션 (mqdefault fix)
                 let modified = false;
                 window.allScraps.forEach(s => {
                     if(s.type === 'video' && s.imageUrl && s.imageUrl.includes('hqdefault.jpg')) {
@@ -264,7 +266,6 @@
             db.ref('folders').set(Array.from(window.customFolders));
         }
 
-        // --- 삭제 기능 복구 ---
         window.deleteScrap = function(id) {
             window.allScraps = window.allScraps.filter(s => s.id !== id);
             saveData(); 
@@ -337,46 +338,36 @@
         }
         window.closeFolderDetail = function() { document.getElementById('view-folder-detail').classList.add('hidden'); document.getElementById('view-folders').classList.remove('hidden'); document.getElementById('folder-back-btn').classList.add('hidden'); document.querySelector('#view-title').textContent = 'My Folders'; }
 
-        // --- Detail View Logic ---
         window.openDetailView = function(scrap) {
             if(!scrap) return;
             window.currentScrap = scrap;
-            
             document.getElementById('detail-title-input').value = scrap.title || '';
             const typeInfo = getTypeInfo(scrap.type);
             document.getElementById('detail-type-badge').textContent = typeInfo.label || scrap.type;
-            
             const img = document.getElementById('detail-image');
             const fallback = document.getElementById('detail-image-fallback');
             const fallbackIcon = document.getElementById('detail-fallback-icon');
             const linkWrapper = document.getElementById('detail-image-link');
             const resizeBtn = document.getElementById('detail-resize-btn');
-
             fallbackIcon.setAttribute('data-lucide', typeInfo.icon);
             linkWrapper.href = scrap.sourceUrl || '#';
-
             img.style.display = 'block'; fallback.classList.add('hidden'); resizeBtn.classList.remove('hidden');
-
             if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { 
                 img.src = scrap.imageUrl; 
                 img.onerror = function() { this.style.display = 'none'; fallback.classList.remove('hidden'); resizeBtn.classList.add('hidden'); };
             } else { 
                 img.style.display = 'none'; fallback.classList.remove('hidden'); resizeBtn.classList.add('hidden');
             }
-
             document.getElementById('detail-summary-text').textContent = scrap.summary || "No summary available.";
             document.getElementById('detail-content-full').textContent = scrap.fullContent || "No full content saved.";
             switchDetailTab('summary');
             document.getElementById('detail-memo-input').value = scrap.memo || "";
-
             const tagContainer = document.getElementById('detail-tags'); tagContainer.innerHTML = '';
             (scrap.tags || []).forEach(t => { const span = document.createElement('span'); span.className = "text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full"; span.textContent = `#${t}`; tagContainer.appendChild(span); });
-
             document.getElementById('detail-view-modal').classList.remove('hidden');
             lucide.createIcons();
         }
         window.closeDetailView = function() { document.getElementById('detail-view-modal').classList.add('hidden'); }
-        
         window.updateDetailTitle = function(val) {
             if(!window.currentScrap) return;
             const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
@@ -386,211 +377,37 @@
             }
         }
         window.handleTitleKey = function(e) { if(e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }
-
-        window.toggleImageFit = function(e) {
-            e.preventDefault(); e.stopPropagation();
-            const img = document.getElementById('detail-image');
-            if (img.classList.contains('img-expanded')) { img.classList.remove('img-expanded'); img.classList.add('img-natural'); } else { img.classList.remove('img-natural'); img.classList.add('img-expanded'); }
-        }
-
-        window.switchDetailTab = function(tab) {
-            const summaryBtn = document.getElementById('tab-btn-summary'); const fullBtn = document.getElementById('tab-btn-full');
-            const summaryContent = document.getElementById('detail-content-summary'); const fullContent = document.getElementById('detail-content-full');
-            if(tab === 'summary') { summaryBtn.classList.add('active'); fullBtn.classList.remove('active'); summaryContent.classList.remove('hidden'); fullContent.classList.add('hidden'); } 
-            else { fullBtn.classList.add('active'); summaryBtn.classList.remove('active'); fullContent.classList.remove('hidden'); summaryContent.classList.add('hidden'); }
-        }
-
-        window.updateDetailMemo = function() {
-            if(!window.currentScrap) return;
-            const newMemo = document.getElementById('detail-memo-input').value;
-            const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
-            if(idx > -1) { window.allScraps[idx].memo = newMemo; window.currentScrap.memo = newMemo; saveData(); alert('Memo updated!'); }
-        }
-
+        window.toggleImageFit = function(e) { e.preventDefault(); e.stopPropagation(); const img = document.getElementById('detail-image'); if (img.classList.contains('img-expanded')) { img.classList.remove('img-expanded'); img.classList.add('img-natural'); } else { img.classList.remove('img-natural'); img.classList.add('img-expanded'); } }
+        window.switchDetailTab = function(tab) { const summaryBtn = document.getElementById('tab-btn-summary'); const fullBtn = document.getElementById('tab-btn-full'); const summaryContent = document.getElementById('detail-content-summary'); const fullContent = document.getElementById('detail-content-full'); if(tab === 'summary') { summaryBtn.classList.add('active'); fullBtn.classList.remove('active'); summaryContent.classList.remove('hidden'); fullContent.classList.add('hidden'); } else { fullBtn.classList.add('active'); summaryBtn.classList.remove('active'); fullContent.classList.remove('hidden'); summaryContent.classList.add('hidden'); } }
+        window.updateDetailMemo = function() { if(!window.currentScrap) return; const newMemo = document.getElementById('detail-memo-input').value; const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id); if(idx > -1) { window.allScraps[idx].memo = newMemo; window.currentScrap.memo = newMemo; saveData(); alert('Memo updated!'); } }
         window.openAddModal = function() { document.getElementById('add-modal').classList.remove('hidden'); updateFolderDropdown(); setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); }
         window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 500); }
-        
-        // --- Menu Modal Logic ---
-        window.openMenuModal = function(scrap) { 
-            window.currentScrap = scrap; window.selectedScrapId = scrap.id; 
-            document.getElementById('menu-title').textContent = scrap.title; 
-            document.getElementById('menu-main-actions').classList.remove('hidden');
-            document.getElementById('menu-folder-selection').classList.add('hidden');
-            document.getElementById('menu-type-selection').classList.add('hidden');
-            document.getElementById('menu-modal').classList.remove('hidden'); 
-            setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); 
-        }
+        window.openMenuModal = function(scrap) { window.currentScrap = scrap; window.selectedScrapId = scrap.id; document.getElementById('menu-title').textContent = scrap.title; document.getElementById('menu-main-actions').classList.remove('hidden'); document.getElementById('menu-folder-selection').classList.add('hidden'); document.getElementById('menu-type-selection').classList.add('hidden'); document.getElementById('menu-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('menu-panel').classList.remove('translate-y-full'), 10); }
         window.closeMenuModal = function() { document.getElementById('menu-panel').classList.add('translate-y-full'); setTimeout(() => document.getElementById('menu-modal').classList.add('hidden'), 300); }
-        
-        window.menuAction = function(action) { 
-            const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); 
-            if(!scrap) return; 
-            if (action === 'open') openDetailView(scrap); 
-            else if (action === 'edit-thumb') document.getElementById('hidden-thumb-input').click(); 
-            else if (action === 'favorite') toggleFavoriteById(scrap.id); 
-            else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id);
-            closeMenuModal(); 
-        }
-
+        window.menuAction = function(action) { const scrap = window.allScraps.find(s => s.id === window.selectedScrapId); if(!scrap) return; if (action === 'open') openDetailView(scrap); else if (action === 'edit-thumb') document.getElementById('hidden-thumb-input').click(); else if (action === 'favorite') toggleFavoriteById(scrap.id); else if (action === 'delete') if(confirm('Delete?')) deleteScrap(scrap.id); closeMenuModal(); }
         window.showFolderSelection = function() { document.getElementById('menu-main-actions').classList.add('hidden'); document.getElementById('menu-folder-selection').classList.remove('hidden'); const grid = document.getElementById('menu-folder-list-grid'); grid.innerHTML = ''; Array.from(window.customFolders).forEach(f => { const btn = document.createElement('button'); btn.className = "p-4 bg-gray-50 border border-gray-100 rounded text-sm font-medium text-black hover:bg-black hover:text-white transition truncate"; btn.textContent = f; btn.onclick = () => moveToFolder(f); grid.appendChild(btn); }); }
         window.showTypeSelection = function() { document.getElementById('menu-main-actions').classList.add('hidden'); document.getElementById('menu-type-selection').classList.remove('hidden'); }
         window.hideSubMenu = function() { document.getElementById('menu-folder-selection').classList.add('hidden'); document.getElementById('menu-type-selection').classList.add('hidden'); document.getElementById('menu-main-actions').classList.remove('hidden'); }
-        
         window.openTypeSelectionInDetail = function() { if(!window.currentScrap) return; window.selectedScrapId = window.currentScrap.id; openMenuModal(window.currentScrap); showTypeSelection(); }
-
-        window.changeType = function(newType) {
-            const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId);
-            if(idx > -1) {
-                window.allScraps[idx].type = newType;
-                if(window.currentScrap && window.currentScrap.id === window.selectedScrapId) {
-                    window.currentScrap.type = newType;
-                    const typeInfo = getTypeInfo(newType);
-                    document.getElementById('detail-type-badge').textContent = typeInfo.label;
-                    document.getElementById('detail-fallback-icon').setAttribute('data-lucide', typeInfo.icon);
-                    lucide.createIcons();
-                }
-                saveData(); renderScraps(); closeMenuModal();
-                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { openFolder(document.querySelector('#view-title').textContent); }
-            }
-        }
-
-        window.moveToFolder = function(targetFolder) {
-            const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId);
-            if(idx > -1) {
-                window.allScraps[idx].folder = targetFolder; saveData(); renderScraps(); renderFolders();
-                if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { openFolder(document.querySelector('#view-title').textContent); }
-                alert(`Moved to ${targetFolder}`); closeMenuModal();
-            }
-        }
-
-        window.handleThumbUpdate = function(e) {
-            const file = e.target.files[0];
-            if(file && window.currentScrap) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
-                    if(idx > -1) {
-                        window.allScraps[idx].imageUrl = evt.target.result; saveData(); renderScraps(); alert('Thumbnail updated!');
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
+        window.changeType = function(newType) { const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId); if(idx > -1) { window.allScraps[idx].type = newType; if(window.currentScrap && window.currentScrap.id === window.selectedScrapId) { window.currentScrap.type = newType; const typeInfo = getTypeInfo(newType); document.getElementById('detail-type-badge').textContent = typeInfo.label; document.getElementById('detail-fallback-icon').setAttribute('data-lucide', typeInfo.icon); lucide.createIcons(); } saveData(); renderScraps(); closeMenuModal(); if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { openFolder(document.querySelector('#view-title').textContent); } } }
+        window.moveToFolder = function(targetFolder) { const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId); if(idx > -1) { window.allScraps[idx].folder = targetFolder; saveData(); renderScraps(); renderFolders(); if(!document.getElementById('view-folder-detail').classList.contains('hidden')) { openFolder(document.querySelector('#view-title').textContent); } alert(`Moved to ${targetFolder}`); closeMenuModal(); } }
+        window.handleThumbUpdate = function(e) { const file = e.target.files[0]; if(file && window.currentScrap) { const reader = new FileReader(); reader.onload = function(evt) { const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id); if(idx > -1) { window.allScraps[idx].imageUrl = evt.target.result; saveData(); renderScraps(); alert('Thumbnail updated!'); } }; reader.readAsDataURL(file); } }
         window.openMemoModal = function(scrap) { window.selectedScrapId = scrap.id; document.getElementById('edit-memo-input').value = scrap.memo || ''; document.getElementById('memo-modal').classList.remove('hidden'); }
         window.closeMemoModal = function() { document.getElementById('memo-modal').classList.add('hidden'); }
         window.saveMemo = function() { const newMemo = document.getElementById('edit-memo-input').value; const idx = window.allScraps.findIndex(s => s.id === window.selectedScrapId); if(idx > -1) { window.allScraps[idx].memo = newMemo; saveData(); closeMemoModal(); } }
-
-        function createCardElement(item) {
-            const card = document.createElement('div');
-            card.className = "noselect relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300";
-            const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
-            const typeInfo = getTypeInfo(item.type);
-            let mediaContent = '';
-            // --- UPDATED: Contain with Visible Gray-200 Background ---
-            if (item.imageUrl && item.imageUrl.trim() !== '') {
-                mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-200 transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
-            } else {
-                mediaContent = `<div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400"><i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i></div>`;
-            }
-            card.innerHTML = `
-                <div class="relative w-full h-full bg-white z-10 flex flex-col pointer-events-none" id="card-inner-${item.id}">
-                    <div class="h-[60%] w-full overflow-hidden relative bg-gray-200">
-                         ${mediaContent}
-                         <div class="absolute bottom-2 left-2 z-20 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm">
-                            <i data-lucide="${typeInfo.icon}" class="w-3 h-3 text-white"></i>
-                            <span class="text-[9px] text-white font-bold uppercase tracking-wide pt-0.5">${typeInfo.label || item.type}</span>
-                         </div>
-                         <div class="absolute top-2 right-2 z-20 p-2">
-                             <div class="bg-black/20 backdrop-blur-sm p-1.5 rounded-full"><i data-lucide="heart" class="w-4 h-4 ${favIconClass}"></i></div>
-                         </div>
-                    </div>
-                    <div class="h-[40%] p-5 flex flex-col justify-between bg-white">
-                        <div><span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block truncate">${item.folder || 'Uncategorized'}</span><h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${item.title}</h3></div>
-                        <div class="flex flex-wrap gap-1 mt-1">${(item.tags || []).slice(0,2).map(t => `<span class="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">#${t}</span>`).join('')}</div>
-                    </div>
-                </div>`;
-            let pressTimer; let isLongPress = false;
-            const startPress = (e) => { isLongPress = false; card.classList.add('card-press-active'); pressTimer = setTimeout(() => { isLongPress = true; card.classList.remove('card-press-active'); if(navigator.vibrate) navigator.vibrate(50); openMenuModal(item); }, 600); };
-            const cancelPress = (e) => { clearTimeout(pressTimer); card.classList.remove('card-press-active'); };
-            const handleEnd = (e) => { clearTimeout(pressTimer); card.classList.remove('card-press-active'); if (!isLongPress) { openDetailView(item); } };
-            card.addEventListener('touchstart', startPress, {passive: true}); card.addEventListener('touchend', handleEnd); card.addEventListener('touchmove', cancelPress);
-            card.addEventListener('mousedown', startPress); card.addEventListener('mouseup', handleEnd); card.addEventListener('mouseleave', cancelPress);
-            card.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
-            return card;
-        }
-        
+        function createCardElement(item) { const card = document.createElement('div'); card.className = "noselect relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"; const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white"; const typeInfo = getTypeInfo(item.type); let mediaContent = ''; if (item.imageUrl && item.imageUrl.trim() !== '') { mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-200 transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`; } else { mediaContent = `<div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400"><i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i></div>`; } card.innerHTML = ` <div class="relative w-full h-full bg-white z-10 flex flex-col pointer-events-none" id="card-inner-${item.id}"> <div class="h-[60%] w-full overflow-hidden relative bg-gray-200"> ${mediaContent} <div class="absolute bottom-2 left-2 z-20 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm"> <i data-lucide="${typeInfo.icon}" class="w-3 h-3 text-white"></i> <span class="text-[9px] text-white font-bold uppercase tracking-wide pt-0.5">${typeInfo.label || item.type}</span> </div> <div class="absolute top-2 right-2 z-20 p-2"> <div class="bg-black/20 backdrop-blur-sm p-1.5 rounded-full"><i data-lucide="heart" class="w-4 h-4 ${favIconClass}"></i></div> </div> </div> <div class="h-[40%] p-5 flex flex-col justify-between bg-white"> <div><span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 block truncate">${item.folder || 'Uncategorized'}</span><h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${item.title}</h3></div> <div class="flex flex-wrap gap-1 mt-1">${(item.tags || []).slice(0,2).map(t => `<span class="text-[8px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">#${t}</span>`).join('')}</div> </div> </div>`; let pressTimer; let isLongPress = false; const startPress = (e) => { isLongPress = false; card.classList.add('card-press-active'); pressTimer = setTimeout(() => { isLongPress = true; card.classList.remove('card-press-active'); if(navigator.vibrate) navigator.vibrate(50); openMenuModal(item); }, 600); }; const cancelPress = (e) => { clearTimeout(pressTimer); card.classList.remove('card-press-active'); }; const handleEnd = (e) => { clearTimeout(pressTimer); card.classList.remove('card-press-active'); if (!isLongPress) { openDetailView(item); } }; card.addEventListener('touchstart', startPress, {passive: true}); card.addEventListener('touchend', handleEnd); card.addEventListener('touchmove', cancelPress); card.addEventListener('mousedown', startPress); card.addEventListener('mouseup', handleEnd); card.addEventListener('mouseleave', cancelPress); card.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; }); return card; }
         function getTypeInfo(type) { const t = type ? type.toLowerCase() : 'custom'; return window.TYPE_CONFIG[t] || window.TYPE_CONFIG['custom']; }
-        window.handleTypeChange = function(select) {
-            const customInput = document.getElementById('input-type-custom'); const preview = document.getElementById('type-icon-preview'); let val = select.value;
-            if(val === 'custom') { select.classList.add('hidden'); customInput.classList.remove('hidden'); customInput.focus(); preview.innerHTML = `<i data-lucide="box" class="w-4 h-4 text-white"></i>`; } 
-            else { const info = window.TYPE_CONFIG[val]; if(info) preview.innerHTML = `<i data-lucide="${info.icon}" class="w-4 h-4 text-white"></i>`; } lucide.createIcons();
-        }
-        window.handleImageInputChanged = function(val) {
-            const img = document.getElementById('thumb-preview-img'); const icon = document.getElementById('thumb-preview-icon');
-            if(val && val.trim() !== '') { img.src = val; img.classList.remove('hidden'); icon.style.display = 'none'; } else { img.src = ''; img.classList.add('hidden'); icon.style.display = 'block'; }
-        }
-        window.handleMediaProcess = function() {
-            const url = document.getElementById('input-url').value; const btn = document.getElementById('media-btn'); 
-            // [FIXED] Robust YouTube Regex
-            const ytRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const ytMatch = url.match(ytRegExp);
-            
-            if (ytMatch && ytMatch[2].length == 11) { 
-                document.getElementById('input-type-select').value = 'video'; 
-                window.handleTypeChange(document.getElementById('input-type-select')); 
-                // Always use mqdefault to avoid black bars
-                const thumbUrl = `https://img.youtube.com/vi/${ytMatch[2]}/mqdefault.jpg`; 
-                document.getElementById('input-image-url').value = thumbUrl; 
-                handleImageInputChanged(thumbUrl); 
-                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set'; 
-                lucide.createIcons(); return; 
-            }
-            if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) { 
-                document.getElementById('input-type-select').value = 'image'; 
-                window.handleTypeChange(document.getElementById('input-type-select')); 
-                document.getElementById('input-image-url').value = url; 
-                handleImageInputChanged(url); 
-                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set'; 
-                lucide.createIcons(); return; 
-            }
-            btn.innerHTML = '<i data-lucide="link" class="w-3 h-3 mr-1"></i> Link Ready'; lucide.createIcons();
-        }
+        window.handleTypeChange = function(select) { const customInput = document.getElementById('input-type-custom'); const preview = document.getElementById('type-icon-preview'); let val = select.value; if(val === 'custom') { select.classList.add('hidden'); customInput.classList.remove('hidden'); customInput.focus(); preview.innerHTML = `<i data-lucide="box" class="w-4 h-4 text-white"></i>`; } else { const info = window.TYPE_CONFIG[val]; if(info) preview.innerHTML = `<i data-lucide="${info.icon}" class="w-4 h-4 text-white"></i>`; } lucide.createIcons(); }
+        window.handleImageInputChanged = function(val) { const img = document.getElementById('thumb-preview-img'); const icon = document.getElementById('thumb-preview-icon'); if(val && val.trim() !== '') { img.src = val; img.classList.remove('hidden'); icon.style.display = 'none'; } else { img.src = ''; img.classList.add('hidden'); icon.style.display = 'block'; } }
+        window.handleMediaProcess = function() { const url = document.getElementById('input-url').value; const btn = document.getElementById('media-btn'); const ytRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/; const ytMatch = url.match(ytRegExp); if (ytMatch && ytMatch[2].length == 11) { document.getElementById('input-type-select').value = 'video'; window.handleTypeChange(document.getElementById('input-type-select')); const thumbUrl = `https://img.youtube.com/vi/${ytMatch[2]}/mqdefault.jpg`; document.getElementById('input-image-url').value = thumbUrl; handleImageInputChanged(thumbUrl); btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Video Set'; lucide.createIcons(); return; } if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null) { document.getElementById('input-type-select').value = 'image'; window.handleTypeChange(document.getElementById('input-type-select')); document.getElementById('input-image-url').value = url; handleImageInputChanged(url); btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Image Set'; lucide.createIcons(); return; } btn.innerHTML = '<i data-lucide="link" class="w-3 h-3 mr-1"></i> Link Ready'; lucide.createIcons(); }
         window.handleFileUpload = function(event) { const file = event.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('input-image-url').value = e.target.result; handleImageInputChanged(e.target.result); }; reader.readAsDataURL(file); } }
         function getGeminiKey() { let key = localStorage.getItem('gemini_api_key'); if (!key) { key = prompt("Gemini API Key Required:"); if (key) localStorage.setItem('gemini_api_key', key); } return key; }
-        window.handleAIProcess = async function() {
-            const content = document.getElementById('input-content').value; const btn = document.getElementById('ai-btn'); if(!content) { alert('Please paste text content first.'); return; } const userKey = getGeminiKey(); if(!userKey) return;
-            btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...'; lucide.createIcons();
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; 
-            try { const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `Analyze this text: "${content}". Output JSON with keys: "title" (max 10 words), "summary" (max 140 chars Korean), "tags" (comma separated string). No markdown.` }] }], generationConfig: { responseMimeType: "application/json" } }) }); 
-            const data = await res.json(); if(data.error) throw new Error(data.error.message); const text = data.candidates[0].content.parts[0].text; const json = JSON.parse(text); 
-            document.getElementById('input-title').value = json.title || ''; document.getElementById('input-summary').value = json.summary || ''; if(json.tags) document.getElementById('input-tags').value = json.tags; btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done';
-            } catch(e) { console.error(e); btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed'; } lucide.createIcons();
-        }
-        window.resetForm = function() {
-            const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea'); inputs.forEach(input => input.value = ''); handleImageInputChanged('');
-            const typeSelect = document.getElementById('input-type-select'); typeSelect.value = 'news'; typeSelect.classList.remove('hidden'); document.getElementById('input-type-custom').classList.add('hidden'); window.handleTypeChange(typeSelect); 
-            document.getElementById('media-btn').textContent = 'Check Media'; document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill';
-            window.isNewItemFavorite = false; updateNewFavoriteBtn(); lucide.createIcons();
-        }
+        window.handleAIProcess = async function() { const content = document.getElementById('input-content').value; const btn = document.getElementById('ai-btn'); if(!content) { alert('Please paste text content first.'); return; } const userKey = getGeminiKey(); if(!userKey) return; btn.innerHTML = '<i data-lucide="loader" class="animate-spin w-3 h-3 mr-1"></i> Processing...'; lucide.createIcons(); const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userKey}`; try { const res = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `Analyze this text: "${content}". Output JSON with keys: "title" (max 10 words), "summary" (max 140 chars Korean), "tags" (comma separated string). No markdown.` }] }], generationConfig: { responseMimeType: "application/json" } }) }); const data = await res.json(); if(data.error) throw new Error(data.error.message); const text = data.candidates[0].content.parts[0].text; const json = JSON.parse(text); document.getElementById('input-title').value = json.title || ''; document.getElementById('input-summary').value = json.summary || ''; if(json.tags) document.getElementById('input-tags').value = json.tags; btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 mr-1"></i> Done'; } catch(e) { console.error(e); btn.innerHTML = '<i data-lucide="x" class="w-3 h-3 mr-1"></i> Failed'; } lucide.createIcons(); }
+        window.resetForm = function() { const inputs = document.querySelectorAll('#scrap-form-container input, #scrap-form-container textarea'); inputs.forEach(input => input.value = ''); handleImageInputChanged(''); const typeSelect = document.getElementById('input-type-select'); typeSelect.value = 'news'; typeSelect.classList.remove('hidden'); document.getElementById('input-type-custom').classList.add('hidden'); window.handleTypeChange(typeSelect); document.getElementById('media-btn').textContent = 'Check Media'; document.getElementById('ai-btn').innerHTML = '<i data-lucide="sparkles" class="w-3 h-3 mr-1"></i> AI Auto-Fill'; window.isNewItemFavorite = false; updateNewFavoriteBtn(); lucide.createIcons(); }
         window.toggleNewFavorite = function() { window.isNewItemFavorite = !window.isNewItemFavorite; updateNewFavoriteBtn(); }
         function updateNewFavoriteBtn() { const btn = document.getElementById('new-favorite-btn'); if(window.isNewItemFavorite) { btn.classList.remove('text-gray-400'); btn.classList.add('text-red-500', 'fill-current'); btn.innerHTML = '<i data-lucide="heart" class="w-5 h-5 fill-current"></i>'; } else { btn.classList.add('text-gray-400'); btn.classList.remove('text-red-500', 'fill-current'); btn.innerHTML = '<i data-lucide="heart" class="w-5 h-5"></i>'; } lucide.createIcons(); }
-        window.handleSaveScrap = function() { 
-            const btn = document.getElementById('save-button'); btn.textContent = 'Saving...'; btn.disabled = true; 
-            const title = document.getElementById('input-title').value; if(!title) { alert('Title is required!'); btn.textContent = 'Save'; btn.disabled = false; return; }
-            const tagsInput = document.getElementById('input-tags').value; const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : []; 
-            let img = document.getElementById('input-image-url').value; let type = document.getElementById('input-type-select').value; if(type === 'custom') { type = document.getElementById('input-type-custom').value || 'custom'; } if(!img) { img = ""; }
-            const fullContent = document.getElementById('input-content').value;
-            const newItem = { id: Date.now().toString(), title: title, summary: document.getElementById('input-summary').value, fullContent: fullContent, sourceUrl: document.getElementById('input-url').value, imageUrl: img, type: type, folder: document.getElementById('input-folder').value || 'General', memo: document.getElementById('input-memo').value, tags: tags, isFavorite: window.isNewItemFavorite, createdAt: new Date().toISOString() }; 
-            window.allScraps.unshift(newItem); saveData(); closeAddModal(); window.resetForm(); switchTab('scraps'); renderScraps(); btn.textContent = 'Save'; btn.disabled = false; 
-        }
-        window.renderScraps = function() {
-            const grid = document.getElementById('scrap-grid'); if(!grid) return; grid.innerHTML = ''; let filtered = window.allScraps;
-            if (window.currentTab === 'favorites') { filtered = filtered.filter(s => s.isFavorite); }
-            if (window.searchText) { const term = window.searchText.toLowerCase(); filtered = filtered.filter(s => s.title && s.title.toLowerCase().includes(term)); }
-            if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden'); else document.getElementById('empty-state').classList.add('hidden');
-            filtered.forEach(item => { try { grid.appendChild(createCardElement(item)); } catch(e) {} }); lucide.createIcons();
-        }
+        window.handleSaveScrap = function() { const btn = document.getElementById('save-button'); btn.textContent = 'Saving...'; btn.disabled = true; const title = document.getElementById('input-title').value; if(!title) { alert('Title is required!'); btn.textContent = 'Save'; btn.disabled = false; return; } const tagsInput = document.getElementById('input-tags').value; const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : []; let img = document.getElementById('input-image-url').value; let type = document.getElementById('input-type-select').value; if(type === 'custom') { type = document.getElementById('input-type-custom').value || 'custom'; } if(!img) { img = ""; } const fullContent = document.getElementById('input-content').value; const newItem = { id: Date.now().toString(), title: title, summary: document.getElementById('input-summary').value, fullContent: fullContent, sourceUrl: document.getElementById('input-url').value, imageUrl: img, type: type, folder: document.getElementById('input-folder').value || 'General', memo: document.getElementById('input-memo').value, tags: tags, isFavorite: window.isNewItemFavorite, createdAt: new Date().toISOString() }; window.allScraps.unshift(newItem); saveData(); closeAddModal(); window.resetForm(); switchTab('scraps'); renderScraps(); btn.textContent = 'Save'; btn.disabled = false; }
+        window.renderScraps = function() { const grid = document.getElementById('scrap-grid'); if(!grid) return; grid.innerHTML = ''; let filtered = window.allScraps; if (window.currentTab === 'favorites') { filtered = filtered.filter(s => s.isFavorite); } if (window.searchText) { const term = window.searchText.toLowerCase(); filtered = filtered.filter(s => s.title && s.title.toLowerCase().includes(term)); } if (filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden'); else document.getElementById('empty-state').classList.add('hidden'); filtered.forEach(item => { try { grid.appendChild(createCardElement(item)); } catch(e) {} }); lucide.createIcons(); }
         window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
     </script>
 </body>

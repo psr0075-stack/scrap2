@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://img.icons8.com/ios-filled/180/000000/box.png">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/ios-filled/192/000000/box.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Archive">
 
-    <title>Creative Archive v5.3 (Recovery)</title>
+    <title>Creative Archive v6.0 (Stable)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -21,7 +21,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
-        /* 기본 설정 유지 */
         body { font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; background-color: #f9fafb; color: #18181b; -webkit-tap-highlight-color: transparent; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -168,6 +167,11 @@
                 <button onclick="showFolderSelection()" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center group-hover:bg-green-100 transition"><i data-lucide="folder-input" class="w-5 h-5 text-green-600"></i></div><span class="text-[10px] font-medium text-green-600">Move</span></button>
                 <button onclick="menuAction('delete')" class="flex flex-col items-center gap-2 group"><div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center group-hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-5 h-5 text-red-500"></i></div><span class="text-[10px] font-medium text-red-500">Del</span></button>
             </div>
+            
+            <button onclick="forceUploadLocalData()" class="w-full py-3 mb-2 text-sm font-bold text-blue-500 bg-blue-50 rounded-sm hover:bg-blue-100 transition flex items-center justify-center gap-2">
+                <i data-lucide="cloud-upload" class="w-4 h-4"></i> Force Upload Local Data
+            </button>
+            
             <button onclick="closeMenuModal()" class="w-full py-3 text-sm font-bold text-gray-400 mt-2 hover:text-black">CANCEL</button>
         </div>
 
@@ -191,7 +195,7 @@
     <div id="memo-modal" class="fixed inset-0 hidden flex items-center justify-center px-6"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMemoModal()"></div><div class="bg-white w-full max-w-md rounded-lg p-8 shadow-2xl relative z-10 border border-gray-100"><h3 class="font-serif italic text-xl text-black mb-6">Thoughts</h3><textarea id="edit-memo-input" rows="6" class="w-full bg-gray-50 border-none rounded-sm p-5 text-sm resize-none mb-6 focus:ring-1 focus:ring-black" placeholder="Write something..."></textarea><button onclick="saveMemo()" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-lg">Save Memo</button></div></div>
 
     <script>
-        // --- 1. FIREBASE CONFIGURATION (YOUR KEYS) ---
+        // --- 1. FIREBASE CONFIGURATION ---
         const firebaseConfig = {
           apiKey: "AIzaSyBqbdAQoIbzGQnD3w35xYkjXWzjc1c8zDs",
           authDomain: "scrap-2e367.firebaseapp.com",
@@ -218,7 +222,7 @@
 
         window.onload = function() { loadData(); lucide.createIcons(); };
 
-        // --- 2. DATA SYNC + RECOVERY LOGIC (핵심 수정 부분) ---
+        // --- 2. DATA SYNC + RECOVERY LOGIC ---
         function loadData() {
             if (!db) {
                 // Fallback: No Firebase
@@ -233,45 +237,33 @@
             const scrapsRef = db.ref('scraps');
             const foldersRef = db.ref('folders');
 
-            // [AUTO-MIGRATION] Check once on load if Cloud is empty but Local has data
-            scrapsRef.once('value', (snapshot) => {
-                const cloudData = snapshot.val();
-                const localScraps = localStorage.getItem('my_archive_scraps');
-                
-                // Cloud is empty AND Local has data -> Upload Local to Cloud
-                if (!cloudData && localScraps) {
-                    try {
-                        const parsedLocal = JSON.parse(localScraps);
-                        if (parsedLocal.length > 0) {
-                            console.log("Migration: Uploading local scraps to Firebase...");
-                            db.ref('scraps').set(parsedLocal);
-                            
-                            const localFolders = localStorage.getItem('my_archive_folders');
-                            if (localFolders) {
-                                const parsedFolders = JSON.parse(localFolders);
-                                db.ref('folders').set(parsedFolders);
-                            }
-                            alert("기존 데이터가 성공적으로 복구(연동)되었습니다!");
-                        }
-                    } catch(e) {
-                        console.error("Migration Failed", e);
-                    }
-                }
-            });
-
-            // Standard Realtime Listeners
+            // Listen for Cloud Data
             scrapsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
-                window.allScraps = data ? data : [];
-                // Migration Fix for old video thumbnails
-                let modified = false;
-                window.allScraps.forEach(s => {
-                    if(s.type === 'video' && s.imageUrl && s.imageUrl.includes('hqdefault.jpg')) {
-                        s.imageUrl = s.imageUrl.replace('hqdefault.jpg', 'mqdefault.jpg');
-                        modified = true;
+                
+                if (data) {
+                    // Case 1: Cloud has data -> Use it
+                    window.allScraps = data;
+                } else {
+                    // Case 2: Cloud is empty -> Check LocalStorage (Recovery)
+                    const localScraps = localStorage.getItem('my_archive_scraps');
+                    if (localScraps) {
+                        try {
+                            const parsedLocal = JSON.parse(localScraps);
+                            if (parsedLocal.length > 0) {
+                                console.log("Cloud empty. Showing Local Data temporarily.");
+                                window.allScraps = parsedLocal;
+                                // Try to upload automatically (might fail if rules are false)
+                                uploadLocalToCloud(parsedLocal);
+                            } else {
+                                window.allScraps = [];
+                            }
+                        } catch(e) { window.allScraps = []; }
+                    } else {
+                        window.allScraps = [];
                     }
-                });
-                if(modified) saveData();
+                }
+                
                 renderScraps();
             });
 
@@ -279,9 +271,50 @@
                 const data = snapshot.val();
                 if (data) {
                     window.customFolders = new Set(data);
+                } else {
+                     // Recover Folders locally if Cloud empty
+                     const localFolders = localStorage.getItem('my_archive_folders');
+                     if(localFolders) {
+                         try { 
+                             const parsed = JSON.parse(localFolders);
+                             window.customFolders = new Set(parsed);
+                             db.ref('folders').set(parsed).catch(e => console.log("Auto-upload folders failed (Permissions?)"));
+                         } catch(e){}
+                     }
                 }
                 renderFolders(); updateFolderDropdown();
             });
+        }
+
+        // Separate function to upload (and handle errors)
+        function uploadLocalToCloud(data) {
+            if(!db) return;
+            db.ref('scraps').set(data).then(() => {
+                console.log("Success: Local data migrated to Cloud.");
+            }).catch(e => {
+                console.error("Migration Failed (Permission Error likely):", e);
+            });
+        }
+
+        // Manual Force Upload Button
+        window.forceUploadLocalData = function() {
+            if (!confirm("현재 화면의 데이터를 서버에 강제로 덮어씌우시겠습니까?")) return;
+            
+            const localScraps = localStorage.getItem('my_archive_scraps');
+            const localFolders = localStorage.getItem('my_archive_folders');
+            
+            if (localScraps) {
+                const parsed = JSON.parse(localScraps);
+                db.ref('scraps').set(parsed).then(() => {
+                    if(localFolders) db.ref('folders').set(JSON.parse(localFolders));
+                    alert("성공! 로컬 데이터가 서버로 전송되었습니다. 이제 데이터는 안전합니다.");
+                    closeMenuModal();
+                }).catch(e => {
+                    alert("실패! Firebase 규칙(Rules)이 'true'로 설정되어 있는지 확인해주세요.");
+                });
+            } else {
+                alert("복구할 로컬 데이터가 없습니다.");
+            }
         }
 
         function saveData() {
@@ -659,3 +692,4 @@
     </script>
 </body>
 </html>
+

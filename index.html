@@ -385,14 +385,15 @@
             const favIconClass = item.isFavorite ? "text-red-500 fill-current" : "text-white";
             const typeInfo = getTypeInfo(item.type);
             let mediaContent = '';
+            // --- UPDATED CARD THUMBNAIL LOGIC (CONTAIN) ---
             if (item.imageUrl && item.imageUrl.trim() !== '') {
-                mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-cover transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
+                mediaContent = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-50 transition duration-700" alt="img" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-gray-200 text-gray-400\\'><i data-lucide=\\'${typeInfo.icon}\\' class=\\'w-12 h-12\\'></i></div>';lucide.createIcons();">`;
             } else {
                 mediaContent = `<div class="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400"><i data-lucide="${typeInfo.icon}" class="w-12 h-12"></i></div>`;
             }
             card.innerHTML = `
                 <div class="relative w-full h-full bg-white z-10 flex flex-col pointer-events-none" id="card-inner-${item.id}">
-                    <div class="h-[60%] w-full overflow-hidden relative">
+                    <div class="h-[60%] w-full overflow-hidden relative bg-gray-50">
                          ${mediaContent}
                          <div class="absolute bottom-2 left-2 z-20 bg-black/80 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1.5 border border-white/10 shadow-sm">
                             <i data-lucide="${typeInfo.icon}" class="w-3 h-3 text-white"></i>

@@ -96,12 +96,14 @@
                 </div>
                 <hr class="border-gray-100">
                 <div class="flex flex-col md:flex-row gap-6 items-stretch">
-                    <div class="w-full md:w-1/2 aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group">
-                        <img id="detail-image" src="" class="w-full h-full img-fit-cover transition-all duration-300" alt="Detail Image" onerror="this.style.display='none'; document.getElementById('detail-image-fallback').style.display='flex';">
-                        <div id="detail-image-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-400">
-                            <i id="detail-fallback-icon" data-lucide="image" class="w-16 h-16 opacity-50"></i>
-                        </div>
-                        <button onclick="toggleImageFit()" class="absolute bottom-3 right-3 bg-black/70 hover:bg-black text-white p-2 rounded-full backdrop-blur-sm transition z-20" title="Fit / Fill">
+                    <div class="w-full md:w-1/2 aspect-video bg-gray-200 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group">
+                        <a id="detail-image-link" href="#" target="_blank" class="block w-full h-full cursor-pointer relative">
+                            <img id="detail-image" src="" class="w-full h-full img-fit-cover transition-all duration-300" alt="Detail Image" onerror="this.style.display='none'; document.getElementById('detail-image-fallback').style.display='flex';">
+                            <div id="detail-image-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-gray-200 text-gray-400">
+                                <i id="detail-fallback-icon" data-lucide="image" class="w-16 h-16 opacity-50"></i>
+                            </div>
+                        </a>
+                        <button onclick="toggleImageFit(event)" class="absolute bottom-3 right-3 bg-black/70 hover:bg-black text-white p-2 rounded-full backdrop-blur-sm transition z-20" title="Fit / Fill">
                             <i data-lucide="maximize" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -141,7 +143,6 @@
 
     <div id="menu-modal" class="fixed inset-0 hidden"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMenuModal()"></div><div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-lg p-8 shadow-2xl transform transition-transform duration-300 translate-y-full" id="menu-panel">
         <h3 id="menu-title" class="text-xl font-serif italic text-black mb-6 truncate">Title</h3>
-        
         <div id="menu-main-actions">
             <button onclick="openInsightModal(window.currentScrap)" class="w-full mb-6 flex items-center justify-center p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-sm border border-indigo-100 text-indigo-900 hover:shadow-md transition"><i data-lucide="sparkles" class="w-5 h-5 mr-2 text-indigo-500"></i><span class="text-sm font-bold">Get AI Insight</span></button>
             <div class="grid grid-cols-5 gap-3 mb-4">
@@ -153,7 +154,6 @@
             </div>
             <button onclick="closeMenuModal()" class="w-full py-3 text-sm font-bold text-gray-400 mt-2 hover:text-black">CANCEL</button>
         </div>
-
         <div id="menu-folder-selection" class="hidden">
             <div class="flex items-center justify-between mb-4"><span class="text-sm font-bold text-gray-500">Move to...</span><button onclick="hideFolderSelection()" class="text-xs bg-gray-100 px-2 py-1 rounded">Back</button></div>
             <div id="menu-folder-list-grid" class="grid grid-cols-2 gap-3 max-h-[40vh] overflow-y-auto"></div>
@@ -208,14 +208,26 @@
             const img = document.getElementById('detail-image');
             const fallback = document.getElementById('detail-image-fallback');
             const fallbackIcon = document.getElementById('detail-fallback-icon');
+            const linkWrapper = document.getElementById('detail-image-link');
+
             fallbackIcon.setAttribute('data-lucide', typeInfo.icon);
+
+            // Set the link for the image wrapper
+            linkWrapper.href = scrap.sourceUrl || '#';
 
             // Reset image fit state
             img.classList.remove('img-fit-contain');
             img.classList.add('img-fit-cover');
 
-            if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { img.src = scrap.imageUrl; img.style.display = 'block'; fallback.classList.add('hidden'); } 
-            else { img.style.display = 'none'; fallback.classList.remove('hidden'); }
+            // Force image source update and fallback handling
+            if(scrap.imageUrl && scrap.imageUrl.trim() !== '') { 
+                img.src = scrap.imageUrl; 
+                img.style.display = 'block'; 
+                fallback.classList.add('hidden'); 
+            } else { 
+                img.style.display = 'none'; 
+                fallback.classList.remove('hidden'); 
+            }
 
             document.getElementById('detail-summary-text').textContent = scrap.summary || "No summary available.";
             document.getElementById('detail-content-full').textContent = scrap.fullContent || "No full content saved.";
@@ -236,8 +248,10 @@
         }
         window.closeDetailView = function() { document.getElementById('detail-view-modal').classList.add('hidden'); }
         
-        // NEW: Toggle Image Fit/Fill
-        window.toggleImageFit = function() {
+        // Image Fit Toggle (Stop propagation to prevent link click)
+        window.toggleImageFit = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             const img = document.getElementById('detail-image');
             if (img.classList.contains('img-fit-cover')) {
                 img.classList.remove('img-fit-cover'); img.classList.add('img-fit-contain');
@@ -286,12 +300,10 @@
             closeMenuModal(); 
         }
 
-        // NEW: Folder Move Logic
         window.showFolderSelection = function() {
             document.getElementById('menu-main-actions').classList.add('hidden');
             document.getElementById('menu-folder-selection').classList.remove('hidden');
             const grid = document.getElementById('menu-folder-list-grid'); grid.innerHTML = '';
-            
             Array.from(window.customFolders).forEach(f => {
                 const btn = document.createElement('button');
                 btn.className = "p-4 bg-gray-50 border border-gray-100 rounded text-sm font-medium text-black hover:bg-black hover:text-white transition truncate";
@@ -310,12 +322,10 @@
                 window.allScraps[idx].folder = targetFolder;
                 saveData();
                 renderScraps();
-                renderFolders(); // Update counts
-                // If viewing inside a folder details, refresh that view too
+                renderFolders();
                 if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
-                     // Check if we are in the folder we just moved FROM or TO
                      const currentViewFolder = document.querySelector('#view-title').textContent;
-                     openFolder(currentViewFolder); // Refresh current folder view
+                     openFolder(currentViewFolder);
                 }
                 alert(`Moved to ${targetFolder}`);
                 closeMenuModal();

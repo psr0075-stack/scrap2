@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Archive v8.3 (Auto-Fix)</title>
+    <title>Archive v8.4 (Standard)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -197,3 +197,451 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-span-1 md:col-span-2 flex flex-col gap-8">
+                        <div>
+                            <h1 id="detail-title-input" class="text-3xl font-serif italic text-black leading-tight mb-6"></h1>
+                            
+                            <div class="bg-gray-50 p-6 rounded-sm border-l-4 border-black mb-8">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Key Summary</label>
+                                <p id="detail-summary-text" class="text-sm text-gray-800 leading-relaxed font-medium"></p>
+                            </div>
+
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-3 border-b border-gray-100 pb-1">Full Content</label>
+                                <div id="detail-full-text" class="text-sm text-gray-600 leading-relaxed whitespace-pre-line text-justify min-h-[50px]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 pt-8 border-t border-gray-100">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-3">Memo</label>
+                    <div class="bg-yellow-50/50 p-6 rounded-sm border border-yellow-200/50 min-h-[100px]">
+                        <p id="detail-memo-input" class="font-serif italic text-gray-800 text-sm whitespace-pre-wrap"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="menu-modal" class="fixed inset-0 hidden z-[400]"><div class="absolute inset-0 bg-black/20" onclick="closeMenuModal()"></div><div class="absolute bottom-0 w-full bg-white p-6 rounded-t-lg shadow-2xl transition-transform" id="menu-panel"><button onclick="menuAction('delete')" class="w-full py-4 text-red-500 font-bold mb-2 bg-red-50 rounded">DELETE</button><button onclick="closeMenuModal()" class="w-full py-4 text-black font-bold">CANCEL</button></div></div>
+
+    <div id="folder-input-modal" class="fixed inset-0 z-[500] hidden flex items-center justify-center transition-opacity duration-200 opacity-0">
+        <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeFolderModal()"></div>
+        <div class="bg-white p-8 rounded-sm shadow-2xl w-[90%] max-w-sm relative z-10 border border-gray-100 transform transition-all duration-200 scale-95" id="folder-modal-content">
+            <h3 id="folder-modal-title" class="font-serif italic text-2xl mb-6 text-center text-black">New Folder</h3>
+            <div class="space-y-4">
+                <input type="text" id="folder-name-input" class="w-full border-b-2 border-gray-200 py-3 text-lg font-medium text-center focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300" placeholder="Type name..." onkeypress="handleFolderEnter(event)">
+                <div class="flex gap-2 pt-4">
+                    <button onclick="closeFolderModal()" class="flex-1 py-3 text-xs font-bold text-gray-400 hover:bg-gray-50 rounded-sm transition">CANCEL</button>
+                    <button onclick="submitFolderInput()" class="flex-1 bg-black text-white py-3 rounded-sm text-xs font-bold hover:bg-gray-800 shadow-lg transition transform active:scale-95">SAVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyBqbdAQoIbzGQnD3w35xYkjXWzjc1c8zDs",
+          authDomain: "scrap-2e367.firebaseapp.com",
+          databaseURL: "https://scrap-2e367-default-rtdb.firebaseio.com",
+          projectId: "scrap-2e367",
+          storageBucket: "scrap-2e367.firebasestorage.app",
+          messagingSenderId: "930951535494",
+          appId: "1:930951535494:web:a59f16f12576338bb5aa07",
+          measurementId: "G-4HM5SEHP15"
+        };
+
+        let db = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch (e) { console.error(e); }
+
+        window.allScraps = []; 
+        window.customFolders = new Set(['General', 'Design']); 
+        window.currentTab = 'scraps'; 
+        window.currentScrap = null;
+        window.currentFolderContext = null; 
+        
+        let folderModalMode = 'create'; 
+        let targetFolderOldName = '';
+        let isNewItemFavorite = false;
+
+        window.onload = function() { loadData(); lucide.createIcons(); };
+
+        // --- API Key & Image Logic ---
+        
+        function getGeminiKey() {
+            let key = localStorage.getItem('GEMINI_API_KEY');
+            if (!key) {
+                key = prompt("Gemini API Key를 입력해주세요. (브라우저에 저장됩니다)");
+                if (key && key.trim() !== "") {
+                    localStorage.setItem('GEMINI_API_KEY', key.trim());
+                } else {
+                    return null;
+                }
+            }
+            return key;
+        }
+
+        window.resetApiKey = function() {
+            const newKey = prompt("새로운 API Key를 입력하세요:");
+            if(newKey) {
+                localStorage.setItem('GEMINI_API_KEY', newKey.trim());
+                alert("Key updated.");
+            }
+        }
+
+        // --- [수정됨] 무조건 작동하는 'gemini-pro' 모델로 고정 ---
+        window.handleAIAutoFill = async function() {
+            const content = document.getElementById('input-content').value;
+            if (!content || content.length < 5) {
+                alert("내용(Content)을 먼저 입력해주세요.");
+                return;
+            }
+            
+            const apiKey = getGeminiKey();
+            if (!apiKey) return;
+
+            const btn = document.querySelector('button[onclick="handleAIAutoFill()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Analyzing...`;
+            lucide.createIcons();
+
+            const prompt = `
+                Analyze the following text. 
+                Return ONLY a JSON object with these keys: "title", "summary" (3 sentences), "folder" (1 word category), "type" (one of: news, paper, custom, video).
+                Do not include markdown.
+                Text: "${content.substring(0, 3000)}"
+            `;
+
+            try {
+                // gemini-1.5-flash 대신, 가장 기본 모델인 'gemini-pro' 사용 (오류 해결 핵심)
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                const data = await response.json();
+                
+                if(data.error) throw new Error(data.error.message);
+
+                let textResult = data.candidates[0].content.parts[0].text;
+                textResult = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(textResult);
+
+                if(parsed.title) document.getElementById('input-title').value = parsed.title;
+                if(parsed.summary) document.getElementById('input-summary').value = parsed.summary;
+                if(parsed.folder) document.getElementById('input-folder').value = parsed.folder;
+                if(parsed.type) document.getElementById('input-type-select').value = parsed.type;
+
+            } catch (error) {
+                console.error("AI Error:", error);
+                // 에러 메시지 분석해서 한글로 안내
+                if(error.message.includes("API key not valid")) {
+                    alert("API Key가 틀렸습니다. [Key] 버튼을 눌러 다시 입력해주세요.");
+                    localStorage.removeItem('GEMINI_API_KEY');
+                } else {
+                    alert("분석 실패: " + error.message + "\n(잠시 후 다시 시도해보세요)");
+                }
+            } finally {
+                btn.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        }
+
+        window.handleThumbUpdate = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('input-image-url').value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // --- Data Sync ---
+        function loadData() {
+            if (!db) return;
+            db.ref('scraps').on('value', (snapshot) => {
+                const data = snapshot.val();
+                window.allScraps = data ? data : [];
+                renderScraps();
+                if(window.currentFolderContext && !document.getElementById('view-folder-detail').classList.contains('hidden')) {
+                     openFolder(window.currentFolderContext);
+                }
+            });
+            db.ref('folders').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if(data) window.customFolders = new Set(data);
+                renderFolders(); updateFolderDropdown();
+            });
+        }
+        function saveData() {
+            if (!db) return;
+            try {
+                db.ref('scraps').set(window.allScraps);
+                db.ref('folders').set(Array.from(window.customFolders));
+            } catch(e) { console.log(e); }
+        }
+
+        // --- Modal & Input Logic ---
+        window.openCreateFolderModal = function() {
+            folderModalMode = 'create'; targetFolderOldName = '';
+            document.getElementById('folder-modal-title').textContent = 'New Folder';
+            document.getElementById('folder-name-input').value = '';
+            showFolderModal();
+        }
+        window.openRenameModal = function() {
+            if(!window.currentFolderContext) return;
+            folderModalMode = 'rename'; targetFolderOldName = window.currentFolderContext;
+            document.getElementById('folder-modal-title').textContent = 'Rename Folder';
+            document.getElementById('folder-name-input').value = window.currentFolderContext;
+            showFolderModal();
+        }
+        function showFolderModal() {
+            const modal = document.getElementById('folder-input-modal');
+            const content = document.getElementById('folder-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); document.getElementById('folder-name-input').focus(); }, 10);
+        }
+        window.closeFolderModal = function() {
+            const modal = document.getElementById('folder-input-modal');
+            const content = document.getElementById('folder-modal-content');
+            modal.classList.add('opacity-0'); content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
+        window.handleFolderEnter = function(e) { if (e.key === 'Enter') submitFolderInput(); }
+        window.submitFolderInput = function() {
+            const input = document.getElementById('folder-name-input');
+            const name = input.value.trim();
+            if (!name) { input.focus(); return; }
+
+            if (folderModalMode === 'create') {
+                if(window.customFolders.has(name)) { alert("Exists."); return; }
+                window.customFolders.add(name);
+            } else if (folderModalMode === 'rename') {
+                if (name === targetFolderOldName) { closeFolderModal(); return; }
+                if (window.customFolders.has(name)) { alert("Exists."); return; }
+                window.customFolders.delete(targetFolderOldName);
+                window.customFolders.add(name);
+                window.allScraps.forEach(scrap => { if (scrap.folder === targetFolderOldName) scrap.folder = name; });
+                window.currentFolderContext = name;
+                document.querySelector('#view-title').textContent = name;
+                const items = window.allScraps.filter(s => s.folder === name);
+                const grid = document.getElementById('folder-detail-grid');
+                grid.innerHTML = '';
+                if(items.length === 0) document.getElementById('folder-empty-state').classList.remove('hidden');
+                else { document.getElementById('folder-empty-state').classList.add('hidden'); items.forEach(item => grid.appendChild(createCardElement(item))); }
+                lucide.createIcons();
+            }
+            renderFolders(); updateFolderDropdown(); saveData(); closeFolderModal();
+        }
+
+        // --- View & Render Logic ---
+        window.switchTab = function(tabName) {
+            window.currentTab = tabName;
+            document.querySelectorAll('.folder-tab').forEach(el => {
+                if(el.id === `tab-${tabName}`) { el.classList.add('active'); el.classList.remove('inactive'); }
+                else { el.classList.add('inactive'); el.classList.remove('active'); }
+            });
+            
+            if (tabName === 'folders') {
+                document.getElementById('view-grid').classList.add('hidden');
+                document.getElementById('view-folders').classList.remove('hidden');
+                renderFolders(); 
+            } else {
+                document.getElementById('view-grid').classList.remove('hidden');
+                document.getElementById('view-folders').classList.add('hidden');
+                renderScraps();
+            }
+            document.getElementById('view-folder-detail').classList.add('hidden');
+            document.getElementById('folder-back-btn').classList.add('hidden');
+            document.getElementById('rename-folder-btn').classList.add('hidden');
+        }
+
+        window.renderScraps = function() {
+            const grid = document.getElementById('scrap-grid');
+            grid.innerHTML = '';
+            let filtered = window.allScraps;
+            if (window.currentTab === 'favorites') {
+                filtered = filtered.filter(s => s.isFavorite === true);
+            }
+            if (window.searchText) {
+                filtered = filtered.filter(s => s.title.toLowerCase().includes(window.searchText.toLowerCase()));
+            }
+            filtered.forEach(item => grid.appendChild(createCardElement(item)));
+            lucide.createIcons();
+            if(filtered.length === 0) document.getElementById('empty-state').classList.remove('hidden');
+            else document.getElementById('empty-state').classList.add('hidden');
+        }
+
+        window.renderFolders = function() {
+            const list = document.getElementById('folder-list');
+            list.innerHTML = '';
+            Array.from(window.customFolders).sort().forEach(f => {
+                const count = window.allScraps.filter(s => s.folder === f).length;
+                const btn = document.createElement('div');
+                btn.className = "aspect-square bg-gray-50 border border-gray-200 rounded-sm flex flex-col items-center justify-center cursor-pointer active:bg-gray-200 hover:bg-gray-100 transition";
+                btn.onclick = () => openFolder(f);
+                btn.innerHTML = `<i data-lucide="folder" class="w-8 h-8 text-black mb-2 opacity-80"></i><span class="font-serif italic text-lg font-bold text-center px-2 truncate w-full">${f}</span><span class="text-xs text-gray-400 mt-1">${count} items</span>`;
+                list.appendChild(btn);
+            });
+            lucide.createIcons();
+        }
+        window.updateFolderDropdown = function() {
+            const dl = document.getElementById('folder-options'); dl.innerHTML = '';
+            Array.from(window.customFolders).forEach(f => { const op = document.createElement('option'); op.value = f; dl.appendChild(op); });
+        }
+        window.openFolder = function(folderName) {
+            window.currentFolderContext = folderName;
+            document.getElementById('view-folders').classList.add('hidden');
+            document.getElementById('view-folder-detail').classList.remove('hidden');
+            document.getElementById('folder-back-btn').classList.remove('hidden');
+            document.getElementById('rename-folder-btn').classList.remove('hidden');
+            document.querySelector('#view-title').textContent = folderName;
+            
+            const items = window.allScraps.filter(s => s.folder === folderName);
+            const grid = document.getElementById('folder-detail-grid');
+            grid.innerHTML = '';
+            if(items.length === 0) document.getElementById('folder-empty-state').classList.remove('hidden');
+            else { document.getElementById('folder-empty-state').classList.add('hidden'); items.forEach(item => grid.appendChild(createCardElement(item))); }
+            lucide.createIcons();
+        }
+        window.closeFolderDetail = function() {
+            window.currentFolderContext = null;
+            document.getElementById('view-folder-detail').classList.add('hidden');
+            document.getElementById('view-folders').classList.remove('hidden');
+            document.getElementById('folder-back-btn').classList.add('hidden');
+            document.getElementById('rename-folder-btn').classList.add('hidden');
+            document.querySelector('#view-title').textContent = 'All Scraps';
+        }
+
+        // --- Grid Card (Scrap Tab) ---
+        function createCardElement(item) {
+            const card = document.createElement('div');
+            card.className = "relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden";
+            let media = `<div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300"><i data-lucide="image" class="w-8 h-8"></i></div>`;
+            
+            if (item.imageUrl) {
+                media = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-100">`;
+            }
+
+            card.innerHTML = `
+                <div class="h-[65%] w-full overflow-hidden relative">${media}</div>
+                <div class="h-[35%] p-4 flex flex-col justify-between bg-white">
+                    <h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${item.title}</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] text-gray-400 uppercase truncate max-w-[80px]">${item.folder}</span>
+                        ${item.isFavorite ? '<i data-lucide="heart" class="w-3 h-3 text-red-500 fill-current"></i>' : ''}
+                    </div>
+                </div>
+            `;
+            
+            card.onclick = () => openDetailView(item);
+            let timer;
+            card.addEventListener('touchstart', () => { timer = setTimeout(() => { window.currentScrap = item; document.getElementById('menu-modal').classList.remove('hidden'); }, 600); });
+            card.addEventListener('touchend', () => clearTimeout(timer));
+            card.addEventListener('contextmenu', (e) => { e.preventDefault(); window.currentScrap = item; document.getElementById('menu-modal').classList.remove('hidden'); });
+            
+            return card;
+        }
+
+        window.toggleNewFavorite = function() {
+            isNewItemFavorite = !isNewItemFavorite;
+            const btn = document.getElementById('new-favorite-btn');
+            if(isNewItemFavorite) { btn.classList.remove('text-gray-400'); btn.classList.add('text-red-500'); btn.querySelector('svg').setAttribute('fill', 'currentColor'); }
+            else { btn.classList.add('text-gray-400'); btn.classList.remove('text-red-500'); btn.querySelector('svg').removeAttribute('fill'); }
+        }
+
+        window.handleSaveScrap = function() {
+            const btn = document.getElementById('save-button');
+            const title = document.getElementById('input-title').value;
+            if(!title) { alert("Title is required"); return; }
+            
+            btn.textContent = 'Saving...';
+            const folderInput = document.getElementById('input-folder').value || 'General';
+            if(!window.customFolders.has(folderInput)) { window.customFolders.add(folderInput); renderFolders(); }
+
+            const newItem = {
+                id: Date.now().toString(),
+                title: title,
+                summary: document.getElementById('input-summary').value,
+                content: document.getElementById('input-content').value,
+                sourceUrl: document.getElementById('input-url').value,
+                imageUrl: document.getElementById('input-image-url').value,
+                type: document.getElementById('input-type-select').value,
+                folder: folderInput,
+                memo: document.getElementById('input-memo').value,
+                isFavorite: isNewItemFavorite,
+                createdAt: new Date().toISOString()
+            };
+            
+            window.allScraps.unshift(newItem);
+            saveData();
+            
+            closeAddModal(); window.resetForm();
+            switchTab('scraps');
+            btn.textContent = 'Save';
+        }
+
+        window.openAddModal = function() { 
+            document.getElementById('add-modal').classList.remove('hidden'); 
+            setTimeout(() => document.getElementById('add-panel').classList.remove('translate-x-full'), 10); 
+            updateFolderDropdown(); 
+            isNewItemFavorite = false; 
+            const favBtn = document.getElementById('new-favorite-btn');
+            favBtn.classList.add('text-gray-400'); favBtn.classList.remove('text-red-500'); favBtn.querySelector('svg').removeAttribute('fill');
+        }
+        window.closeAddModal = function() { document.getElementById('add-panel').classList.add('translate-x-full'); setTimeout(() => document.getElementById('add-modal').classList.add('hidden'), 300); }
+        window.resetForm = function() { document.querySelectorAll('#add-panel input, #add-panel textarea').forEach(i => i.value = ''); }
+        
+        // --- Detail View Logic ---
+        window.openDetailView = function(scrap) {
+            window.currentScrap = scrap;
+            document.getElementById('detail-title-input').textContent = scrap.title;
+            document.getElementById('detail-image').src = scrap.imageUrl || '';
+            document.getElementById('detail-summary-text').textContent = scrap.summary;
+            document.getElementById('detail-full-text').innerText = scrap.content || ""; 
+            document.getElementById('detail-memo-input').innerText = scrap.memo;
+            document.getElementById('detail-view-modal').classList.remove('hidden');
+        }
+        window.closeDetailView = function() { document.getElementById('detail-view-modal').classList.add('hidden'); }
+        window.openSourceUrl = function() {
+            if(window.currentScrap && window.currentScrap.sourceUrl) {
+                window.open(window.currentScrap.sourceUrl, '_blank');
+            }
+        }
+        
+        window.closeMenuModal = function() { document.getElementById('menu-modal').classList.add('hidden'); }
+        window.menuAction = function(action) {
+            if(action === 'delete') {
+                if(confirm("Delete this item?")) {
+                    window.allScraps = window.allScraps.filter(s => s.id !== window.currentScrap.id);
+                    saveData(); closeMenuModal();
+                    if(window.currentFolderContext && !document.getElementById('view-folder-detail').classList.contains('hidden')) { openFolder(window.currentFolderContext); } 
+                    else { renderScraps(); }
+                }
+            }
+        }
+        
+        window.searchText = "";
+        window.handleSearchInput = function(e) { window.searchText = e.target.value; renderScraps(); }
+        
+        window.handleMediaProcess = function() {
+             const url = document.getElementById('input-url').value;
+             if(url.includes('youtu')) {
+                 const id = url.split('v=')[1] || url.split('/').pop();
+                 const thumb = `https://img.youtube.com/vi/${id.split('&')[0]}/mqdefault.jpg`;
+                 document.getElementById('input-image-url').value = thumb;
+                 document.getElementById('input-type-select').value = 'video';
+             }
+        }
+    </script>
+</body>
+</html>

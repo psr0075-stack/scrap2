@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Archive v8.0 (Grid Thumb Fix)</title>
+    <title>Archive v8.1 (Error Debug)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -338,8 +338,11 @@
 
             } catch (error) {
                 console.error("AI Error:", error);
-                alert("AI 분석 실패. API Key를 확인해주세요.");
-                if(confirm("API Key를 다시 입력하시겠습니까?")) {
+                
+                // --- [수정됨] 진짜 에러 메시지를 보여주도록 수정 ---
+                alert("오류 발생: " + error.message + "\n\n(API Key 문제라면 [Key] 버튼을 눌러 다시 입력하거나 확인을 눌러 초기화하세요)");
+                
+                if(confirm("저장된 API Key를 삭제하고 다시 입력하시겠습니까?")) {
                     localStorage.removeItem('GEMINI_API_KEY');
                     getGeminiKey();
                 }
@@ -517,13 +520,12 @@
             document.querySelector('#view-title').textContent = 'All Scraps';
         }
 
-        // --- [수정됨] Grid Card (Scrap Tab) Image Style ---
+        // --- Grid Card (Scrap Tab) ---
         function createCardElement(item) {
             const card = document.createElement('div');
             card.className = "relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden";
             let media = `<div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300"><i data-lucide="image" class="w-8 h-8"></i></div>`;
             
-            // 여기서 object-contain과 bg-gray-100을 적용하여 썸네일 전체가 보이게 함
             if (item.imageUrl) {
                 media = `<img src="${item.imageUrl}" class="w-full h-full object-contain bg-gray-100">`;
             }
@@ -603,7 +605,6 @@
             document.getElementById('detail-title-input').textContent = scrap.title;
             document.getElementById('detail-image').src = scrap.imageUrl || '';
             document.getElementById('detail-summary-text').textContent = scrap.summary;
-            // [수정됨] Full Text 연결
             document.getElementById('detail-full-text').innerText = scrap.content || ""; 
             document.getElementById('detail-memo-input').innerText = scrap.memo;
             document.getElementById('detail-view-modal').classList.remove('hidden');

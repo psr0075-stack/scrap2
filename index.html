@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Archive v10.1 (Design Fix)</title>
+    <title>Archive v11.0 (Perfect Edition)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -18,31 +18,30 @@
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 상단 탭 스타일 (사진 기반) */
+        /* 탭 스타일 */
         .folder-tab { 
             font-family: 'Playfair Display', serif; 
             font-style: italic; 
-            font-size: 1.125rem; /* text-lg */
+            font-size: 1.125rem; 
             padding-bottom: 0.5rem; 
             margin-right: 2rem;
             cursor: pointer; 
             transition: all 0.2s; 
             border-bottom: 2px solid transparent;
-            color: #a1a1aa; /* inactive color */
+            color: #a1a1aa; 
         }
-        .folder-tab.active { 
-            color: #000000; 
-            font-weight: 700; 
-            border-bottom-color: #000000;
-        }
-        .folder-tab:hover {
-            color: #52525b;
-        }
+        .folder-tab.active { color: #000000; font-weight: 700; border-bottom-color: #000000; }
+        .folder-tab:hover { color: #52525b; }
 
         button:active { transform: scale(0.95); transition: 0.1s; }
         
+        /* 상세 이미지 스타일 */
         #detail-image-container { background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #e5e7eb; }
         #detail-image { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+        /* 수정 모드 인풋 스타일 */
+        .edit-input { border: 1px solid #e5e7eb; background: #fff; padding: 4px 8px; width: 100%; border-radius: 4px; }
+        .edit-textarea { border: 1px solid #e5e7eb; background: #fff; padding: 8px; width: 100%; border-radius: 4px; min-height: 100px; }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col bg-[#f9fafb]">
@@ -52,10 +51,8 @@
 
     <div class="pt-8 px-8 flex flex-col select-none z-50 shrink-0">
         <div class="flex justify-end items-center gap-4 mb-2">
-             <button class="p-2 hover:bg-gray-100 rounded-full transition"><i data-lucide="search" class="w-6 h-6 text-gray-600"></i></button>
-             <button class="p-2 hover:bg-gray-100 rounded-full transition"><i data-lucide="share" class="w-6 h-6 text-gray-600"></i></button>
-             <button onclick="openAddModal()" class="p-2 hover:bg-gray-100 rounded-full transition"><i data-lucide="plus" class="w-6 h-6 text-gray-900"></i></button>
-             <button class="p-2 hover:bg-gray-100 rounded-full transition"><i data-lucide="copy" class="w-6 h-6 text-gray-600"></i></button>
+             <button class="p-2 hover:bg-gray-100 rounded-full transition"><i data-lucide="search" class="w-5 h-5 text-gray-600"></i></button>
+             <button onclick="openAddModal()" class="p-2 hover:bg-gray-100 rounded-full transition"><i data-lucide="plus" class="w-5 h-5 text-gray-900"></i></button>
         </div>
 
         <div>
@@ -83,10 +80,9 @@
             </div>
         </div>
 
-        
         <div class="relative flex-grow overflow-hidden">
             <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-8 pb-32">
-                <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+                <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6"></div>
                 <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
                     <i data-lucide="layers" class="w-10 h-10 mb-4 opacity-20 text-black"></i>
                     <p class="text-sm font-light tracking-widest uppercase">Empty Collection</p>
@@ -104,7 +100,7 @@
             </div>
             
             <div id="view-folder-detail" class="absolute inset-0 overflow-y-auto no-scrollbar p-8 pb-32 hidden">
-                  <div id="folder-detail-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+                  <div id="folder-detail-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"></div>
                   <div id="folder-empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20"><p class="text-sm font-light tracking-widest uppercase">No items in this folder</p></div>
             </div>
         </div>
@@ -126,7 +122,7 @@
                 <div class="space-y-2 p-4 bg-gray-50 rounded-sm border border-gray-100">
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Media Source (URL)</label>
                     <div class="flex gap-2">
-                        <input type="url" id="input-url" class="flex-1 bg-white border border-gray-200 rounded-sm px-4 py-2 text-sm" placeholder="Instagram, Twitter, YouTube link...">
+                        <input type="url" id="input-url" class="flex-1 bg-white border border-gray-200 rounded-sm px-4 py-2 text-sm" placeholder="URL...">
                         <button type="button" onclick="handleMediaProcess()" class="bg-white border border-gray-200 text-black px-4 rounded-sm text-xs font-bold">Check</button>
                     </div>
                 </div>
@@ -134,7 +130,7 @@
                 <div class="space-y-2">
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Image (SNS는 직접 업로드)</label>
                     <div class="flex gap-2">
-                        <input type="text" id="input-image-url" class="flex-1 bg-gray-50 border-b border-gray-200 py-2 text-xs" placeholder="썸네일 주소 or 업로드">
+                        <input type="text" id="input-image-url" class="flex-1 bg-gray-50 border-b border-gray-200 py-2 text-xs" placeholder="URL or Upload">
                         <button onclick="document.getElementById('hidden-thumb-input').click()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-sm text-gray-700 transition flex items-center gap-1 text-xs font-bold whitespace-nowrap" title="Upload Image">
                             <i data-lucide="image-plus" class="w-4 h-4"></i> Upload
                         </button>
@@ -143,22 +139,20 @@
 
                 <div class="space-y-2 relative">
                     <div class="flex justify-between items-center">
-                        <label class="block text-[10px] font-bold text-blue-500 uppercase tracking-wider">Content Analysis</label>
+                        <label class="block text-[10px] font-bold text-blue-500 uppercase tracking-wider">AI Analysis</label>
                         <div class="flex gap-2 items-center">
                             <button onclick="checkAvailableModels()" class="flex items-center justify-center px-2 py-1 bg-blue-50 text-blue-600 rounded-sm text-[10px] font-bold hover:bg-blue-100 transition border border-blue-100">
                                 <i data-lucide="search-code" class="w-3 h-3 mr-1"></i>모델확인
                             </button>
-                            
                             <select id="model-select" class="bg-gray-100 border-none text-[10px] rounded-sm py-1 px-2 font-bold text-gray-600 focus:ring-0 cursor-pointer w-24 truncate">
                                 <option value="gemini-1.5-flash">Default</option>
                             </select>
-
                             <button onclick="handleAIAutoFill()" class="flex items-center space-x-1 px-3 py-1 bg-black text-white text-[10px] font-bold rounded-sm shadow hover:bg-gray-800 transition">
                                 <i data-lucide="sparkles" class="w-3 h-3"></i><span>Auto-Fill</span>
                             </button>
                         </div>
                     </div>
-                    <textarea id="input-content" rows="8" class="w-full bg-blue-50/20 border border-blue-100 rounded-sm p-4 text-sm leading-relaxed" placeholder="내용을 붙여넣거나 AI 분석 결과를 확인하세요..."></textarea>
+                    <textarea id="input-content" rows="8" class="w-full bg-blue-50/20 border border-blue-100 rounded-sm p-4 text-sm leading-relaxed" placeholder="내용..."></textarea>
                 </div>
 
                 <div class="border-t border-gray-100 pt-6 space-y-6">
@@ -169,15 +163,9 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Type (직접 입력 가능)</label>
-                            <input type="text" id="input-type" list="type-options" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm" placeholder="Select or Type...">
-                            <datalist id="type-options">
-                                <option value="News">
-                                <option value="Video">
-                                <option value="Social">
-                                <option value="Image">
-                                <option value="Paper">
-                            </datalist>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Type (직접 입력)</label>
+                            <input type="text" id="input-type" list="type-options" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm" placeholder="Select/Type">
+                            <datalist id="type-options"><option value="News"><option value="Video"><option value="Social"><option value="Image"><option value="Paper"></datalist>
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Folder</label>
@@ -185,18 +173,10 @@
                             <datalist id="folder-options"></datalist>
                         </div>
                     </div>
-                    
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Summary</label>
-                        <textarea id="input-summary" rows="3" class="w-full bg-gray-50 rounded-sm p-4 text-sm"></textarea>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Memo</label>
-                        <textarea id="input-memo" rows="2" class="w-full bg-yellow-50/50 rounded-sm p-4 text-sm"></textarea>
-                    </div>
+                    <div class="space-y-1"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Summary</label><textarea id="input-summary" rows="3" class="w-full bg-gray-50 rounded-sm p-4 text-sm"></textarea></div>
+                    <div class="space-y-1"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Memo</label><textarea id="input-memo" rows="2" class="w-full bg-yellow-50/50 rounded-sm p-4 text-sm"></textarea></div>
                 </div>
             </div>
-            
             <div class="p-6 border-t border-gray-50 bg-white">
                 <button type="button" onclick="handleSaveScrap()" id="save-button" class="w-full bg-black text-white py-4 rounded-sm font-medium text-sm shadow-xl hover:bg-gray-800 transition">Save</button>
             </div>
@@ -206,7 +186,13 @@
     <div id="detail-view-modal" class="fixed inset-0 z-[300] hidden bg-white flex flex-col">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white z-10 shrink-0">
             <button onclick="closeDetailView()" class="p-2 hover:bg-gray-50 rounded-full transition"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
-            <span class="font-serif italic text-gray-500 text-sm">DETAIL</span>
+            
+            <div class="flex items-center gap-2">
+                <button id="detail-edit-btn" onclick="toggleDetailEdit()" class="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-bold text-gray-700 transition">
+                    <i data-lucide="edit-3" class="w-3 h-3"></i> <span>Edit</span>
+                </button>
+            </div>
+            
             <div class="w-10"></div>
         </div>
 
@@ -229,10 +215,12 @@
                                 <span id="detail-type-badge" class="px-2 py-1 bg-gray-100 text-[10px] font-bold uppercase tracking-wider rounded-sm text-gray-600">TYPE</span>
                             </div>
                             <h1 id="detail-title-input" class="text-3xl font-serif italic text-black leading-tight mb-6"></h1>
+                            
                             <div class="bg-gray-50 p-6 rounded-sm border-l-4 border-black mb-8">
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Key Summary</label>
-                                <p id="detail-summary-text" class="text-sm text-gray-800 leading-relaxed font-medium"></p>
+                                <div id="detail-summary-text" class="text-sm text-gray-800 leading-relaxed font-medium"></div>
                             </div>
+                            
                             <div>
                                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-3 border-b border-gray-100 pb-1">Full Content</label>
                                 <div id="detail-full-text" class="text-sm text-gray-600 leading-relaxed whitespace-pre-line text-justify min-h-[50px]"></div>
@@ -243,235 +231,190 @@
                 <div class="mt-12 pt-8 border-t border-gray-100">
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-3">Memo</label>
                     <div class="bg-yellow-50/50 p-6 rounded-sm border border-yellow-200/50 min-h-[100px]">
-                        <p id="detail-memo-input" class="font-serif italic text-gray-800 text-sm whitespace-pre-wrap"></p>
+                        <div id="detail-memo-input" class="font-serif italic text-gray-800 text-sm whitespace-pre-wrap"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="menu-modal" class="fixed inset-0 hidden z-[400]"><div class="absolute inset-0 bg-black/20" onclick="closeMenuModal()"></div><div class="absolute bottom-0 w-full bg-white p-6 rounded-t-lg shadow-2xl transition-transform" id="menu-panel"><button onclick="menuAction('delete')" class="w-full py-4 text-red-500 font-bold mb-2 bg-red-50 rounded">DELETE</button><button onclick="closeMenuModal()" class="w-full py-4 text-black font-bold">CANCEL</button></div></div>
+    <div id="menu-modal" class="fixed inset-0 hidden z-[400] flex items-end justify-center sm:items-center">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onclick="closeMenuModal()"></div>
+        <div class="relative bg-white w-full sm:w-[320px] sm:rounded-lg rounded-t-lg shadow-2xl p-4 overflow-hidden animate-slide-up sm:animate-none transform transition-all" id="menu-panel">
+            <div class="flex items-center gap-3 p-2 mb-2 border-b border-gray-100 pb-4">
+                <div id="menu-thumb" class="w-12 h-12 bg-gray-100 rounded-sm overflow-hidden flex-shrink-0"></div>
+                <div class="overflow-hidden">
+                    <h3 id="menu-title" class="font-bold text-sm truncate">Title</h3>
+                    <p id="menu-folder" class="text-xs text-gray-400 truncate">Folder</p>
+                </div>
+            </div>
+            
+            <div class="space-y-1">
+                <button onclick="menuAction('edit')" class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-md text-left transition text-sm font-medium">
+                    <i data-lucide="edit-3" class="w-4 h-4 text-gray-500"></i> Edit Content
+                </button>
+                <button onclick="menuAction('folder')" class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-md text-left transition text-sm font-medium">
+                    <i data-lucide="folder-input" class="w-4 h-4 text-gray-500"></i> Move Folder
+                </button>
+                <button onclick="menuAction('favorite')" class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-md text-left transition text-sm font-medium">
+                    <i data-lucide="heart" class="w-4 h-4 text-red-500"></i> Toggle Favorite
+                </button>
+                <div class="h-px bg-gray-100 my-1"></div>
+                <button onclick="menuAction('delete')" class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-md text-left transition text-sm font-bold text-red-500">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
+                </button>
+            </div>
+            <button onclick="closeMenuModal()" class="w-full mt-2 py-3 text-xs font-bold text-gray-400 hover:text-black transition">CANCEL</button>
+        </div>
+    </div>
+
     <div id="folder-input-modal" class="fixed inset-0 z-[500] hidden flex items-center justify-center transition-opacity duration-200 opacity-0"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeFolderModal()"></div><div class="bg-white p-8 rounded-sm shadow-2xl w-[90%] max-w-sm relative z-10 border border-gray-100 transform transition-all duration-200 scale-95" id="folder-modal-content"><h3 id="folder-modal-title" class="font-serif italic text-2xl mb-6 text-center text-black">New Folder</h3><div class="space-y-4"><input type="text" id="folder-name-input" class="w-full border-b-2 border-gray-200 py-3 text-lg font-medium text-center focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300" placeholder="Type name..." onkeypress="handleFolderEnter(event)"><div class="flex gap-2 pt-4"><button onclick="closeFolderModal()" class="flex-1 py-3 text-xs font-bold text-gray-400 hover:bg-gray-50 rounded-sm transition">CANCEL</button><button onclick="submitFolderInput()" class="flex-1 bg-black text-white py-3 rounded-sm text-xs font-bold hover:bg-gray-800 shadow-lg transition transform active:scale-95">SAVE</button></div></div></div></div>
 
     <script>
-        // --- FIREBASE CONFIG ---
         const firebaseConfig={apiKey:"AIzaSyBqbdAQoIbzGQnD3w35xYkjXWzjc1c8zDs",authDomain:"scrap-2e367.firebaseapp.com",databaseURL:"https://scrap-2e367-default-rtdb.firebaseio.com",projectId:"scrap-2e367",storageBucket:"scrap-2e367.firebasestorage.app",messagingSenderId:"930951535494",appId:"1:930951535494:web:a59f16f12576338bb5aa07",measurementId:"G-4HM5SEHP15"};
         let db=null;try{firebase.initializeApp(firebaseConfig);db=firebase.database();}catch(e){console.error(e);}
 
-        // Global State
-        window.allScraps=[];window.customFolders=new Set(['General','Design']);window.currentTab='scraps';window.currentScrap=null;window.currentFolderContext=null;let folderModalMode='create';let targetFolderOldName='';let isNewItemFavorite=false;
+        window.allScraps=[];window.customFolders=new Set(['General','Design']);window.currentTab='scraps';window.currentScrap=null;window.currentFolderContext=null;let folderModalMode='create';let targetFolderOldName='';let isNewItemFavorite=false;let isDetailEditing=false;
 
-        // Init
         window.onload=function(){loadData();lucide.createIcons();};
 
-        // --- Auth & AI ---
-        function getGeminiKey(){let k=localStorage.getItem('GEMINI_API_KEY');if(!k){k=prompt("Gemini API Key를 입력하세요:");if(k&&k.trim()){localStorage.setItem('GEMINI_API_KEY',k.trim());return k.trim();}return null;}return k.trim();}
+        // --- Functions ---
+        function getGeminiKey(){let k=localStorage.getItem('GEMINI_API_KEY');if(!k){k=prompt("Gemini API Key:");if(k&&k.trim()){localStorage.setItem('GEMINI_API_KEY',k.trim());return k.trim();}return null;}return k.trim();}
         window.resetApiKey=function(){const k=prompt("새 API Key:");if(k){localStorage.setItem('GEMINI_API_KEY',k.trim());alert("저장됨");}}
-
-        window.checkAvailableModels = async function() {
-            const key = getGeminiKey(); if(!key) return;
-            const btn = document.querySelector('button[onclick="checkAvailableModels()"]');
-            const originalText = btn.innerHTML; btn.innerHTML = "...";
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-                const data = await res.json();
-                if(data.models) {
-                    const select = document.getElementById('model-select');
-                    select.innerHTML = "";
-                    let found = 0;
-                    data.models.forEach(m => {
-                        if(m.supportedGenerationMethods?.includes("generateContent")) {
-                            const opt = document.createElement('option');
-                            opt.value = m.name.replace("models/", "");
-                            opt.text = m.name.replace("models/", "");
-                            select.appendChild(opt);
-                            found++;
-                        }
-                    });
-                    if(found>0) alert(`✅ ${found}개 모델 로드 완료!`);
-                    else alert("⚠️ 사용 가능한 모델이 없습니다.");
-                }
-            } catch(e) { alert("❌ 키 확인 실패: " + e.message); }
-            finally { btn.innerHTML = originalText; lucide.createIcons(); }
-        }
-
-        window.handleAIAutoFill = async function() {
-            const content = document.getElementById('input-content').value;
-            if(!content || content.length<5){alert("내용을 입력하세요.");return;}
-            const key = getGeminiKey(); if(!key)return;
-            
-            let model = document.getElementById('model-select').value || "gemini-1.5-flash";
-            const btn=document.querySelector('button[onclick="handleAIAutoFill()"]');
-            const orgHtml=btn.innerHTML;
-            btn.innerHTML=`<i data-lucide="loader-2" class="animate-spin w-3 h-3"></i>`;
-            lucide.createIcons();
-
-            const prompt=`Analyze text. Return ONLY JSON: "title", "summary" (3 sentences), "folder" (1 word), "type" (one of: News, Video, Social, Image, Paper). No markdown. Text: "${content.substring(0,3000)}"`;
-
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-                const res = await fetch(url, {
-                    method:"POST", headers:{"Content-Type":"application/json"},
-                    body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
-                });
-                const data = await res.json();
-                if(!res.ok) throw new Error(data.error?.message);
-
-                let txt = data.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim();
-                const json = JSON.parse(txt);
-
-                if(json.title) document.getElementById('input-title').value=json.title;
-                if(json.summary) document.getElementById('input-summary').value=json.summary;
-                if(json.folder) document.getElementById('input-folder').value=json.folder;
-                if(json.type) document.getElementById('input-type').value=json.type;
-
-            } catch(e) { alert("AI 오류: "+e.message); } 
-            finally { btn.innerHTML=orgHtml; lucide.createIcons(); }
-        }
-
-        // --- Core Functions ---
+        window.checkAvailableModels=async function(){const k=getGeminiKey();if(!k)return;try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);const d=await r.json();if(d.models){const s=document.getElementById('model-select');s.innerHTML="";d.models.forEach(m=>{if(m.supportedGenerationMethods?.includes("generateContent")){const o=document.createElement('option');o.value=m.name.replace("models/","");o.text=m.name.replace("models/","");s.appendChild(o);}});alert(`✅ ${d.models.length}개 모델 로드`);}}catch(e){alert("오류: "+e.message);}}
+        window.handleAIAutoFill=async function(){const c=document.getElementById('input-content').value;if(!c||c.length<5){alert("내용입력");return;}const k=getGeminiKey();if(!k)return;const m=document.getElementById('model-select').value||"gemini-1.5-flash";const b=document.querySelector('button[onclick="handleAIAutoFill()"]');const o=b.innerHTML;b.innerHTML=`...`;try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:`Analyze. ONLY JSON: title, summary(3sent), folder(1word), type(News/Video/Social/Image/Paper). Text: "${c.substring(0,3000)}"`}]}]})});const d=await r.json();let t=d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim();const j=JSON.parse(t);if(j.title)document.getElementById('input-title').value=j.title;if(j.summary)document.getElementById('input-summary').value=j.summary;if(j.folder)document.getElementById('input-folder').value=j.folder;if(j.type)document.getElementById('input-type').value=j.type;}catch(e){alert(e.message);}finally{b.innerHTML=o;}}
         window.handleThumbUpdate=function(e){const f=e.target.files[0];if(f){const r=new FileReader();r.onload=(ev)=>document.getElementById('input-image-url').value=ev.target.result;r.readAsDataURL(f);}};
-        
-        // SNS & Media Handler
-        window.handleMediaProcess=function(){
-             const url = document.getElementById('input-url').value;
-             const typeInput = document.getElementById('input-type');
-             
-             if(url.includes('youtu')) {
-                 const id = url.split('v=')[1] || url.split('/').pop();
-                 const thumb = `https://img.youtube.com/vi/${id.split('&')[0]}/mqdefault.jpg`;
-                 document.getElementById('input-image-url').value = thumb;
-                 typeInput.value = 'Video';
-             } else if (url.includes('twitter') || url.includes('x.com') || url.includes('instagram')) {
-                 typeInput.value = 'Social';
-                 alert("⚠️ 트위터/인스타그램 썸네일은 보안상 자동 추출이 어렵습니다.\n\n'Upload' 버튼을 눌러 직접 캡처한 이미지를 넣어주세요!");
-             }
-        }
-
-        // Saving Logic
-        window.handleSaveScrap = function() {
-            const btn = document.getElementById('save-button');
-            const title = document.getElementById('input-title').value;
-            
-            if(!title) { alert("Title is required"); return; }
-            
-            btn.textContent = 'Saving...';
-            
-            const folderInput = document.getElementById('input-folder').value || 'General';
-            if(!window.customFolders.has(folderInput)) { 
-                window.customFolders.add(folderInput); 
-                renderFolders(); 
-            }
-
-            const typeInput = document.getElementById('input-type').value || 'Note';
-
-            const newItem = {
-                id: Date.now().toString(),
-                title: title,
-                summary: document.getElementById('input-summary').value,
-                content: document.getElementById('input-content').value,
-                sourceUrl: document.getElementById('input-url').value,
-                imageUrl: document.getElementById('input-image-url').value,
-                type: typeInput,
-                folder: folderInput,
-                memo: document.getElementById('input-memo').value,
-                isFavorite: isNewItemFavorite,
-                createdAt: new Date().toISOString()
-            };
-            
-            window.allScraps.unshift(newItem);
-            saveData();
-            
-            closeAddModal(); 
-            window.resetForm();
-            switchTab('scraps');
-            btn.textContent = 'Save';
-        }
-
-        // Firebase Sync
-        function loadData() { 
-            if(!db)return; 
-            db.ref('scraps').on('value',s=>{window.allScraps=s.val()||[];renderScraps();});
-            db.ref('folders').on('value',s=>{if(s.val())window.customFolders=new Set(s.val());renderFolders();updateFolderDropdown();}); 
-        }
-        function saveData() { 
-            if(!db)return; 
-            try{
-                db.ref('scraps').set(window.allScraps);
-                db.ref('folders').set(Array.from(window.customFolders));
-            }catch(e){console.error("Save failed", e);} 
-        }
-
-        // UI Helpers
-        window.switchTab=function(t){
-            window.currentTab=t;
-            document.querySelectorAll('.folder-tab').forEach(e=>{
-                e.classList.remove('active');
-            });
-            document.getElementById(`tab-${t}`).classList.add('active');
-            
-            if(t==='folders'){
-                document.getElementById('view-grid').classList.add('hidden');
-                document.getElementById('view-folders').classList.remove('hidden');
-                renderFolders();
-            }else{
-                document.getElementById('view-grid').classList.remove('hidden');
-                document.getElementById('view-folders').classList.add('hidden');
-                renderScraps();
-            }
-            document.getElementById('view-folder-detail').classList.add('hidden');
-            document.getElementById('sub-header').classList.add('hidden');
-        }
-
+        window.handleMediaProcess=function(){const u=document.getElementById('input-url').value;if(u.includes('youtu')){const i=u.split('v=')[1]||u.split('/').pop();document.getElementById('input-image-url').value=`https://img.youtube.com/vi/${i.split('&')[0]}/mqdefault.jpg`;document.getElementById('input-type').value='Video';}else{alert("SNS/기타 링크는 이미지를 직접 업로드해주세요.");document.getElementById('input-type').value='Social';}}
+        window.handleSaveScrap=function(){const t=document.getElementById('input-title').value;if(!t){alert("Title Required");return;}const f=document.getElementById('input-folder').value||'General';if(!window.customFolders.has(f)){window.customFolders.add(f);renderFolders();}const n={id:Date.now().toString(),title:t,summary:document.getElementById('input-summary').value,content:document.getElementById('input-content').value,sourceUrl:document.getElementById('input-url').value,imageUrl:document.getElementById('input-image-url').value,type:document.getElementById('input-type').value||'Note',folder:f,memo:document.getElementById('input-memo').value,isFavorite:isNewItemFavorite,createdAt:new Date().toISOString()};window.allScraps.unshift(n);saveData();closeAddModal();window.resetForm();switchTab('scraps');}
+        function loadData(){if(!db)return;db.ref('scraps').on('value',s=>{window.allScraps=s.val()||[];renderScraps();});db.ref('folders').on('value',s=>{if(s.val())window.customFolders=new Set(s.val());renderFolders();updateFolderDropdown();});}
+        function saveData(){if(!db)return;db.ref('scraps').set(window.allScraps);db.ref('folders').set(Array.from(window.customFolders));}
+        window.switchTab=function(t){window.currentTab=t;document.querySelectorAll('.folder-tab').forEach(e=>e.classList.remove('active'));document.getElementById(`tab-${t}`).classList.add('active');if(t==='folders'){document.getElementById('view-grid').classList.add('hidden');document.getElementById('view-folders').classList.remove('hidden');renderFolders();}else{document.getElementById('view-grid').classList.remove('hidden');document.getElementById('view-folders').classList.add('hidden');renderScraps();}document.getElementById('view-folder-detail').classList.add('hidden');document.getElementById('sub-header').classList.add('hidden');}
         window.renderScraps=function(){const g=document.getElementById('scrap-grid');g.innerHTML='';let f=window.allScraps;if(window.currentTab==='favorites')f=f.filter(s=>s.isFavorite);if(window.searchText)f=f.filter(s=>s.title.toLowerCase().includes(window.searchText.toLowerCase()));f.forEach(i=>g.appendChild(createCardElement(i)));lucide.createIcons();if(f.length===0)document.getElementById('empty-state').classList.remove('hidden');else document.getElementById('empty-state').classList.add('hidden');}
         
-        function createCardElement(i) {
+        // [FIXED] Card with full thumbnail & better grid
+        function createCardElement(i){
             const c=document.createElement('div');
-            c.className="relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden transition hover:shadow-md";
+            // object-contain for video/social, bg-black for cinematic look
+            const isVideo = i.type==='Video'||i.sourceUrl?.includes('youtu');
+            const bgClass = isVideo ? 'bg-black' : 'bg-gray-100';
             
-            let media;
-            if(i.imageUrl) {
-                media=`<img src="${i.imageUrl}" class="w-full h-full object-cover bg-gray-100">`;
-            } else {
-                let icon = "image";
-                if(i.type === 'Social' || i.sourceUrl?.includes('twitter') || i.sourceUrl?.includes('instagram')) icon = "smartphone";
-                media=`<div class="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-300 gap-2"><i data-lucide="${icon}" class="w-8 h-8"></i><span class="text-[10px] uppercase font-bold text-gray-400">${i.type}</span></div>`;
-            }
-
-            c.innerHTML=`<div class="h-[65%] w-full overflow-hidden relative">${media}</div><div class="h-[35%] p-5 flex flex-col justify-between bg-white"><h3 class="font-serif text-base font-bold text-black leading-snug line-clamp-2">${i.title}</h3><div class="flex justify-between items-center"><span class="text-[11px] text-gray-400 uppercase truncate max-w-[100px] tracking-wider">${i.folder}</span>${i.isFavorite?'<i data-lucide="heart" class="w-4 h-4 text-red-500 fill-current"></i>':''}</div></div>`;
+            c.className="relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden transition hover:shadow-md";
+            let m;
+            if(i.imageUrl) m=`<img src="${i.imageUrl}" class="w-full h-full object-contain ${bgClass}">`;
+            else m=`<div class="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-300 gap-2"><i data-lucide="image" class="w-8 h-8"></i><span class="text-[10px] uppercase font-bold text-gray-400">${i.type}</span></div>`;
+            
+            c.innerHTML=`<div class="h-[65%] w-full overflow-hidden relative">${m}</div><div class="h-[35%] p-4 flex flex-col justify-between bg-white"><h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${i.title}</h3><div class="flex justify-between items-center"><span class="text-[10px] text-gray-400 uppercase truncate max-w-[80px]">${i.folder}</span>${i.isFavorite?'<i data-lucide="heart" class="w-3 h-3 text-red-500 fill-current"></i>':''}</div></div>`;
             c.onclick=()=>openDetailView(i);
             
+            // Long Press & Right Click
             let t;
-            c.addEventListener('touchstart',()=>t=setTimeout(()=>{window.currentScrap=i;document.getElementById('menu-modal').classList.remove('hidden');},600));
+            c.addEventListener('touchstart',()=>t=setTimeout(()=>{openMenu(i)},600));
             c.addEventListener('touchend',()=>clearTimeout(t));
-            c.addEventListener('contextmenu',e=>{e.preventDefault();window.currentScrap=i;document.getElementById('menu-modal').classList.remove('hidden');});
+            c.addEventListener('contextmenu',e=>{e.preventDefault();openMenu(i);});
             return c;
+        }
+
+        // [NEW] Menu Logic
+        function openMenu(item){
+            window.currentScrap=item;
+            document.getElementById('menu-title').textContent = item.title;
+            document.getElementById('menu-folder').textContent = item.folder;
+            document.getElementById('menu-thumb').innerHTML = item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-full object-cover">` : '';
+            document.getElementById('menu-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+        
+        window.menuAction = function(action) {
+            const item = window.currentScrap;
+            if(!item) return;
+            
+            if(action === 'delete') {
+                if(confirm("Delete this item?")) {
+                    window.allScraps = window.allScraps.filter(s => s.id !== item.id);
+                    saveData();
+                    if(document.getElementById('view-folder-detail').classList.contains('hidden')) renderScraps();
+                    else openFolder(item.folder); // Refresh folder view
+                }
+            } else if(action === 'favorite') {
+                item.isFavorite = !item.isFavorite;
+                saveData();
+                renderScraps();
+            } else if(action === 'folder') {
+                const newFolder = prompt("이동할 폴더 이름을 입력하세요:", item.folder);
+                if(newFolder && newFolder.trim() !== "") {
+                    item.folder = newFolder.trim();
+                    if(!window.customFolders.has(item.folder)) window.customFolders.add(item.folder);
+                    saveData();
+                    renderFolders();
+                    renderScraps();
+                }
+            } else if(action === 'edit') {
+                openDetailView(item);
+                toggleDetailEdit(); // Auto start edit mode
+            }
+            closeMenuModal();
+        }
+
+        // [NEW] Detail Edit Logic
+        window.toggleDetailEdit = function() {
+            isDetailEditing = !isDetailEditing;
+            const btn = document.getElementById('detail-edit-btn');
+            const titleEl = document.getElementById('detail-title-input');
+            const summaryEl = document.getElementById('detail-summary-text');
+            const contentEl = document.getElementById('detail-full-text');
+            const memoEl = document.getElementById('detail-memo-input');
+
+            if(isDetailEditing) {
+                // Switch to Edit Mode
+                btn.innerHTML = `<i data-lucide="save" class="w-3 h-3"></i> <span>Save</span>`;
+                btn.classList.replace('bg-gray-100', 'bg-black');
+                btn.classList.replace('text-gray-700', 'text-white');
+                btn.classList.replace('hover:bg-gray-200', 'hover:bg-gray-800');
+
+                titleEl.innerHTML = `<input type="text" class="edit-input text-3xl font-serif italic" value="${window.currentScrap.title}">`;
+                summaryEl.innerHTML = `<textarea class="edit-textarea text-sm">${window.currentScrap.summary}</textarea>`;
+                contentEl.innerHTML = `<textarea class="edit-textarea text-sm h-64">${window.currentScrap.content}</textarea>`;
+                memoEl.innerHTML = `<textarea class="edit-textarea font-serif italic text-sm">${window.currentScrap.memo}</textarea>`;
+            } else {
+                // Save Changes
+                const newTitle = titleEl.querySelector('input').value;
+                const newSummary = summaryEl.querySelector('textarea').value;
+                const newContent = contentEl.querySelector('textarea').value;
+                const newMemo = memoEl.querySelector('textarea').value;
+
+                // Update Object
+                window.currentScrap.title = newTitle;
+                window.currentScrap.summary = newSummary;
+                window.currentScrap.content = newContent;
+                window.currentScrap.memo = newMemo;
+
+                // Sync
+                const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
+                if(idx !== -1) window.allScraps[idx] = window.currentScrap;
+                saveData();
+
+                // Switch back to View Mode
+                btn.innerHTML = `<i data-lucide="edit-3" class="w-3 h-3"></i> <span>Edit</span>`;
+                btn.classList.replace('bg-black', 'bg-gray-100');
+                btn.classList.replace('text-white', 'text-gray-700');
+                btn.classList.replace('hover:bg-gray-800', 'hover:bg-gray-200');
+
+                // Render Text
+                titleEl.textContent = newTitle;
+                summaryEl.textContent = newSummary;
+                contentEl.innerText = newContent;
+                memoEl.innerText = newMemo;
+                
+                renderScraps(); // Refresh Grid
+            }
+            lucide.createIcons();
         }
 
         window.renderFolders=function(){const l=document.getElementById('folder-list');l.innerHTML='';Array.from(window.customFolders).sort().forEach(f=>{const c=window.allScraps.filter(s=>s.folder===f).length,b=document.createElement('div');b.className="aspect-square bg-white border border-gray-200 rounded-sm flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition hover:shadow-sm";b.onclick=()=>openFolder(f);b.innerHTML=`<i data-lucide="folder" class="w-10 h-10 text-black mb-3 opacity-80"></i><span class="font-serif italic text-xl font-bold text-center px-4 truncate w-full">${f}</span><span class="text-xs text-gray-400 mt-2 uppercase tracking-wider">${c} Items</span>`;l.appendChild(b);});lucide.createIcons();}
         window.updateFolderDropdown=function(){const d=document.getElementById('folder-options');d.innerHTML='';Array.from(window.customFolders).forEach(f=>{const o=document.createElement('option');o.value=f;d.appendChild(o);});}
-        
-        window.openFolder=function(f){
-            window.currentFolderContext=f;
-            document.getElementById('view-folders').classList.add('hidden');
-            document.getElementById('view-folder-detail').classList.remove('hidden');
-            document.getElementById('sub-header').classList.remove('hidden');
-            document.querySelector('#view-title').textContent=f;
-            const i=window.allScraps.filter(s=>s.folder===f),g=document.getElementById('folder-detail-grid');
-            g.innerHTML='';
-            if(i.length===0)document.getElementById('folder-empty-state').classList.remove('hidden');
-            else{document.getElementById('folder-empty-state').classList.add('hidden');i.forEach(itm=>g.appendChild(createCardElement(itm)));}
-            lucide.createIcons();
-        }
-        
-        window.closeFolderDetail=function(){
-            window.currentFolderContext=null;
-            document.getElementById('view-folder-detail').classList.add('hidden');
-            document.getElementById('view-folders').classList.remove('hidden');
-            document.getElementById('sub-header').classList.add('hidden');
-        }
-
+        window.openFolder=function(f){window.currentFolderContext=f;document.getElementById('view-folders').classList.add('hidden');document.getElementById('view-folder-detail').classList.remove('hidden');document.getElementById('sub-header').classList.remove('hidden');document.querySelector('#view-title').textContent=f;const i=window.allScraps.filter(s=>s.folder===f),g=document.getElementById('folder-detail-grid');g.innerHTML='';if(i.length===0)document.getElementById('folder-empty-state').classList.remove('hidden');else{document.getElementById('folder-empty-state').classList.add('hidden');i.forEach(itm=>g.appendChild(createCardElement(itm)));}lucide.createIcons();}
         window.openDetailView=function(s){
+            if(isDetailEditing) toggleDetailEdit(); // Reset edit mode if open
             window.currentScrap=s;
             document.getElementById('detail-title-input').textContent=s.title;
             document.getElementById('detail-image').src=s.imageUrl||'';
@@ -481,17 +424,14 @@
             document.getElementById('detail-type-badge').innerText = s.type || 'NOTE';
             document.getElementById('detail-view-modal').classList.remove('hidden');
         }
-        
         window.closeDetailView=function(){document.getElementById('detail-view-modal').classList.add('hidden');}
-        window.openSourceUrl=function(){if(window.currentScrap&&window.currentScrap.sourceUrl)window.open(window.currentScrap.sourceUrl,'_blank');}
+        window.openSourceUrl=function(){if(!isDetailEditing && window.currentScrap&&window.currentScrap.sourceUrl)window.open(window.currentScrap.sourceUrl,'_blank');}
         window.toggleNewFavorite=function(){isNewItemFavorite=!isNewItemFavorite;const b=document.getElementById('new-favorite-btn');if(isNewItemFavorite){b.classList.remove('text-gray-400');b.classList.add('text-red-500');b.querySelector('svg').setAttribute('fill','currentColor');}else{b.classList.add('text-gray-400');b.classList.remove('text-red-500');b.querySelector('svg').removeAttribute('fill');}}
         window.openAddModal=function(){document.getElementById('add-modal').classList.remove('hidden');setTimeout(()=>document.getElementById('add-panel').classList.remove('translate-x-full'),10);updateFolderDropdown();isNewItemFavorite=false;const f=document.getElementById('new-favorite-btn');f.classList.add('text-gray-400');f.classList.remove('text-red-500');f.querySelector('svg').removeAttribute('fill');}
         window.closeAddModal=function(){document.getElementById('add-panel').classList.add('translate-x-full');setTimeout(()=>document.getElementById('add-modal').classList.add('hidden'),300);}
         window.resetForm=function(){document.querySelectorAll('#add-panel input, #add-panel textarea').forEach(i=>i.value='');}
         window.closeMenuModal=function(){document.getElementById('menu-modal').classList.add('hidden');}
-        window.menuAction=function(a){if(a==='delete'){if(confirm("Delete this item?")){window.allScraps=window.allScraps.filter(s=>s.id!==window.currentScrap.id);saveData();closeMenuModal();if(window.currentFolderContext&&!document.getElementById('view-folder-detail').classList.contains('hidden'))openFolder(window.currentFolderContext);else renderScraps();}}}
         window.searchText="";window.handleSearchInput=function(e){window.searchText=e.target.value;renderScraps();}
-
         window.openCreateFolderModal=function(){folderModalMode='create';targetFolderOldName='';document.getElementById('folder-modal-title').textContent='New Folder';document.getElementById('folder-name-input').value='';showFolderModal();}
         window.openRenameModal=function(){if(!window.currentFolderContext)return;folderModalMode='rename';targetFolderOldName=window.currentFolderContext;document.getElementById('folder-modal-title').textContent='Rename Folder';document.getElementById('folder-name-input').value=window.currentFolderContext;showFolderModal();}
         function showFolderModal(){const m=document.getElementById('folder-input-modal'),c=document.getElementById('folder-modal-content');m.classList.remove('hidden');setTimeout(()=>{m.classList.remove('opacity-0');c.classList.remove('scale-95');document.getElementById('folder-name-input').focus();},10);}

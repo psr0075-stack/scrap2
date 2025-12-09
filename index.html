@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Archive v8.1 (AI Fix)</title>
+    <title>Archive v8.2 (Final Fix)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -295,7 +295,7 @@
             }
         }
 
-        // [CORRECTED] Gemini Auto-Fill Function
+        // [CORRECTED] Gemini Auto-Fill Function (Use gemini-1.5-flash)
         window.handleAIAutoFill = async function() {
             const content = document.getElementById('input-content').value;
             if (!content || content.length < 5) {
@@ -319,13 +319,14 @@
             `;
 
             try {
-                // FIXED: Changed model back to standard 'gemini-1.5-flash'
+                // Modified: STRICTLY use 'gemini-1.5-flash' which is the standard identifier.
+                // Do NOT use 'gemini-1.5-flash-latest' as it causes 404.
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { response_mime_type: "application/json" } // Force valid JSON
+                        generationConfig: { response_mime_type: "application/json" } 
                     })
                 });
 
@@ -333,7 +334,7 @@
                 if(data.error) throw new Error(data.error.message);
 
                 let textResult = data.candidates[0].content.parts[0].text;
-                // Safety cleanup
+                // Double safety cleanup
                 textResult = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
                 const parsed = JSON.parse(textResult);
 
@@ -344,7 +345,7 @@
 
             } catch (error) {
                 console.error("AI Error:", error);
-                alert("AI 분석 실패. API Key나 네트워크를 확인해주세요.\nError: " + error.message);
+                alert("AI 분석 실패.\nError: " + error.message);
                 if(confirm("API Key를 다시 입력하시겠습니까?")) {
                     localStorage.removeItem('GEMINI_API_KEY');
                     getGeminiKey();

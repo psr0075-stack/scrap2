@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Archive v11.1 (Readable & Easy Folder)</title>
+    <title>Archive v11.2 (Final Polish)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -18,6 +18,7 @@
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* 탭 스타일 */
         .folder-tab { 
             font-family: 'Playfair Display', serif; 
             font-style: italic; 
@@ -79,7 +80,7 @@
 
         <div class="relative flex-grow overflow-hidden">
             <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-8 pb-32">
-                <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-6"></div>
+                <div id="scrap-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8"></div>
                 <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
                     <i data-lucide="layers" class="w-10 h-10 mb-4 opacity-20 text-black"></i>
                     <p class="text-sm font-light tracking-widest uppercase">Empty Collection</p>
@@ -97,7 +98,7 @@
             </div>
             
             <div id="view-folder-detail" class="absolute inset-0 overflow-y-auto no-scrollbar p-8 pb-32 hidden">
-                  <div id="folder-detail-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"></div>
+                  <div id="folder-detail-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8"></div>
                   <div id="folder-empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20"><p class="text-sm font-light tracking-widest uppercase">No items in this folder</p></div>
             </div>
         </div>
@@ -295,19 +296,27 @@
         window.switchTab=function(t){window.currentTab=t;document.querySelectorAll('.folder-tab').forEach(e=>e.classList.remove('active'));document.getElementById(`tab-${t}`).classList.add('active');if(t==='folders'){document.getElementById('view-grid').classList.add('hidden');document.getElementById('view-folders').classList.remove('hidden');renderFolders();}else{document.getElementById('view-grid').classList.remove('hidden');document.getElementById('view-folders').classList.add('hidden');renderScraps();}document.getElementById('view-folder-detail').classList.add('hidden');document.getElementById('sub-header').classList.add('hidden');}
         window.renderScraps=function(){const g=document.getElementById('scrap-grid');g.innerHTML='';let f=window.allScraps;if(window.currentTab==='favorites')f=f.filter(s=>s.isFavorite);if(window.searchText)f=f.filter(s=>s.title.toLowerCase().includes(window.searchText.toLowerCase()));f.forEach(i=>g.appendChild(createCardElement(i)));lucide.createIcons();if(f.length===0)document.getElementById('empty-state').classList.remove('hidden');else document.getElementById('empty-state').classList.add('hidden');}
         
-        // [FIXED] Card Title Size & Video BG
+        // [MODIFIED] Card UI Logic
         function createCardElement(i){
             const c=document.createElement('div');
-            // Gray background for all media to look modern
-            const bgClass = 'bg-gray-50'; 
+            // Gray BG for video margins (Fix)
+            const bgClass = 'bg-gray-100'; 
             
             c.className="relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden transition hover:shadow-md";
-            let m;
-            if(i.imageUrl) m=`<img src="${i.imageUrl}" class="w-full h-full object-contain ${bgClass}">`;
-            else m=`<div class="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-300 gap-2"><i data-lucide="image" class="w-8 h-8"></i><span class="text-[10px] uppercase font-bold text-gray-400">${i.type}</span></div>`;
             
-            // Text-lg for title (Larger)
-            c.innerHTML=`<div class="h-[65%] w-full overflow-hidden relative">${m}</div><div class="h-[35%] p-4 flex flex-col justify-between bg-white"><h3 class="font-serif text-lg font-bold text-black leading-tight line-clamp-2">${i.title}</h3><div class="flex justify-between items-center"><span class="text-[10px] text-gray-400 uppercase truncate max-w-[80px]">${i.folder}</span>${i.isFavorite?'<i data-lucide="heart" class="w-3 h-3 text-red-500 fill-current"></i>':''}</div></div>`;
+            let m;
+            if(i.imageUrl) {
+                // Video type or YouTube -> object-contain + gray bg
+                // Others (Images) -> object-cover (Full Fill)
+                const isVideo = i.type === 'Video' || i.sourceUrl?.includes('youtu');
+                const fitClass = isVideo ? 'object-contain' : 'object-cover';
+                m = `<div class="w-full h-full ${bgClass} flex items-center justify-center overflow-hidden"><img src="${i.imageUrl}" class="w-full h-full ${fitClass}"></div>`;
+            } else {
+                m=`<div class="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-300 gap-2"><i data-lucide="image" class="w-8 h-8"></i><span class="text-[10px] uppercase font-bold text-gray-400">${i.type}</span></div>`;
+            }
+            
+            // Larger Title (text-lg + line-clamp-2)
+            c.innerHTML=`<div class="h-[65%] w-full overflow-hidden relative">${m}</div><div class="h-[35%] p-5 flex flex-col justify-between bg-white"><h3 class="font-serif text-lg font-bold text-black leading-snug line-clamp-2">${i.title}</h3><div class="flex justify-between items-center"><span class="text-[11px] text-gray-400 uppercase truncate max-w-[80px] tracking-wider">${i.folder}</span>${i.isFavorite?'<i data-lucide="heart" class="w-4 h-4 text-red-500 fill-current"></i>':''}</div></div>`;
             c.onclick=()=>openDetailView(i);
             
             let t;
@@ -321,12 +330,15 @@
             window.currentScrap=item;
             document.getElementById('menu-title').textContent = item.title;
             document.getElementById('menu-folder').textContent = item.folder;
-            document.getElementById('menu-thumb').innerHTML = item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-full object-cover">` : '';
+            // Thumb display in menu
+            const isVideo = item.type === 'Video' || item.sourceUrl?.includes('youtu');
+            const fitClass = isVideo ? 'object-contain' : 'object-cover';
+            document.getElementById('menu-thumb').innerHTML = item.imageUrl ? `<img src="${item.imageUrl}" class="w-full h-full ${fitClass}">` : '';
+            
             document.getElementById('menu-modal').classList.remove('hidden');
             lucide.createIcons();
         }
         
-        // [FIXED] Folder Select Modal Logic
         window.menuAction = function(action) {
             const item = window.currentScrap;
             if(!item) return;
@@ -345,7 +357,6 @@
                 renderScraps();
                 closeMenuModal();
             } else if(action === 'folder') {
-                // Open Folder Select Modal instead of prompt
                 closeMenuModal();
                 openFolderSelectModal();
             } else if(action === 'edit') {
@@ -358,8 +369,6 @@
         window.openFolderSelectModal = function() {
             const list = document.getElementById('folder-select-list');
             list.innerHTML = '';
-            
-            // List all folders as buttons
             Array.from(window.customFolders).sort().forEach(f => {
                 const btn = document.createElement('button');
                 btn.className = "w-full text-left px-4 py-3 hover:bg-gray-100 rounded-sm font-medium text-sm flex items-center gap-2 transition";
@@ -369,13 +378,12 @@
                     saveData();
                     renderScraps();
                     if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
-                        openFolder(f); // Move view to new folder or refresh
+                        openFolder(f); 
                     }
                     closeFolderSelectModal();
                 };
                 list.appendChild(btn);
             });
-            
             document.getElementById('folder-select-modal').classList.remove('hidden');
             lucide.createIcons();
         }

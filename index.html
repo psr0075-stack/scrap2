@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Archive v11.0 (Perfect Edition)</title>
+    <title>Archive v11.1 (Readable & Easy Folder)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -18,7 +18,6 @@
         .font-serif { font-family: 'Playfair Display', serif; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* 탭 스타일 */
         .folder-tab { 
             font-family: 'Playfair Display', serif; 
             font-style: italic; 
@@ -35,11 +34,9 @@
 
         button:active { transform: scale(0.95); transition: 0.1s; }
         
-        /* 상세 이미지 스타일 */
         #detail-image-container { background-color: #f3f4f6; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #e5e7eb; }
         #detail-image { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-        /* 수정 모드 인풋 스타일 */
         .edit-input { border: 1px solid #e5e7eb; background: #fff; padding: 4px 8px; width: 100%; border-radius: 4px; }
         .edit-textarea { border: 1px solid #e5e7eb; background: #fff; padding: 8px; width: 100%; border-radius: 4px; min-height: 100px; }
     </style>
@@ -163,7 +160,7 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Type (직접 입력)</label>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Type</label>
                             <input type="text" id="input-type" list="type-options" class="w-full bg-transparent border-b border-gray-200 py-2 text-sm" placeholder="Select/Type">
                             <datalist id="type-options"><option value="News"><option value="Video"><option value="Social"><option value="Image"><option value="Paper"></datalist>
                         </div>
@@ -186,13 +183,11 @@
     <div id="detail-view-modal" class="fixed inset-0 z-[300] hidden bg-white flex flex-col">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white z-10 shrink-0">
             <button onclick="closeDetailView()" class="p-2 hover:bg-gray-50 rounded-full transition"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
-            
             <div class="flex items-center gap-2">
                 <button id="detail-edit-btn" onclick="toggleDetailEdit()" class="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-bold text-gray-700 transition">
                     <i data-lucide="edit-3" class="w-3 h-3"></i> <span>Edit</span>
                 </button>
             </div>
-            
             <div class="w-10"></div>
         </div>
 
@@ -268,6 +263,16 @@
         </div>
     </div>
 
+    <div id="folder-select-modal" class="fixed inset-0 hidden z-[450] flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeFolderSelectModal()"></div>
+        <div class="bg-white w-[300px] rounded-lg shadow-2xl p-6 relative z-10">
+            <h3 class="font-serif italic text-xl font-bold mb-4 text-center">Move to...</h3>
+            <div id="folder-select-list" class="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                </div>
+            <button onclick="closeFolderSelectModal()" class="w-full mt-4 py-2 text-xs font-bold text-gray-400 hover:bg-gray-50 rounded transition">CANCEL</button>
+        </div>
+    </div>
+
     <div id="folder-input-modal" class="fixed inset-0 z-[500] hidden flex items-center justify-center transition-opacity duration-200 opacity-0"><div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeFolderModal()"></div><div class="bg-white p-8 rounded-sm shadow-2xl w-[90%] max-w-sm relative z-10 border border-gray-100 transform transition-all duration-200 scale-95" id="folder-modal-content"><h3 id="folder-modal-title" class="font-serif italic text-2xl mb-6 text-center text-black">New Folder</h3><div class="space-y-4"><input type="text" id="folder-name-input" class="w-full border-b-2 border-gray-200 py-3 text-lg font-medium text-center focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300" placeholder="Type name..." onkeypress="handleFolderEnter(event)"><div class="flex gap-2 pt-4"><button onclick="closeFolderModal()" class="flex-1 py-3 text-xs font-bold text-gray-400 hover:bg-gray-50 rounded-sm transition">CANCEL</button><button onclick="submitFolderInput()" class="flex-1 bg-black text-white py-3 rounded-sm text-xs font-bold hover:bg-gray-800 shadow-lg transition transform active:scale-95">SAVE</button></div></div></div></div>
 
     <script>
@@ -278,7 +283,6 @@
 
         window.onload=function(){loadData();lucide.createIcons();};
 
-        // --- Functions ---
         function getGeminiKey(){let k=localStorage.getItem('GEMINI_API_KEY');if(!k){k=prompt("Gemini API Key:");if(k&&k.trim()){localStorage.setItem('GEMINI_API_KEY',k.trim());return k.trim();}return null;}return k.trim();}
         window.resetApiKey=function(){const k=prompt("새 API Key:");if(k){localStorage.setItem('GEMINI_API_KEY',k.trim());alert("저장됨");}}
         window.checkAvailableModels=async function(){const k=getGeminiKey();if(!k)return;try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${k}`);const d=await r.json();if(d.models){const s=document.getElementById('model-select');s.innerHTML="";d.models.forEach(m=>{if(m.supportedGenerationMethods?.includes("generateContent")){const o=document.createElement('option');o.value=m.name.replace("models/","");o.text=m.name.replace("models/","");s.appendChild(o);}});alert(`✅ ${d.models.length}개 모델 로드`);}}catch(e){alert("오류: "+e.message);}}
@@ -291,22 +295,21 @@
         window.switchTab=function(t){window.currentTab=t;document.querySelectorAll('.folder-tab').forEach(e=>e.classList.remove('active'));document.getElementById(`tab-${t}`).classList.add('active');if(t==='folders'){document.getElementById('view-grid').classList.add('hidden');document.getElementById('view-folders').classList.remove('hidden');renderFolders();}else{document.getElementById('view-grid').classList.remove('hidden');document.getElementById('view-folders').classList.add('hidden');renderScraps();}document.getElementById('view-folder-detail').classList.add('hidden');document.getElementById('sub-header').classList.add('hidden');}
         window.renderScraps=function(){const g=document.getElementById('scrap-grid');g.innerHTML='';let f=window.allScraps;if(window.currentTab==='favorites')f=f.filter(s=>s.isFavorite);if(window.searchText)f=f.filter(s=>s.title.toLowerCase().includes(window.searchText.toLowerCase()));f.forEach(i=>g.appendChild(createCardElement(i)));lucide.createIcons();if(f.length===0)document.getElementById('empty-state').classList.remove('hidden');else document.getElementById('empty-state').classList.add('hidden');}
         
-        // [FIXED] Card with full thumbnail & better grid
+        // [FIXED] Card Title Size & Video BG
         function createCardElement(i){
             const c=document.createElement('div');
-            // object-contain for video/social, bg-black for cinematic look
-            const isVideo = i.type==='Video'||i.sourceUrl?.includes('youtu');
-            const bgClass = isVideo ? 'bg-black' : 'bg-gray-100';
+            // Gray background for all media to look modern
+            const bgClass = 'bg-gray-50'; 
             
             c.className="relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden transition hover:shadow-md";
             let m;
             if(i.imageUrl) m=`<img src="${i.imageUrl}" class="w-full h-full object-contain ${bgClass}">`;
             else m=`<div class="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-300 gap-2"><i data-lucide="image" class="w-8 h-8"></i><span class="text-[10px] uppercase font-bold text-gray-400">${i.type}</span></div>`;
             
-            c.innerHTML=`<div class="h-[65%] w-full overflow-hidden relative">${m}</div><div class="h-[35%] p-4 flex flex-col justify-between bg-white"><h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${i.title}</h3><div class="flex justify-between items-center"><span class="text-[10px] text-gray-400 uppercase truncate max-w-[80px]">${i.folder}</span>${i.isFavorite?'<i data-lucide="heart" class="w-3 h-3 text-red-500 fill-current"></i>':''}</div></div>`;
+            // Text-lg for title (Larger)
+            c.innerHTML=`<div class="h-[65%] w-full overflow-hidden relative">${m}</div><div class="h-[35%] p-4 flex flex-col justify-between bg-white"><h3 class="font-serif text-lg font-bold text-black leading-tight line-clamp-2">${i.title}</h3><div class="flex justify-between items-center"><span class="text-[10px] text-gray-400 uppercase truncate max-w-[80px]">${i.folder}</span>${i.isFavorite?'<i data-lucide="heart" class="w-3 h-3 text-red-500 fill-current"></i>':''}</div></div>`;
             c.onclick=()=>openDetailView(i);
             
-            // Long Press & Right Click
             let t;
             c.addEventListener('touchstart',()=>t=setTimeout(()=>{openMenu(i)},600));
             c.addEventListener('touchend',()=>clearTimeout(t));
@@ -314,7 +317,6 @@
             return c;
         }
 
-        // [NEW] Menu Logic
         function openMenu(item){
             window.currentScrap=item;
             document.getElementById('menu-title').textContent = item.title;
@@ -324,6 +326,7 @@
             lucide.createIcons();
         }
         
+        // [FIXED] Folder Select Modal Logic
         window.menuAction = function(action) {
             const item = window.currentScrap;
             if(!item) return;
@@ -333,29 +336,54 @@
                     window.allScraps = window.allScraps.filter(s => s.id !== item.id);
                     saveData();
                     if(document.getElementById('view-folder-detail').classList.contains('hidden')) renderScraps();
-                    else openFolder(item.folder); // Refresh folder view
+                    else openFolder(item.folder);
                 }
+                closeMenuModal();
             } else if(action === 'favorite') {
                 item.isFavorite = !item.isFavorite;
                 saveData();
                 renderScraps();
+                closeMenuModal();
             } else if(action === 'folder') {
-                const newFolder = prompt("이동할 폴더 이름을 입력하세요:", item.folder);
-                if(newFolder && newFolder.trim() !== "") {
-                    item.folder = newFolder.trim();
-                    if(!window.customFolders.has(item.folder)) window.customFolders.add(item.folder);
-                    saveData();
-                    renderFolders();
-                    renderScraps();
-                }
+                // Open Folder Select Modal instead of prompt
+                closeMenuModal();
+                openFolderSelectModal();
             } else if(action === 'edit') {
                 openDetailView(item);
-                toggleDetailEdit(); // Auto start edit mode
+                toggleDetailEdit();
+                closeMenuModal();
             }
-            closeMenuModal();
         }
 
-        // [NEW] Detail Edit Logic
+        window.openFolderSelectModal = function() {
+            const list = document.getElementById('folder-select-list');
+            list.innerHTML = '';
+            
+            // List all folders as buttons
+            Array.from(window.customFolders).sort().forEach(f => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left px-4 py-3 hover:bg-gray-100 rounded-sm font-medium text-sm flex items-center gap-2 transition";
+                btn.innerHTML = `<i data-lucide="folder" class="w-4 h-4 text-gray-400"></i> ${f}`;
+                btn.onclick = () => {
+                    window.currentScrap.folder = f;
+                    saveData();
+                    renderScraps();
+                    if(!document.getElementById('view-folder-detail').classList.contains('hidden')) {
+                        openFolder(f); // Move view to new folder or refresh
+                    }
+                    closeFolderSelectModal();
+                };
+                list.appendChild(btn);
+            });
+            
+            document.getElementById('folder-select-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+        
+        window.closeFolderSelectModal = function() {
+            document.getElementById('folder-select-modal').classList.add('hidden');
+        }
+
         window.toggleDetailEdit = function() {
             isDetailEditing = !isDetailEditing;
             const btn = document.getElementById('detail-edit-btn');
@@ -365,47 +393,35 @@
             const memoEl = document.getElementById('detail-memo-input');
 
             if(isDetailEditing) {
-                // Switch to Edit Mode
                 btn.innerHTML = `<i data-lucide="save" class="w-3 h-3"></i> <span>Save</span>`;
                 btn.classList.replace('bg-gray-100', 'bg-black');
                 btn.classList.replace('text-gray-700', 'text-white');
                 btn.classList.replace('hover:bg-gray-200', 'hover:bg-gray-800');
-
                 titleEl.innerHTML = `<input type="text" class="edit-input text-3xl font-serif italic" value="${window.currentScrap.title}">`;
                 summaryEl.innerHTML = `<textarea class="edit-textarea text-sm">${window.currentScrap.summary}</textarea>`;
                 contentEl.innerHTML = `<textarea class="edit-textarea text-sm h-64">${window.currentScrap.content}</textarea>`;
                 memoEl.innerHTML = `<textarea class="edit-textarea font-serif italic text-sm">${window.currentScrap.memo}</textarea>`;
             } else {
-                // Save Changes
                 const newTitle = titleEl.querySelector('input').value;
                 const newSummary = summaryEl.querySelector('textarea').value;
                 const newContent = contentEl.querySelector('textarea').value;
                 const newMemo = memoEl.querySelector('textarea').value;
-
-                // Update Object
                 window.currentScrap.title = newTitle;
                 window.currentScrap.summary = newSummary;
                 window.currentScrap.content = newContent;
                 window.currentScrap.memo = newMemo;
-
-                // Sync
                 const idx = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
                 if(idx !== -1) window.allScraps[idx] = window.currentScrap;
                 saveData();
-
-                // Switch back to View Mode
                 btn.innerHTML = `<i data-lucide="edit-3" class="w-3 h-3"></i> <span>Edit</span>`;
                 btn.classList.replace('bg-black', 'bg-gray-100');
                 btn.classList.replace('text-white', 'text-gray-700');
                 btn.classList.replace('hover:bg-gray-800', 'hover:bg-gray-200');
-
-                // Render Text
                 titleEl.textContent = newTitle;
                 summaryEl.textContent = newSummary;
                 contentEl.innerText = newContent;
                 memoEl.innerText = newMemo;
-                
-                renderScraps(); // Refresh Grid
+                renderScraps();
             }
             lucide.createIcons();
         }
@@ -413,17 +429,7 @@
         window.renderFolders=function(){const l=document.getElementById('folder-list');l.innerHTML='';Array.from(window.customFolders).sort().forEach(f=>{const c=window.allScraps.filter(s=>s.folder===f).length,b=document.createElement('div');b.className="aspect-square bg-white border border-gray-200 rounded-sm flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition hover:shadow-sm";b.onclick=()=>openFolder(f);b.innerHTML=`<i data-lucide="folder" class="w-10 h-10 text-black mb-3 opacity-80"></i><span class="font-serif italic text-xl font-bold text-center px-4 truncate w-full">${f}</span><span class="text-xs text-gray-400 mt-2 uppercase tracking-wider">${c} Items</span>`;l.appendChild(b);});lucide.createIcons();}
         window.updateFolderDropdown=function(){const d=document.getElementById('folder-options');d.innerHTML='';Array.from(window.customFolders).forEach(f=>{const o=document.createElement('option');o.value=f;d.appendChild(o);});}
         window.openFolder=function(f){window.currentFolderContext=f;document.getElementById('view-folders').classList.add('hidden');document.getElementById('view-folder-detail').classList.remove('hidden');document.getElementById('sub-header').classList.remove('hidden');document.querySelector('#view-title').textContent=f;const i=window.allScraps.filter(s=>s.folder===f),g=document.getElementById('folder-detail-grid');g.innerHTML='';if(i.length===0)document.getElementById('folder-empty-state').classList.remove('hidden');else{document.getElementById('folder-empty-state').classList.add('hidden');i.forEach(itm=>g.appendChild(createCardElement(itm)));}lucide.createIcons();}
-        window.openDetailView=function(s){
-            if(isDetailEditing) toggleDetailEdit(); // Reset edit mode if open
-            window.currentScrap=s;
-            document.getElementById('detail-title-input').textContent=s.title;
-            document.getElementById('detail-image').src=s.imageUrl||'';
-            document.getElementById('detail-summary-text').textContent=s.summary;
-            document.getElementById('detail-full-text').innerText=s.content||"";
-            document.getElementById('detail-memo-input').innerText=s.memo;
-            document.getElementById('detail-type-badge').innerText = s.type || 'NOTE';
-            document.getElementById('detail-view-modal').classList.remove('hidden');
-        }
+        window.openDetailView=function(s){if(isDetailEditing) toggleDetailEdit();window.currentScrap=s;document.getElementById('detail-title-input').textContent=s.title;document.getElementById('detail-image').src=s.imageUrl||'';document.getElementById('detail-summary-text').textContent=s.summary;document.getElementById('detail-full-text').innerText=s.content||"";document.getElementById('detail-memo-input').innerText=s.memo;document.getElementById('detail-type-badge').innerText = s.type || 'NOTE';document.getElementById('detail-view-modal').classList.remove('hidden');}
         window.closeDetailView=function(){document.getElementById('detail-view-modal').classList.add('hidden');}
         window.openSourceUrl=function(){if(!isDetailEditing && window.currentScrap&&window.currentScrap.sourceUrl)window.open(window.currentScrap.sourceUrl,'_blank');}
         window.toggleNewFavorite=function(){isNewItemFavorite=!isNewItemFavorite;const b=document.getElementById('new-favorite-btn');if(isNewItemFavorite){b.classList.remove('text-gray-400');b.classList.add('text-red-500');b.querySelector('svg').setAttribute('fill','currentColor');}else{b.classList.add('text-gray-400');b.classList.remove('text-red-500');b.querySelector('svg').removeAttribute('fill');}}

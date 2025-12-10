@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Archive v9.0 (iPad Fix)</title>
+    <title>Archive v9.1 (Search & UI Fix)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
         
         button:active { transform: scale(0.95); transition: 0.1s; }
         
-        /* 카드 및 상세 이미지 스타일 개선 */
+        /* 카드 및 상세 이미지 스타일 */
         .card-image-container {
             width: 100%;
             height: 100%;
@@ -37,23 +37,23 @@
         .card-image {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 이미지가 꽉 차게 */
+            object-fit: cover; 
             display: block;
         }
 
         #detail-image-container {
-            background-color: #f3f4f6;
+            background-color: #f8f9fa;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
             border: 1px solid #e5e7eb;
-            position: relative;
+            position: relative; /* 버튼 위치 잡기용 */
         }
         #detail-image {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* 상세에서는 전체가 다 보이게 */
+            object-fit: contain; 
             display: block;
         }
     </style>
@@ -212,19 +212,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
                     
                     <div class="col-span-1">
-                        <div id="detail-image-container" class="aspect-[3/4] w-full rounded-sm relative group bg-gray-100">
+                        <div id="detail-image-container" class="aspect-[3/4] w-full rounded-sm relative bg-gray-100">
                             <img id="detail-image" class="transition duration-300">
                             
-                            <div class="absolute inset-0 bg-black/5 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <button onclick="openSourceUrl()" class="bg-white text-black text-xs font-bold px-4 py-2 rounded shadow-lg flex items-center gap-2 hover:bg-gray-50">
-                                    <i data-lucide="external-link" class="w-3 h-3"></i> Visit Link
-                                </button>
-                                <button onclick="triggerDetailThumbUpload()" class="bg-black text-white text-xs font-bold px-4 py-2 rounded shadow-lg flex items-center gap-2 hover:bg-gray-800">
-                                    <i data-lucide="image" class="w-3 h-3"></i> Change Image
-                                </button>
-                            </div>
-                            <button onclick="triggerDetailThumbUpload()" class="absolute top-2 right-2 p-2 bg-white/80 backdrop-blur rounded-full shadow text-black md:hidden">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            <button onclick="openSourceUrl()" class="absolute top-3 left-3 bg-white/90 text-black text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 hover:bg-white z-20">
+                                <i data-lucide="external-link" class="w-3 h-3"></i> Link
+                            </button>
+
+                            <button onclick="triggerDetailThumbUpload()" class="absolute bottom-3 right-3 bg-black/70 text-white p-2.5 rounded-full shadow-xl flex items-center justify-center hover:bg-black transition z-20 backdrop-blur-sm" title="Change Image">
+                                <i data-lucide="camera" class="w-5 h-5"></i>
                             </button>
                         </div>
                     </div>
@@ -302,6 +298,8 @@
         window.currentTab = 'scraps'; 
         window.currentScrap = null;
         window.currentFolderContext = null; 
+        
+        // [FIX] Search Variable GLOBAL definition
         window.searchText = "";
         
         let folderModalMode = 'create'; 
@@ -333,7 +331,6 @@
             }
         }
 
-        // [CRITICAL FIX] Error Handling added to prevent crash
         window.handleAIAutoFill = async function() {
             const content = document.getElementById('input-content').value;
             if (!content || content.length < 5) {
@@ -367,23 +364,14 @@
 
                 const data = await response.json();
                 
-                // [FIX] Explicit error check before accessing properties
-                if (data.error) {
-                    throw new Error("API Error: " + data.error.message);
-                }
-                if (!data.candidates || data.candidates.length === 0) {
-                    throw new Error("AI가 응답을 생성하지 못했습니다 (Safety block 등).");
-                }
+                if (data.error) throw new Error("API Error: " + data.error.message);
+                if (!data.candidates || data.candidates.length === 0) throw new Error("AI No Response");
 
                 let textResult = data.candidates[0].content.parts[0].text;
                 textResult = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
                 
                 let parsed;
-                try {
-                    parsed = JSON.parse(textResult);
-                } catch(e) {
-                    throw new Error("AI 응답 형식이 올바르지 않습니다.");
-                }
+                try { parsed = JSON.parse(textResult); } catch(e) { throw new Error("AI parsing failed"); }
 
                 if(parsed.title) document.getElementById('input-title').value = parsed.title;
                 if(parsed.summary) document.getElementById('input-summary').value = parsed.summary;
@@ -416,7 +404,7 @@
             db.ref('scraps').on('value', (snapshot) => {
                 const data = snapshot.val();
                 window.allScraps = data ? data : [];
-                renderScraps(); // Render initial list
+                renderScraps(); 
                 if(window.currentFolderContext && !document.getElementById('view-folder-detail').classList.contains('hidden')) {
                      openFolder(window.currentFolderContext);
                 }
@@ -457,9 +445,9 @@
             document.getElementById('rename-folder-btn').classList.add('hidden');
         }
 
-        // [FIXED] Search Functionality
+        // [FIX] Robust Search Handler
         window.handleSearchInput = function(e) {
-            window.searchText = e.target.value.trim().toLowerCase();
+            window.searchText = e.target.value.toLowerCase().trim();
             renderScraps();
         }
 
@@ -469,12 +457,11 @@
             
             let filtered = window.allScraps;
 
-            // Apply Search Filter
-            if (window.searchText) {
+            // Search Logic
+            if (window.searchText && window.searchText.length > 0) {
                 filtered = filtered.filter(s => s.title && s.title.toLowerCase().includes(window.searchText));
             }
 
-            // Apply Favorites Filter
             if (window.currentTab === 'favorites') {
                 filtered = filtered.filter(s => s.isFavorite === true);
             }
@@ -500,7 +487,7 @@
             lucide.createIcons();
         }
         
-        // --- Grid Card & Image Logic ---
+        // --- Grid Card ---
         function createCardElement(item) {
             const card = document.createElement('div');
             card.className = "relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden";
@@ -508,14 +495,14 @@
             let media = `<div class="card-image-container"><i data-lucide="image" class="w-8 h-8 text-gray-300"></i></div>`;
             
             if (item.imageUrl) {
-                // [FIX] Added onerror to handle broken images
-                media = `<div class="card-image-container"><img src="${item.imageUrl}" class="card-image" onerror="this.onerror=null;this.src='';this.parentElement.innerHTML='<i data-lucide=image-off class=\'w-8 h-8 text-gray-300\'></i>'"></div>`;
+                media = `<div class="card-image-container"><img src="${item.imageUrl}" class="card-image" onerror="this.parentElement.innerHTML='<i data-lucide=image-off class=\'w-8 h-8 text-gray-300\'></i>'"></div>`;
             }
 
+            // [FIX] Text Size: text-sm -> text-xs, leading-snug -> leading-tight
             card.innerHTML = `
                 <div class="h-[65%] w-full overflow-hidden relative">${media}</div>
                 <div class="h-[35%] p-4 flex flex-col justify-between bg-white">
-                    <h3 class="font-serif text-sm font-bold text-black leading-snug line-clamp-2">${item.title}</h3>
+                    <h3 class="font-serif text-xs font-bold text-black leading-tight line-clamp-2">${item.title}</h3>
                     <div class="flex justify-between items-center">
                         <span class="text-[10px] text-gray-400 uppercase truncate max-w-[80px]">${item.folder}</span>
                         ${item.isFavorite ? '<i data-lucide="heart" class="w-3 h-3 text-red-500 fill-current"></i>' : ''}
@@ -525,7 +512,6 @@
             
             card.onclick = () => openDetailView(item);
             
-            // iPad Long Press for Menu
             let timer;
             card.addEventListener('touchstart', () => { timer = setTimeout(() => { window.currentScrap = item; document.getElementById('menu-modal').classList.remove('hidden'); }, 600); });
             card.addEventListener('touchend', () => clearTimeout(timer));
@@ -534,19 +520,16 @@
             return card;
         }
 
-        // --- Detail View Logic & Edit Thumb ---
+        // --- Detail View & Edit ---
         window.openDetailView = function(scrap) {
             window.currentScrap = scrap;
             document.getElementById('detail-title-input').textContent = scrap.title;
             
-            // Handle image display with error fallback
             const imgEl = document.getElementById('detail-image');
             if(scrap.imageUrl) {
                 imgEl.src = scrap.imageUrl;
                 imgEl.classList.remove('hidden');
-                imgEl.onerror = function() {
-                    this.style.display = 'none';
-                }
+                imgEl.onerror = function() { this.style.display = 'none'; }
             } else {
                 imgEl.src = '';
                 imgEl.classList.add('hidden');
@@ -558,32 +541,27 @@
             document.getElementById('detail-view-modal').classList.remove('hidden');
         }
 
-        // [NEW] Trigger File Input for Detail View
         window.triggerDetailThumbUpload = function() {
             document.getElementById('detail-thumb-input').click();
         }
 
-        // [NEW] Handle File Change in Detail View
         window.handleDetailThumbUpdate = function(event) {
             const file = event.target.files[0];
             if (file && window.currentScrap) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const newUrl = e.target.result;
-                    // Update UI
                     const imgEl = document.getElementById('detail-image');
                     imgEl.src = newUrl;
                     imgEl.classList.remove('hidden');
                     
-                    // Update Data
                     window.currentScrap.imageUrl = newUrl;
                     
-                    // Update Array & Save
                     const index = window.allScraps.findIndex(s => s.id === window.currentScrap.id);
                     if(index !== -1) {
                         window.allScraps[index] = window.currentScrap;
                         saveData();
-                        renderScraps(); // Refresh grid behind modal
+                        renderScraps();
                     }
                 };
                 reader.readAsDataURL(file);

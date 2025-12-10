@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Archive v9.1 (Search & UI Fix)</title>
+    <title>Archive v9.2 (Compact Grid)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
@@ -24,11 +24,11 @@
         
         button:active { transform: scale(0.95); transition: 0.1s; }
         
-        /* 카드 및 상세 이미지 스타일 */
+        /* 카드 이미지 스타일 (수정됨: contain 적용 + 회색 배경) */
         .card-image-container {
             width: 100%;
             height: 100%;
-            background-color: #f3f4f6;
+            background-color: #f3f4f6; /* 회색 배경 고정 */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -37,7 +37,7 @@
         .card-image {
             width: 100%;
             height: 100%;
-            object-fit: cover; 
+            object-fit: contain; /* 이미지가 잘리지 않고 다 보이게 */
             display: block;
         }
 
@@ -48,7 +48,7 @@
             justify-content: center;
             overflow: hidden;
             border: 1px solid #e5e7eb;
-            position: relative; /* 버튼 위치 잡기용 */
+            position: relative;
         }
         #detail-image {
             width: 100%;
@@ -94,7 +94,7 @@
             
             <div class="relative flex-grow overflow-hidden bg-[#fafafa]">
                 <div id="view-grid" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32">
-                    <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                    <div id="scrap-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
                     <div id="empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20">
                         <i data-lucide="layers" class="w-8 h-8 mb-3 opacity-20 text-black"></i>
                         <p class="text-xs font-light tracking-widest uppercase">Empty Collection</p>
@@ -112,7 +112,7 @@
                 </div>
                 
                 <div id="view-folder-detail" class="absolute inset-0 overflow-y-auto no-scrollbar p-6 pb-32 hidden bg-[#fafafa]">
-                      <div id="folder-detail-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+                      <div id="folder-detail-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
                       <div id="folder-empty-state" class="hidden h-full flex flex-col items-center justify-center text-gray-400 pb-20"><p class="text-xs font-light tracking-widest uppercase">No items in this folder</p></div>
                 </div>
             </div>
@@ -298,8 +298,6 @@
         window.currentTab = 'scraps'; 
         window.currentScrap = null;
         window.currentFolderContext = null; 
-        
-        // [FIX] Search Variable GLOBAL definition
         window.searchText = "";
         
         let folderModalMode = 'create'; 
@@ -445,7 +443,6 @@
             document.getElementById('rename-folder-btn').classList.add('hidden');
         }
 
-        // [FIX] Robust Search Handler
         window.handleSearchInput = function(e) {
             window.searchText = e.target.value.toLowerCase().trim();
             renderScraps();
@@ -457,7 +454,6 @@
             
             let filtered = window.allScraps;
 
-            // Search Logic
             if (window.searchText && window.searchText.length > 0) {
                 filtered = filtered.filter(s => s.title && s.title.toLowerCase().includes(window.searchText));
             }
@@ -487,7 +483,7 @@
             lucide.createIcons();
         }
         
-        // --- Grid Card ---
+        // --- Grid Card (수정됨: 이미지 contain 및 회색 배경) ---
         function createCardElement(item) {
             const card = document.createElement('div');
             card.className = "relative group cursor-pointer w-full aspect-[3/4] bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden";
@@ -495,10 +491,10 @@
             let media = `<div class="card-image-container"><i data-lucide="image" class="w-8 h-8 text-gray-300"></i></div>`;
             
             if (item.imageUrl) {
+                // 수정된 부분: 회색 배경(.card-image-container) + contain
                 media = `<div class="card-image-container"><img src="${item.imageUrl}" class="card-image" onerror="this.parentElement.innerHTML='<i data-lucide=image-off class=\'w-8 h-8 text-gray-300\'></i>'"></div>`;
             }
 
-            // [FIX] Text Size: text-sm -> text-xs, leading-snug -> leading-tight
             card.innerHTML = `
                 <div class="h-[65%] w-full overflow-hidden relative">${media}</div>
                 <div class="h-[35%] p-4 flex flex-col justify-between bg-white">
